@@ -85,8 +85,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     return (
         <div className="flex h-screen bg-[#F8FAFC]">
-            {/* SIDEBAR (Dark Navy #0F172A) */}
-            <aside className="w-72 bg-[#0F172A] p-8 flex flex-col justify-between border-r border-slate-800">
+            {/* SIDEBAR (Light Olive #F5F7F0) */}
+            <aside className="w-72 bg-olive-50 p-8 flex flex-col justify-between border-r border-olive-200">
                 <div className="space-y-12">
                     {/* Logo */}
                     <Link href={`/${role}/dashboard`} className="flex items-center gap-3">
@@ -94,8 +94,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             <Heart className="text-white" size={24} fill="currentColor" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-black text-white tracking-tighter uppercase leading-none">Medicore</h1>
-                            <p className="text-[8px] font-bold text-olive-400 tracking-[0.4em] uppercase mt-1">Enterprise</p>
+                            <h1 className="text-xl font-black text-olive-900 tracking-tighter uppercase leading-none">Medicore</h1>
+                            <p className="text-[8px] font-bold text-olive-600 tracking-[0.4em] uppercase mt-1">Enterprise</p>
                         </div>
                     </Link>
 
@@ -108,11 +108,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                     key={item.name}
                                     href={item.href}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${isActive
-                                        ? "bg-olive-500/10 text-olive-400 border border-olive-500/20"
-                                        : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                                        ? "bg-olive-600 text-white shadow-lg shadow-olive-600/20"
+                                        : "text-slate-500 hover:text-olive-900 hover:bg-olive-100"
                                         }`}
                                 >
-                                    <item.icon size={20} className={isActive ? "text-olive-400" : "text-slate-500 group-hover:text-slate-300"} />
+                                    <item.icon size={20} className={isActive ? "text-olive-100" : "text-slate-400 group-hover:text-olive-700"} />
                                     <span className="text-sm font-bold tracking-tight">{item.name}</span>
                                 </Link>
                             );
@@ -122,14 +122,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Bottom Actions */}
                 <div className="space-y-6">
-                    <div className="p-4 bg-slate-800/50 rounded-2xl border border-slate-700/50">
+                    <div className="p-4 bg-white rounded-2xl border border-olive-100 shadow-sm">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-olive-600 flex items-center justify-center text-white font-black text-xs uppercase shadow-lg shadow-olive-600/20">
+                            <div className="w-10 h-10 rounded-full bg-olive-100 flex items-center justify-center text-olive-700 font-black text-xs uppercase">
                                 {userName?.[0] || "U"}
                             </div>
                             <div className="flex-1 overflow-hidden">
-                                <p className="text-sm font-bold text-white truncate">{userName}</p>
-                                <p className="text-[10px] font-bold text-olive-500 uppercase tracking-widest">{role}</p>
+                                <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
+                                <p className="text-[10px] font-bold text-olive-600 uppercase tracking-widest">{role}</p>
                             </div>
                         </div>
                     </div>
@@ -138,7 +138,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             sessionStorage.clear();
                             signOut({ callbackUrl: "/login" });
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/5 rounded-xl transition-all border border-transparent hover:border-red-500/10"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
                     >
                         <LogOut size={20} />
                         <span className="text-sm font-bold tracking-tight uppercase tracking-widest">Terminate Session</span>
