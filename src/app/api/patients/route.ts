@@ -1,57 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/mongoose";
-import Patient from "@/lib/models/Patient";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+export async function GET() {
+    // Mocking a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-        await dbConnect();
-        const data = await req.json();
-
-        // Generate a simple MRN for mock purposes if not provided
-        if (!data.mrn) {
-            data.mrn = `MRN-${Date.now().toString().slice(-6)}`;
-        }
-
-        const patient = await Patient.create(data);
-        return NextResponse.json(patient, { status: 201 });
-    } catch (error: any) {
-        console.error("Patient Creation Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-}
-
-export async function GET(req: NextRequest) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        await dbConnect();
-        const { searchParams } = new URL(req.url);
-        const query = searchParams.get("q");
-
-        let filter = {};
-        if (query) {
-            filter = {
-                $or: [
-                    { firstName: { $regex: query, $options: "i" } },
-                    { lastName: { $regex: query, $options: "i" } },
-                    { mrn: { $regex: query, $options: "i" } },
-                ],
-            };
-        }
-
-        const patients = await Patient.find(filter).sort({ createdAt: -1 }).limit(50);
-        return NextResponse.json(patients);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    return NextResponse.json({
+        patients: [
+            { firstName: "Alice", lastName: "Cooper", mrn: "88429", status: "Stable", condition: "Type 2 Diabetes", lastVisit: "Jan 15, 2026", severity: "Low" },
+            { firstName: "Jim", lastName: "Morrison", mrn: "99102", status: "Admitted", condition: "Pulmonary Edema", lastVisit: "Jan 22, 2026", severity: "High" },
+            { firstName: "Janis", lastName: "Joplin", mrn: "22031", status: "Stable", condition: "Hypertension", lastVisit: "Jan 10, 2026", severity: "Low" },
+            { firstName: "Kurt", lastName: "Cobain", mrn: "44501", status: "Out-Patient", condition: "Chronic Pain", lastVisit: "Jan 20, 2026", severity: "Medium" },
+            { firstName: "Freddie", lastName: "Mercury", mrn: "11293", status: "Admitted", condition: "Arrhythmia", lastVisit: "Jan 22, 2026", severity: "High" },
+            { firstName: "David", lastName: "Bowie", mrn: "55678", status: "Stable", condition: "Thyroid Mass", lastVisit: "Jan 18, 2026", severity: "Medium" },
+            { firstName: "Elvis", lastName: "Presley", mrn: "77321", status: "Out-Patient", condition: "Sleep Apnea", lastVisit: "Jan 12, 2026", severity: "Low" },
+        ]
+    });
 }

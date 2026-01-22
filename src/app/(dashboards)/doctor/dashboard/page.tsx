@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
     Users,
@@ -13,19 +14,39 @@ import {
     Activity
 } from "lucide-react";
 
-export default function DoctorDashboard() {
-    const stats = [
-        { title: "Today's Appointments", value: "12", icon: Calendar, color: "text-olive-500", bg: "bg-olive-50" },
-        { title: "Patients Under Care", value: "45", icon: Users, color: "text-olive-600", bg: "bg-olive-50" },
-        { title: "Pending Lab Results", value: "08", icon: Beaker, color: "text-olive-400", bg: "bg-olive-50/50" },
-        { title: "Critical Alerts", value: "02", icon: AlertTriangle, color: "text-red-500", bg: "bg-red-50" },
-    ];
+const ICON_MAP: Record<string, any> = {
+    Calendar,
+    Users,
+    Beaker,
+    AlertTriangle
+};
 
-    const patientQueue = [
-        { name: "Alice Cooper", time: "09:00 AM", status: "Checked-in", reason: "Diabetes Follow-up" },
-        { name: "Bob Marley", time: "09:30 AM", status: "Waiting", reason: "Chronic Pain Mgmt" },
-        { name: "Charlie Brown", time: "10:15 AM", status: "Checked-in", reason: "Post-Op Review" },
-    ];
+export default function DoctorDashboard() {
+    const [stats, setStats] = useState<any[]>([]);
+    const [patientQueue, setPatientQueue] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [statsRes, queueRes] = await Promise.all([
+                    fetch('/api/doctor/stats'),
+                    fetch('/api/doctor/queue')
+                ]);
+                const statsData = await statsRes.json();
+                const queueData = await queueRes.json();
+
+                setStats(statsData.stats);
+                setPatientQueue(queueData.queue);
+            } catch (error) {
+                console.error("Failed to fetch dashboard data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     return (
         <DashboardLayout>
@@ -45,17 +66,26 @@ export default function DoctorDashboard() {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {stats.map((s, i) => (
-                        <div key={i} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-olive-400 transition-all">
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{s.title}</p>
-                                <p className="text-3xl font-black text-slate-900 tracking-tighter">{s.value}</p>
-                            </div>
-                            <div className={`p-4 ${s.bg} ${s.color} rounded-2xl`}>
-                                <s.icon size={24} />
-                            </div>
-                        </div>
-                    ))}
+                    {loading ? (
+                        [...Array(4)].map((_, i) => (
+                            <div key={i} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm animate-pulse h-24"></div>
+                        ))
+                    ) : (
+                        stats.map((s, i) => {
+                            const Icon = ICON_MAP[s.icon] || Activity;
+                            return (
+                                <div key={i} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-olive-400 transition-all">
+                                    <div>
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{s.title}</p>
+                                        <p className="text-3xl font-black text-slate-900 tracking-tighter">{s.value}</p>
+                                    </div>
+                                    <div className={`p-4 ${s.bg} ${s.color} rounded-2xl`}>
+                                        <Icon size={24} />
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
 
                 {/* Main Content Split */}
@@ -66,44 +96,52 @@ export default function DoctorDashboard() {
                             <h3 className="text-xl font-black text-slate-900 tracking-tight">In-Clinic Queue</h3>
                             <span className="text-[10px] font-black text-olive-600 bg-olive-50 px-3 py-1 rounded-full uppercase tracking-widest border border-olive-100">Live Status</span>
                         </div>
-                        <div className="flex-1 overflow-y-auto">
-                            <table className="w-full text-left">
-                                <thead>
-                                    <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
-                                        <th className="px-8 py-4">Patient</th>
-                                        <th className="px-8 py-4">Appt. Time</th>
-                                        <th className="px-8 py-4">Status</th>
-                                        <th className="px-8 py-4">Reason</th>
-                                        <th className="px-8 py-4 text-right pr-12">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {patientQueue.map((p, idx) => (
-                                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
-                                            <td className="px-8 py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-olive-100 flex items-center justify-center text-olive-700 font-black text-[10px]">
-                                                        {p.name[0]}
-                                                    </div>
-                                                    <span className="text-sm font-bold text-slate-900">{p.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-5 text-xs font-bold text-slate-500">{p.time}</td>
-                                            <td className="px-8 py-5">
-                                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase border ${p.status === 'Checked-in' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-yellow-50 text-yellow-600 border-yellow-100'}`}>
-                                                    {p.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-5 text-xs text-slate-600 font-medium">{p.reason}</td>
-                                            <td className="px-8 py-5 text-right pr-6">
-                                                <button className="p-2 text-slate-400 hover:text-olive-700 bg-slate-50 rounded-lg border border-slate-200 group-hover:bg-white transition-all">
-                                                    <ArrowUpRight size={16} />
-                                                </button>
-                                            </td>
-                                        </tr>
+                        <div className="flex-1 overflow-y-auto min-h-[400px]">
+                            {loading ? (
+                                <div className="p-8 space-y-4">
+                                    {[...Array(5)].map((_, i) => (
+                                        <div key={i} className="h-12 bg-slate-50 rounded-xl animate-pulse"></div>
                                     ))}
-                                </tbody>
-                            </table>
+                                </div>
+                            ) : (
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                                            <th className="px-8 py-4">Patient</th>
+                                            <th className="px-8 py-4">Appt. Time</th>
+                                            <th className="px-8 py-4">Status</th>
+                                            <th className="px-8 py-4">Reason</th>
+                                            <th className="px-8 py-4 text-right pr-12">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {patientQueue.map((p, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                                                <td className="px-8 py-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-olive-100 flex items-center justify-center text-olive-700 font-black text-[10px]">
+                                                            {p.name[0]}
+                                                        </div>
+                                                        <span className="text-sm font-bold text-slate-900">{p.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-5 text-xs font-bold text-slate-500">{p.time}</td>
+                                                <td className="px-8 py-5">
+                                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase border ${p.status === 'Checked-in' ? 'bg-green-50 text-green-600 border-green-100' : p.status === 'Waiting' ? 'bg-yellow-50 text-yellow-600 border-yellow-100' : 'bg-slate-50 text-slate-600 border-slate-100'}`}>
+                                                        {p.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-5 text-xs text-slate-600 font-medium">{p.reason}</td>
+                                                <td className="px-8 py-5 text-right pr-6">
+                                                    <button className="p-2 text-slate-400 hover:text-olive-700 bg-slate-50 rounded-lg border border-slate-200 group-hover:bg-white transition-all">
+                                                        <ArrowUpRight size={16} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
                     </div>
 

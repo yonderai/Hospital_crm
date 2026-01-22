@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -39,26 +41,47 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
     }, []);
 
-    const role = (session?.user as any)?.role || demoState?.role || "doctor";
+    // Detect role from pathname if not in session/demoState
+    const pathRole = pathname?.split('/')[1];
+    const role = (session?.user as any)?.role || demoState?.role || (["doctor", "nurse", "admin", "front-desk", "patient", "lab-tech", "pharmacist", "billing", "hr", "inventory"].includes(pathRole) ? pathRole : "doctor");
     const userName = session?.user?.name || demoState?.name || "Initializing...";
 
-    const navigation = [
+    // Role-based navigation mapping
+    const navConfig: Record<string, string[]> = {
+        doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking", "Laboratory", "Pharmacy", "Radiology", "Analytics"],
+        nurse: ["Overview", "Patients", "Schedule", "Clinical", "ICU Tracking", "Laboratory"],
+        admin: ["Overview", "Patients", "Laboratory", "Pharmacy", "Billing", "Radiology", "Engineering", "HR", "Research", "Compliance", "Analytics"],
+        "front-desk": ["Overview", "Patients", "Schedule", "Billing"],
+        patient: ["Overview", "Schedule", "Clinical", "Pharmacy", "Billing"],
+        "lab-tech": ["Overview", "Laboratory", "Research"],
+        pharmacist: ["Overview", "Pharmacy", "Inventory"],
+        billing: ["Overview", "Billing", "Analytics"],
+        hr: ["Overview", "HR", "Compliance"],
+        inventory: ["Overview", "Inventory", "Pharmacy"]
+    };
+
+    const navigationItems = [
         { name: "Overview", href: `/${role}/dashboard`, icon: LayoutGrid },
         { name: "Patients", href: `/${role}/patients`, icon: Users },
         { name: "Schedule", href: `/${role}/schedule`, icon: Calendar },
         { name: "Clinical", href: `/${role}/clinical`, icon: FileText },
         { name: "Surgery", href: `/${role}/or-management`, icon: Activity },
         { name: "ICU Tracking", href: `/${role}/icu-tracking`, icon: Wind },
-        { name: "Laboratory", href: `/lab/dashboard`, icon: Beaker },
+        { name: "Laboratory", href: `/${role}/laboratory`, icon: Beaker },
         { name: "Pharmacy", href: `/${role}/pharmacy`, icon: Package },
         { name: "Billing", href: `/${role}/billing`, icon: DollarSign },
         { name: "Radiology", href: `/${role}/radiology`, icon: Aperture },
-        { name: "Engineering", href: `/assets/dashboard`, icon: Wrench },
-        { name: "HR", href: `/hr/dashboard`, icon: Users },
-        { name: "Research", href: `/admin/research`, icon: FlaskConical },
-        { name: "Compliance", href: `/admin/compliance`, icon: ShieldCheck },
+        { name: "Engineering", href: `/${role}/engineering`, icon: Wrench },
+        { name: "HR", href: `/${role}/hr`, icon: Users },
+        { name: "Research", href: `/${role}/research`, icon: FlaskConical },
+        { name: "Compliance", href: `/${role}/compliance`, icon: ShieldCheck },
         { name: "Analytics", href: `/${role}/analytics`, icon: BarChart3 },
+        { name: "Inventory", href: `/${role}/inventory`, icon: Package },
     ];
+
+    const navigation = navigationItems.filter(item =>
+        navConfig[role]?.includes(item.name)
+    );
 
     return (
         <div className="flex h-screen bg-[#F8FAFC]">
