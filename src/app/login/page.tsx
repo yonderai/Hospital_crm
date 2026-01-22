@@ -18,16 +18,16 @@ import Link from "next/link";
 
 export default function LoginRoleSelection() {
     const roles = [
-        { name: "Doctor", icon: Stethoscope, href: "/login/doctor", color: "text-blue-600", bg: "bg-blue-50" },
+        { name: "Doctor", icon: Stethoscope, href: "/login/doctor", color: "text-olive-600", bg: "bg-olive-50" },
         { name: "Nurse", icon: UserCircle, href: "/login/nurse", color: "text-olive-600", bg: "bg-olive-50" },
-        { name: "Admin", icon: ShieldCheck, href: "/login/admin", color: "text-slate-900", bg: "bg-slate-100" },
-        { name: "Lab Tech", icon: Beaker, href: "/login/lab-tech", color: "text-purple-600", bg: "bg-purple-50" },
-        { name: "Pharmacist", icon: Store, href: "/login/pharmacist", color: "text-orange-600", bg: "bg-orange-50" },
-        { name: "Front Desk", icon: Users, href: "/login/front-desk", color: "text-teal-600", bg: "bg-teal-50" },
-        { name: "Billing", icon: Wallet, href: "/login/billing", color: "text-emerald-600", bg: "bg-emerald-50" },
-        { name: "HR Manager", icon: UserCog, href: "/login/hr", color: "text-indigo-600", bg: "bg-indigo-50" },
-        { name: "Inventory", icon: Box, href: "/login/inventory", color: "text-amber-600", bg: "bg-amber-50" },
-        { name: "Patient", icon: User, href: "/login/patient", color: "text-rose-600", bg: "bg-rose-50" },
+        { name: "Admin", icon: ShieldCheck, href: "/login/admin", color: "text-olive-700", bg: "bg-olive-100" },
+        { name: "Lab Tech", icon: Beaker, href: "/login/lab-tech", color: "text-olive-600", bg: "bg-olive-50" },
+        { name: "Pharmacist", icon: Store, href: "/login/pharmacist", color: "text-olive-600", bg: "bg-olive-50" },
+        { name: "Front Desk", icon: Users, href: "/login/front-desk", color: "text-olive-600", bg: "bg-olive-50" },
+        { name: "Billing", icon: Wallet, href: "/login/billing", color: "text-olive-600", bg: "bg-olive-50" },
+        { name: "HR Manager", icon: UserCog, href: "/login/hr", color: "text-olive-600", bg: "bg-olive-50" },
+        { name: "Inventory", icon: Box, href: "/login/inventory", color: "text-olive-600", bg: "bg-olive-50" },
+        { name: "Patient", icon: User, href: "/login/patient", color: "text-olive-600", bg: "bg-olive-50" },
     ];
 
     return (
@@ -35,7 +35,7 @@ export default function LoginRoleSelection() {
             <header className="py-12 px-8 flex flex-col items-center gap-6">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-[#0F172A] rounded-xl flex items-center justify-center">
-                        <Heart className="text-teal-400" size={28} fill="currentColor" />
+                        <Heart className="text-olive-400" size={28} fill="currentColor" />
                     </div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Medicore</h1>
                 </div>

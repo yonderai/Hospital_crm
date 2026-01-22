@@ -23,13 +23,13 @@ export default function EncounterEditor() {
             {/* Patient Header Banner */}
             <div className="bg-white border border-slate-100 rounded-[40px] p-8 shadow-sm flex items-center justify-between">
                 <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-[24px] bg-slate-900 border border-slate-800 flex items-center justify-center text-teal-400 font-serif text-3xl italic">
+                    <div className="w-16 h-16 rounded-[24px] bg-slate-900 border border-slate-800 flex items-center justify-center text-olive-400 font-serif text-3xl italic">
                         P
                     </div>
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <h2 className="text-2xl font-black text-slate-900 tracking-tight">Johnathan Doe</h2>
-                            <span className="text-[10px] font-black bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase tracking-widest border border-blue-100">In-Patient</span>
+                            <span className="text-[10px] font-black bg-olive-50 text-olive-600 px-3 py-1 rounded-full uppercase tracking-widest border border-olive-100">In-Patient</span>
                         </div>
                         <div className="flex gap-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">
                             <span>MRN: 99824-X</span>
@@ -116,7 +116,7 @@ export default function EncounterEditor() {
                     <div className="bg-[#0F172A] rounded-[40px] p-8 text-white relative overflow-hidden shadow-2xl">
                         <div className="relative z-10 space-y-6">
                             <div className="flex items-center gap-2">
-                                <ShieldCheck size={18} className="text-teal-400" />
+                                <ShieldCheck size={18} className="text-olive-400" />
                                 <h4 className="text-sm font-black uppercase tracking-widest">ICD-10 Search</h4>
                             </div>
                             <div className="relative">
@@ -124,7 +124,7 @@ export default function EncounterEditor() {
                                 <input className="w-full bg-white/5 border border-white/10 p-3 pl-10 rounded-xl text-xs outline-none focus:bg-white/10" placeholder="Type name or code..." />
                             </div>
                             <div className="space-y-2">
-                                <p className="text-[10px] font-black text-teal-400 uppercase tracking-widest mb-1">Selected Codes</p>
+                                <p className="text-[10px] font-black text-olive-400 uppercase tracking-widest mb-1">Selected Codes</p>
                                 <div className="p-3 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center">
                                     <span className="text-xs font-bold">R07.9 - Chest Pain</span>
                                     <Plus size={14} className="opacity-40" />

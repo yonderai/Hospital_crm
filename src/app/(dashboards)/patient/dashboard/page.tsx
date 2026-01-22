@@ -12,6 +12,7 @@ import {
     Clock,
     Play
 } from "lucide-react";
+import Link from "next/link";
 
 export default function PatientDashboard() {
     return (
@@ -42,8 +43,12 @@ export default function PatientDashboard() {
                 {/* Action Widgets */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     <PatientWidget title="Messages" value="03" sub="Unread" icon={MessageSquare} color="text-blue-500" bg="bg-blue-50" />
-                    <PatientWidget title="Lab Results" value="Ready" sub="2 items" icon={FileText} color="text-purple-500" bg="bg-purple-50" />
-                    <PatientWidget title="Balance Due" value="$42" sub="Pay by Jan 30" icon={Wallet} color="text-emerald-500" bg="bg-emerald-50" />
+                    <Link href="/patient/records" className="block">
+                        <PatientWidget title="Lab Results" value="Ready" sub="2 items" icon={FileText} color="text-purple-500" bg="bg-purple-50" />
+                    </Link>
+                    <Link href="/patient/billing" className="block">
+                        <PatientWidget title="Balance Due" value="$42" sub="Pay by Jan 30" icon={Wallet} color="text-emerald-500" bg="bg-emerald-50" />
+                    </Link>
                     <PatientWidget title="Care Plans" value="Active" sub="Hypertension" icon={Stethoscope} color="text-olive-600" bg="bg-olive-50" />
                 </div>
 

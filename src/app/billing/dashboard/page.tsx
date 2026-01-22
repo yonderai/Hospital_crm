@@ -23,9 +23,9 @@ export default function BillingDashboard() {
                 {/* KPI Cards */}
                 <div className="grid grid-cols-4 gap-6">
                     <StatsCard title="Total Receivables" value="$1,240,500" trend="+12.5%" icon={<DollarSign className="text-olive-600" />} />
-                    <StatsCard title="Clean Claim Rate" value="94.2%" trend="+2.1%" icon={<ShieldCheck className="text-green-600" />} />
+                    <StatsCard title="Clean Claim Rate" value="94.2%" trend="+2.1%" icon={<ShieldCheck className="text-olive-600" />} />
                     <StatsCard title="Denial Rate" value="4.8%" trend="-1.5%" icon={<AlertTriangle className="text-red-600" />} trendDown />
-                    <StatsCard title="Avg Ref. Days" value="18 Days" trend="-2 Days" icon={<TrendingUp className="text-blue-600" />} trendDown />
+                    <StatsCard title="Avg Ref. Days" value="18 Days" trend="-2 Days" icon={<TrendingUp className="text-olive-500" />} trendDown />
                 </div>
 
                 <div className="grid grid-cols-3 gap-8">
@@ -128,7 +128,7 @@ function StatsCard({ title, value, trend, icon, trendDown }: any) {
                 <div className="p-3 bg-olive-50 rounded-xl group-hover:bg-olive-100 transition-colors">
                     {icon}
                 </div>
-                <div className={`flex items-center gap-1 text-xs font-bold ${trendDown ? 'text-red-500' : 'text-green-500'}`}>
+                <div className={`flex items-center gap-1 text-xs font-bold ${trendDown ? 'text-red-500' : 'text-olive-500'}`}>
                     {trendDown ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
                     {trend}
                 </div>
@@ -153,10 +153,10 @@ function LegendItem({ color, label, pct }: any) {
 
 function BillingBadge({ status }: { status: string }) {
     const styles: any = {
-        'Submitted': 'bg-blue-50 text-blue-700 border-blue-100',
+        'Submitted': 'bg-olive-50 text-olive-500 border-olive-100',
         'Pending': 'bg-yellow-50 text-yellow-700 border-yellow-100',
         'Denied': 'bg-red-50 text-red-700 border-red-100',
-        'Paid': 'bg-green-50 text-green-700 border-green-100',
+        'Paid': 'bg-olive-100 text-olive-700 border-olive-200',
     };
     return (
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${styles[status]}`}>

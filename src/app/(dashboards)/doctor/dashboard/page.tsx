@@ -15,9 +15,9 @@ import {
 
 export default function DoctorDashboard() {
     const stats = [
-        { title: "Today's Appointments", value: "12", icon: Calendar, color: "text-blue-500", bg: "bg-blue-50" },
+        { title: "Today's Appointments", value: "12", icon: Calendar, color: "text-olive-500", bg: "bg-olive-50" },
         { title: "Patients Under Care", value: "45", icon: Users, color: "text-olive-600", bg: "bg-olive-50" },
-        { title: "Pending Lab Results", value: "08", icon: Beaker, color: "text-purple-500", bg: "bg-purple-50" },
+        { title: "Pending Lab Results", value: "08", icon: Beaker, color: "text-olive-400", bg: "bg-olive-50/50" },
         { title: "Critical Alerts", value: "02", icon: AlertTriangle, color: "text-red-500", bg: "bg-red-50" },
     ];
 
@@ -114,7 +114,7 @@ export default function DoctorDashboard() {
                                 <h4 className="text-xl font-black tracking-tight leading-tight">Clinical Decision Support</h4>
                                 <div className="space-y-4">
                                     <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
-                                        <FileText className="text-teal-400 shrink-0" size={20} />
+                                        <FileText className="text-olive-400 shrink-0" size={20} />
                                         <div>
                                             <p className="text-sm font-bold text-white">Review Protocols</p>
                                             <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">Updated oncology protocols available for V-03.</p>
@@ -136,9 +136,9 @@ export default function DoctorDashboard() {
                             <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Quick Directives</h4>
                             <div className="grid grid-cols-2 gap-4">
                                 <QuickAction icon={Pill} label="Prescribe" color="bg-orange-50 text-orange-600" />
-                                <QuickAction icon={Beaker} label="Order Lab" color="bg-purple-50 text-purple-600" />
-                                <QuickAction icon={Users} label="Referral" color="bg-blue-50 text-blue-600" />
-                                <QuickAction icon={Calendar} label="Follow-up" color="bg-teal-50 text-teal-600" />
+                                <QuickAction icon={Beaker} label="Order Lab" color="bg-olive-100 text-olive-700" />
+                                <QuickAction icon={Users} label="Referral" color="bg-olive-50 text-olive-600" />
+                                <QuickAction icon={Calendar} label="Follow-up" color="bg-olive-50 text-olive-500" />
                             </div>
                         </div>
                     </div>

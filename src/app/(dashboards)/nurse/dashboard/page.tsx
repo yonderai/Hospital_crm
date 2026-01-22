@@ -15,10 +15,10 @@ import {
 
 export default function NurseDashboard() {
     const stats = [
-        { title: "Patients Under Care", value: "28", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
-        { title: "Medications Due", value: "15", icon: Droplets, color: "text-olive-600", bg: "bg-olive-50" },
-        { title: "Vital Signs Pending", value: "09", icon: Activity, color: "text-purple-500", bg: "bg-purple-50" },
-        { title: "Tasks Completed", value: "67%", icon: CheckCircle2, color: "text-green-500", bg: "bg-green-50" },
+        { title: "Patients Under Care", value: "28", icon: Users, color: "text-olive-600", bg: "bg-olive-50" },
+        { title: "Medications Due", value: "15", icon: Droplets, color: "text-olive-500", bg: "bg-olive-50" },
+        { title: "Vital Signs Pending", value: "09", icon: Activity, color: "text-olive-400", bg: "bg-olive-50/50" },
+        { title: "Tasks Completed", value: "67%", icon: CheckCircle2, color: "text-olive-600", bg: "bg-olive-50" },
     ];
 
     const medicationSchedule = [
@@ -88,7 +88,7 @@ export default function NurseDashboard() {
                                                 </td>
                                                 <td className="px-8 py-5 text-xs font-bold text-olive-700">{m.med} ({m.dose})</td>
                                                 <td className="px-8 py-5">
-                                                    <span className="text-[10px] font-black bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase tracking-widest border border-blue-100">
+                                                    <span className="text-[10px] font-black bg-olive-50 text-olive-600 px-3 py-1 rounded-full uppercase tracking-widest border border-olive-100">
                                                         {m.time}
                                                     </span>
                                                 </td>
@@ -109,7 +109,7 @@ export default function NurseDashboard() {
                             <div className="space-y-4">
                                 <VitalsControl label="SpO2 & HR Check" patient="Alice Cooper (W2-B)" status="Due Now" color="border-red-500" />
                                 <VitalsControl label="BP Monitoring" patient="Johnathan Doe (W3-A)" status="In 45m" color="border-slate-200" />
-                                <VitalsControl label="Temp Round" patient="Pediatric Unit" status="Completed" color="border-green-500" />
+                                <VitalsControl label="Temp Round" patient="Pediatric Unit" status="Completed" color="border-olive-500" />
                             </div>
                         </div>
                     </div>
@@ -122,7 +122,7 @@ export default function NurseDashboard() {
                                 <p className="text-[10px] text-olive-400 font-bold uppercase tracking-widest leading-none">Awaiting Intervention</p>
                                 <div className="space-y-4">
                                     <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
-                                        <ClipboardList className="text-teal-400" size={20} />
+                                        <ClipboardList className="text-olive-400" size={20} />
                                         <div className="text-sm font-bold">Dressings: Room 402, 404, 408</div>
                                     </div>
                                 </div>

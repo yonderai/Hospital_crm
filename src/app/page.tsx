@@ -10,7 +10,13 @@ import {
   User,
   ArrowRight,
   Activity,
-  ChevronRight
+  ChevronRight,
+  Video,
+  Microscope,
+  Users,
+  Wind,
+  FlaskConical,
+  ShieldAlert
 } from "lucide-react";
 import Link from "next/link";
 
@@ -71,6 +77,62 @@ export default function Home() {
       href: "/patient-portal/dashboard",
       color: "bg-olive-400",
       status: "Ready"
+    },
+    {
+      title: "Virtual Clinic",
+      desc: "Telehealth, Video Consultations & Remote Monitoring",
+      icon: <Video size={24} />,
+      href: "/clinical/telehealth",
+      color: "bg-olive-600",
+      status: "Beta"
+    },
+    {
+      title: "Laboratory (LIS)",
+      desc: "Lab Orders, Pathology Reports & Result Verification",
+      icon: <Microscope size={24} />,
+      href: "/lab/dashboard",
+      color: "bg-olive-700",
+      status: "Ready"
+    },
+    {
+      title: "Human Resources",
+      desc: "Staff Management, Payroll & Shift Scheduling",
+      icon: <Users size={24} />,
+      href: "/hr/dashboard",
+      color: "bg-olive-500",
+      status: "Ready"
+    },
+    {
+      title: "Surgical Services",
+      desc: "OR Coordination, Anesthesia & Instrument Tracking",
+      icon: <Activity size={24} />,
+      href: "/doctor/or-management",
+      color: "bg-olive-800",
+      status: "New"
+    },
+    {
+      title: "Intensive Care (ICU)",
+      desc: "Critical Care Monitoring & Hourly Flowsheets",
+      icon: <Wind size={24} />,
+      href: "/doctor/icu-tracking",
+      color: "bg-olive-900",
+      status: "New"
+    },
+    {
+      title: "Research Hub",
+      desc: "Clinical Trials, Patient Enrollment & IRB Compliance",
+      icon: <FlaskConical size={24} />,
+      href: "/admin/research",
+      color: "bg-olive-600",
+      status: "New"
+    },
+    {
+      title: "Quality & Compliance",
+      desc: "Incident Reporting, Audit Logs & Infection Control",
+      icon: <ShieldAlert size={24} />,
+      href: "/admin/compliance",
+      color: "bg-olive-700",
+      status: "New"
     }
   ];
 

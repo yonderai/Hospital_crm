@@ -25,14 +25,21 @@ export default function LoginPage() {
     // Capitalize role for display
     const displayRole = role.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        // Mock login delay
+
+        // Demo Mode Logic
+        sessionStorage.setItem("userRole", role);
+        sessionStorage.setItem("isAuthenticated", "true");
+        sessionStorage.setItem("userEmail", email || "demo.user@medicore.net");
+        sessionStorage.setItem("userName", "Demo User");
+
+        // Mock delay for UI experience
         setTimeout(() => {
             setLoading(false);
             router.push(`/${role}/dashboard`);
-        }, 1500);
+        }, 1000);
     };
 
     return (
@@ -41,25 +48,25 @@ export default function LoginPage() {
             <div className="hidden lg:flex w-[40%] bg-[#0F172A] p-16 flex-col justify-between relative overflow-hidden">
                 {/* Abstract Background Decoration */}
                 <div className="absolute top-[-10%] right-[-10%] opacity-10 pointer-events-none">
-                    <Activity size={400} className="text-teal-400 rotate-12" />
+                    <Activity size={400} className="text-olive-400 rotate-12" />
                 </div>
                 <div className="absolute bottom-[-5%] left-[-5%] opacity-5 pointer-events-none">
-                    <Dna size={300} className="text-teal-500" />
+                    <Dna size={300} className="text-olive-500" />
                 </div>
 
                 <div className="relative z-10 space-y-12">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-tr from-teal-500 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/20">
+                        <div className="w-12 h-12 bg-gradient-to-tr from-olive-600 to-olive-400 rounded-xl flex items-center justify-center shadow-lg shadow-olive-600/20">
                             <Heart className="text-white" size={28} fill="currentColor" />
                         </div>
                         <div>
                             <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">Medicore</h1>
-                            <p className="text-[10px] font-bold text-teal-400 tracking-[0.4em] uppercase mt-1">Enterprise Clinical</p>
+                            <p className="text-[10px] font-bold text-olive-400 tracking-[0.4em] uppercase mt-1">Enterprise Clinical</p>
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <h2 className="text-6xl font-black bg-gradient-to-r from-white via-white to-teal-400 bg-clip-text text-transparent leading-none">
+                        <h2 className="text-6xl font-black bg-gradient-to-r from-white via-white to-olive-400 bg-clip-text text-transparent leading-none">
                             Control<br />Center
                         </h2>
                         <p className="text-slate-400 text-lg leading-relaxed max-w-sm">
@@ -83,9 +90,9 @@ export default function LoginPage() {
                 <div className="relative z-10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <span className="text-[10px] font-bold text-slate-500 tracking-widest">V2.4.1</span>
-                        <div className="flex items-center gap-1.5 px-3 py-1 bg-teal-500/10 border border-teal-500/20 rounded-full">
-                            <ShieldCheck size={12} className="text-teal-400" />
-                            <span className="text-[10px] font-bold text-teal-400 uppercase tracking-widest">HIPAA Compliant</span>
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-olive-500/10 border border-olive-500/20 rounded-full">
+                            <ShieldCheck size={12} className="text-olive-400" />
+                            <span className="text-[10px] font-bold text-olive-400 uppercase tracking-widest">HIPAA Compliant</span>
                         </div>
                     </div>
                     <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Yonder sentinel prtcl</span>
@@ -111,7 +118,7 @@ export default function LoginPage() {
                                 <p className="text-sm font-bold text-slate-900">{displayRole}</p>
                             </div>
                         </div>
-                        <CheckCircle2 className="text-teal-500" size={24} />
+                        <CheckCircle2 className="text-olive-500" size={24} />
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-6">

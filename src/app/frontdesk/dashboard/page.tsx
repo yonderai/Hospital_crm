@@ -46,13 +46,13 @@ export default function FrontDeskDashboard() {
                                 <span className="text-[10px] font-bold text-olive-500 block">TOTAL</span>
                                 <span className="text-2xl font-bold text-olive-900">24</span>
                             </div>
-                            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                                <span className="text-[10px] font-bold text-green-600 block">ARRIVED</span>
-                                <span className="text-2xl font-bold text-green-700">12</span>
+                            <div className="bg-olive-100 p-4 rounded-lg border border-olive-200">
+                                <span className="text-[10px] font-bold text-olive-600 block">ARRIVED</span>
+                                <span className="text-2xl font-bold text-olive-800">12</span>
                             </div>
-                            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-                                <span className="text-[10px] font-bold text-yellow-600 block">PENDING</span>
-                                <span className="text-2xl font-bold text-yellow-700">8</span>
+                            <div className="bg-olive-50 p-4 rounded-lg border border-olive-100">
+                                <span className="text-[10px] font-bold text-olive-500 block">PENDING</span>
+                                <span className="text-2xl font-bold text-olive-700">8</span>
                             </div>
                             <div className="bg-red-50 p-4 rounded-lg border border-red-100">
                                 <span className="text-[10px] font-bold text-red-600 block">CANCEL</span>
@@ -200,9 +200,9 @@ export default function FrontDeskDashboard() {
 function StatusBadge({ status }: { status: string }) {
     switch (status) {
         case 'Checked-in':
-            return <div className="flex items-center gap-1.5 text-green-600 font-bold text-xs bg-green-50 px-2 py-0.5 rounded-full border border-green-100"><CheckCircle size={12} /> Checked-in</div>;
+            return <div className="flex items-center gap-1.5 text-olive-700 font-bold text-xs bg-olive-100 px-2 py-0.5 rounded-full border border-olive-200"><CheckCircle size={12} /> Checked-in</div>;
         case 'Waiting':
-            return <div className="flex items-center gap-1.5 text-blue-600 font-bold text-xs bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100"><Clock size={12} /> In Waiting</div>;
+            return <div className="flex items-center gap-1.5 text-olive-600 font-bold text-xs bg-olive-50 px-2 py-0.5 rounded-full border border-olive-100"><Clock size={12} /> In Waiting</div>;
         case 'Delayed':
             return <div className="flex items-center gap-1.5 text-red-600 font-bold text-xs bg-red-50 px-2 py-0.5 rounded-full border border-red-100"><AlertCircle size={12} /> Delayed</div>;
         default:

@@ -1,27 +1,10 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
-export default withAuth(
-    function middleware(req) {
-        const token = req.nextauth.token;
-        const path = req.nextUrl.pathname;
-
-        // Check if the user's role matches the dashboard path
-        // e.g., /doctor/dashboard requires role 'doctor'
-        const roleMatch = path.match(/^\/([a-z-]+)\/dashboard/);
-        if (roleMatch) {
-            const dashboardRole = roleMatch[1];
-            if (token?.role !== dashboardRole) {
-                return NextResponse.redirect(new URL(`/login/${dashboardRole}`, req.url));
-            }
-        }
-    },
-    {
-        callbacks: {
-            authorized: ({ token }) => !!token,
-        },
-    }
-);
+export default function middleware(req: any) {
+    // Demo Mode: Allow all requests without authentication checks
+    return NextResponse.next();
+}
 
 export const config = {
     matcher: [

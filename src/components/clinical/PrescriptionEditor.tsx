@@ -30,7 +30,7 @@ export default function PrescriptionEditor() {
         <div className="max-w-5xl mx-auto space-y-10 font-sans">
             <div className="flex items-center justify-between border-b border-slate-100 pb-8">
                 <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/10">
+                    <div className="w-14 h-14 bg-olive-100 text-olive-700 rounded-2xl flex items-center justify-center shadow-lg shadow-olive-600/10">
                         <Stethoscope size={28} />
                     </div>
                     <div>
@@ -39,7 +39,7 @@ export default function PrescriptionEditor() {
                     </div>
                 </div>
                 <div className="flex gap-4">
-                    <div className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 flex items-center gap-2">
+                    <div className="px-4 py-2 bg-olive-50 text-olive-700 rounded-xl border border-olive-100 flex items-center gap-2">
                         <ShieldCheck size={14} />
                         <span className="text-[10px] font-black uppercase tracking-widest">Drug Interaction Check: Clear</span>
                     </div>
@@ -49,7 +49,7 @@ export default function PrescriptionEditor() {
             <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="p-8 bg-slate-50/50 border-b border-slate-50 flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-teal-400 font-black text-xs">P</div>
+                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-olive-400 font-black text-xs">P</div>
                         <div>
                             <p className="text-sm font-bold text-slate-900 underline">Johnathan Doe</p>
                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">DOB: 05/12/1982 • MRN: 99824-X</p>
@@ -133,7 +133,7 @@ export default function PrescriptionEditor() {
                             <p className="text-xs text-slate-400 leading-relaxed font-medium">Metformin is the Tier 1 preferred agent for Type 2 Diabetes on the patient's current insurance plan.</p>
                         </div>
                         <div className="flex gap-4">
-                            <button className="flex items-center gap-2 text-[10px] font-black text-teal-400 uppercase tracking-widest">
+                            <button className="flex items-center gap-2 text-[10px] font-black text-olive-400 uppercase tracking-widest">
                                 <Calculator size={14} /> GFR: 72 mL/min (Normal)
                             </button>
                         </div>

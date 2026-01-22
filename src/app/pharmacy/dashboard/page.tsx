@@ -31,10 +31,10 @@ export default function PharmacyDashboard() {
             <main className="flex-1 p-8 overflow-y-auto space-y-8">
                 {/* Status Row */}
                 <div className="grid grid-cols-4 gap-6">
-                    <PharmacyStat title="Pending Prescriptions" value="42" color="text-yellow-600" bg="bg-yellow-50" icon={<Activity size={20} />} />
+                    <PharmacyStat title="Pending Prescriptions" value="42" color="text-olive-400" bg="bg-olive-50/50" icon={<Activity size={20} />} />
                     <PharmacyStat title="Out of Stock Items" value="12" color="text-red-600" bg="bg-red-50" icon={<AlertCircle size={20} />} />
                     <PharmacyStat title="Items to Expire (30d)" value="08" color="text-orange-600" bg="bg-orange-50" icon={<Clock size={20} />} />
-                    <PharmacyStat title="Procurements In-Route" value="03" color="text-blue-600" bg="bg-blue-50" icon={<Truck size={20} />} />
+                    <PharmacyStat title="Procurements In-Route" value="03" color="text-olive-500" bg="bg-olive-50" icon={<Truck size={20} />} />
                 </div>
 
                 <div className="grid grid-cols-3 gap-8">
@@ -111,7 +111,7 @@ export default function PharmacyDashboard() {
                         <div className="bg-olive-900 rounded-2xl p-6 text-white overflow-hidden relative">
                             <div className="relative z-10">
                                 <h3 className="font-bold flex items-center gap-2 mb-2">
-                                    <CheckCircle size={18} className="text-green-400" />
+                                    <CheckCircle size={18} className="text-olive-400" />
                                     Compliance Check
                                 </h3>
                                 <p className="text-[11px] text-olive-300 leading-relaxed">
