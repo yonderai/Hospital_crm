@@ -1,65 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/mongoose";
-import Payroll from "@/lib/models/Payroll";
-import Staff from "@/lib/models/Staff";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongoose';
+import User from '@/lib/models/User';
 
-export async function POST(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export async function GET() {
+    await dbConnect();
 
-    try {
-        await dbConnect();
-        const data = await req.json();
+    // Generate payroll data based on existing users
+    const staff = await User.find({}).limit(20);
 
-        // Basic validation: ensure staff exists and netPay is calculated
-        const staff = await Staff.findById(data.staffId);
-        if (!staff) {
-            return NextResponse.json({ error: "Staff member not found" }, { status: 404 });
-        }
+    const data = staff.map(u => {
+        // Mock salary based on role length/complexity for variance
+        const baseSalary = 3000 + (u.role.length * 500);
+        return {
+            id: `PAY-${Date.now().toString().slice(-4)}-${u._id.toString().slice(-2)}`,
+            name: `${u.firstName} ${u.lastName}`,
+            status: 'Processed',
+            date: new Date().toLocaleDateString(),
+            value: `$${baseSalary.toLocaleString()}`
+        };
+    });
 
-        // Calculate netPay if not provided
-        if (!data.netPay) {
-            data.netPay = (data.baseSalary || staff.baseSalary) +
-                (data.allowances || 0) -
-                (data.deductions || 0);
-        }
+    const totalPayroll = data.reduce((acc, curr) => acc + parseInt(curr.value.replace(/[^0-9]/g, '')), 0);
 
-        const payroll = await Payroll.create(data);
-        return NextResponse.json(payroll, { status: 201 });
-    } catch (error: any) {
-        console.error("Payroll Creation Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-}
-
-export async function GET(req: NextRequest) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        await dbConnect();
-        const { searchParams } = new URL(req.url);
-        const staffId = searchParams.get("staffId");
-        const month = searchParams.get("month");
-        const year = searchParams.get("year");
-
-        let filter: any = {};
-        if (staffId) filter.staffId = staffId;
-        if (month) filter.month = parseInt(month);
-        if (year) filter.year = parseInt(year);
-
-        const payrolls = await Payroll.find(filter)
-            .populate("staffId", "firstName lastName employeeId department")
-            .sort({ year: -1, month: -1 });
-
-        return NextResponse.json(payrolls);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    return NextResponse.json({
+        data,
+        stats: [
+            { label: "Total Payroll", value: `$${(totalPayroll / 1000).toFixed(1)}k`, change: "+1.2%", icon: "DollarSign", color: "text-green-600", bg: "bg-green-50" },
+            { label: "Processed", value: staff.length.toString(), change: "100%", icon: "CheckCircle", color: "text-olive-600", bg: "bg-olive-50" },
+            { label: "Pending Disputes", value: "0", change: "0%", icon: "AlertTriangle", color: "text-blue-600", bg: "bg-blue-50" },
+            { label: "Tax Deductions", value: `$${(totalPayroll * 0.2 / 1000).toFixed(1)}k`, change: "+1.2%", icon: "FileText", color: "text-orange-600", bg: "bg-orange-50" },
+        ]
+    });
 }

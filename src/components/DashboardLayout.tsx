@@ -46,37 +46,82 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const role = (session?.user as any)?.role || demoState?.role || (["doctor", "nurse", "admin", "front-desk", "patient", "lab-tech", "pharmacist", "billing", "hr", "inventory"].includes(pathRole) ? pathRole : "doctor");
     const userName = session?.user?.name || demoState?.name || "Initializing...";
 
-    // Role-based navigation mapping
+    // Role-based navigation mapping - Strictly separated as per requirements
     const navConfig: Record<string, string[]> = {
-        doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking", "Laboratory", "Pharmacy", "Radiology", "Analytics"],
-        nurse: ["Overview", "Patients", "Schedule", "Clinical", "ICU Tracking", "Laboratory"],
-        admin: ["Overview", "Patients", "Laboratory", "Pharmacy", "Billing", "Radiology", "Engineering", "HR", "Research", "Compliance", "Analytics"],
-        "front-desk": ["Overview", "Patients", "Schedule", "Billing"],
-        patient: ["Overview", "Schedule", "Clinical", "Pharmacy", "Billing"],
-        "lab-tech": ["Overview", "Laboratory", "Research"],
-        pharmacist: ["Overview", "Pharmacy", "Inventory"],
-        billing: ["Overview", "Billing", "Analytics"],
-        hr: ["Overview", "HR", "Compliance"],
-        inventory: ["Overview", "Inventory", "Pharmacy"]
+        doctor: ["Overview", "Patients", "Schedule"], // Clinical only
+        pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports"], // Pharmacy & Inventory
+        "lab-tech": ["Overview", "Test Scheduling", "Sample Tracking", "Processing Status", "Digital Reports"], // Diagnostics Hub
+        "front-desk": ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
+        nurse: ["Overview", "Duty Roster", "Assigned Patients", "Ward Management", "ICU Monitor", "Clinical Updates"], // Nurse Portal
+        billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
+        finance: ["Overview", "Procurement", "Expenses", "Payroll", "CapEx", "Assets"], // Back Office / Finance
+        patient: ["Overview", "Medical Wallet", "Report Viewer", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
+        hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
+        admin: ["Overview", "Expense Oversight", "Stock Summary", "Staff Overview", "Salary Overview", "Medical Claims", "Hospital Chain", "Analytics"] // Master Control
     };
 
     const navigationItems = [
         { name: "Overview", href: `/${role}/dashboard`, icon: LayoutGrid },
+        // Doctor
         { name: "Patients", href: `/${role}/patients`, icon: Users },
         { name: "Schedule", href: `/${role}/schedule`, icon: Calendar },
-        { name: "Clinical", href: `/${role}/clinical`, icon: FileText },
-        { name: "Surgery", href: `/${role}/or-management`, icon: Activity },
-        { name: "ICU Tracking", href: `/${role}/icu-tracking`, icon: Wind },
-        { name: "Laboratory", href: `/${role}/laboratory`, icon: Beaker },
-        { name: "Pharmacy", href: `/${role}/pharmacy`, icon: Package },
-        { name: "Billing", href: `/${role}/billing`, icon: DollarSign },
-        { name: "Radiology", href: `/${role}/radiology`, icon: Aperture },
-        { name: "Engineering", href: `/${role}/engineering`, icon: Wrench },
-        { name: "HR", href: `/${role}/hr`, icon: Users },
-        { name: "Research", href: `/${role}/research`, icon: FlaskConical },
-        { name: "Compliance", href: `/${role}/compliance`, icon: ShieldCheck },
-        { name: "Analytics", href: `/${role}/analytics`, icon: BarChart3 },
+        // Pharmacy & Inventory
+        { name: "Dispensing", href: `/${role}/dispensing`, icon: Package },
         { name: "Inventory", href: `/${role}/inventory`, icon: Package },
+        { name: "Batch & Expiry", href: `/${role}/expiry`, icon: Activity },
+        { name: "Usage Reports", href: `/${role}/reports`, icon: BarChart3 },
+        // Diagnostics Hub
+        { name: "Test Scheduling", href: `/${role}/test-scheduling`, icon: Calendar },
+        { name: "Sample Tracking", href: `/${role}/sample-tracking`, icon: Activity },
+        { name: "Processing Status", href: `/${role}/status`, icon: Activity },
+        { name: "Digital Reports", href: `/${role}/digital-reports`, icon: FileText },
+        // Front Desk
+        { name: "Registration", href: `/${role}/registration`, icon: Users },
+        { name: "Queue", href: `/${role}/queue`, icon: Activity },
+        { name: "Bed Allocation", href: `/${role}/bed-allocation`, icon: Activity },
+        { name: "Appointments", href: `/${role}/appointments`, icon: Calendar },
+        { name: "Insurance Triage", href: `/${role}/insurance-triage`, icon: ShieldCheck },
+        { name: "Fee Collection", href: `/${role}/fees`, icon: DollarSign },
+        // Nurse
+        { name: "Duty Roster", href: `/${role}/roster`, icon: Calendar },
+        { name: "Assigned Patients", href: `/${role}/assigned-patients`, icon: Users },
+        { name: "Ward Management", href: `/${role}/ward-management`, icon: Activity },
+        { name: "ICU Monitor", href: `/${role}/icu-monitor`, icon: Activity },
+        { name: "Clinical Updates", href: `/${role}/clinical-updates`, icon: FileText },
+        // Revenue Office
+        { name: "Cash Payments", href: `/${role}/cash-payments`, icon: DollarSign },
+        { name: "Card/UPI", href: `/${role}/digital-payments`, icon: DollarSign },
+        { name: "Insurance Pre-Auth", href: `/${role}/pre-auth`, icon: ShieldCheck },
+        { name: "Claims Management", href: `/${role}/claims`, icon: FileText },
+        { name: "Split Billing", href: `/${role}/split-billing`, icon: DollarSign },
+        { name: "Invoices", href: `/${role}/invoices`, icon: FileText },
+        // Back Office / Finance
+        { name: "Procurement", href: `/${role}/procurement`, icon: Package },
+        { name: "Expenses", href: `/${role}/expenses`, icon: DollarSign },
+        { name: "Payroll", href: `/${role}/payroll`, icon: Users },
+        { name: "CapEx", href: `/${role}/capex`, icon: BarChart3 },
+        { name: "Assets", href: `/${role}/assets`, icon: Wrench },
+        // Patient Portal
+        { name: "Medical Wallet", href: `/${role}/wallet`, icon: FileText },
+        { name: "Report Viewer", href: `/${role}/viewer`, icon: Beaker },
+        { name: "e-Prescriptions", href: `/${role}/prescriptions`, icon: Package },
+        { name: "Booking", href: `/${role}/booking`, icon: Calendar },
+        { name: "Queue Status", href: `/${role}/queue-status`, icon: Activity },
+        { name: "Billing & Invoices", href: `/${role}/billing-history`, icon: DollarSign },
+        // HR Module
+        { name: "Staff Management", href: `/${role}/staff`, icon: Users },
+        { name: "Rosters & Attendance", href: `/${role}/attendance`, icon: Calendar },
+        { name: "Complaints", href: `/${role}/complaints`, icon: Bell },
+        { name: "Compliance", href: `/${role}/compliance`, icon: ShieldCheck },
+        { name: "Payroll Integration", href: `/${role}/payroll-data`, icon: DollarSign },
+        // Admin Portal
+        { name: "Expense Oversight", href: `/${role}/expense-oversight`, icon: DollarSign },
+        { name: "Stock Summary", href: `/${role}/stock-summary`, icon: Package },
+        { name: "Staff Overview", href: `/${role}/staff-overview`, icon: Users },
+        { name: "Salary Overview", href: `/${role}/salary-overview`, icon: DollarSign },
+        { name: "Medical Claims", href: `/${role}/claims-overview`, icon: ShieldCheck },
+        { name: "Hospital Chain", href: `/${role}/chain-management`, icon: LayoutGrid },
+        { name: "Analytics", href: `/${role}/analytics`, icon: BarChart3 },
     ];
 
     const navigation = navigationItems.filter(item =>

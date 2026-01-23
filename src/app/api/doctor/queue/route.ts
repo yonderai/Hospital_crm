@@ -1,16 +1,39 @@
 import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongoose';
+import Appointment from '@/lib/models/Appointment';
+import User from '@/lib/models/User';
+import Patient from '@/lib/models/Patient'; // Ensure Patient model is registered
 
 export async function GET() {
-    // Mocking a delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    await dbConnect();
 
-    return NextResponse.json({
-        queue: [
-            { name: "Alice Cooper", time: "09:00 AM", status: "Checked-in", reason: "Diabetes Follow-up" },
-            { name: "Bob Marley", time: "09:30 AM", status: "Waiting", reason: "Chronic Pain Mgmt" },
-            { name: "Charlie Brown", time: "10:15 AM", status: "Checked-in", reason: "Post-Op Review" },
-            { name: "David Bowie", time: "11:00 AM", status: "Waiting", reason: "General Checkup" },
-            { name: "Elvis Presley", time: "11:30 AM", status: "Scheduled", reason: "Vocal Cord Exam" },
-        ]
+    const doctor = await User.findOne({ role: 'doctor' });
+
+    if (!doctor) {
+        return NextResponse.json({ queue: [] });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const appointments = await Appointment.find({
+        providerId: doctor._id,
+        startTime: { $gte: today, $lt: tomorrow }
+    })
+        .populate('patientId')
+        .sort({ startTime: 1 });
+
+    const queue = appointments.map((apt: any) => {
+        const patientName = apt.patientId ? `${apt.patientId.firstName} ${apt.patientId.lastName}` : 'Unknown';
+        return {
+            name: patientName,
+            time: new Date(apt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            status: apt.status.charAt(0).toUpperCase() + apt.status.slice(1), // Capitalize
+            reason: apt.reason
+        };
     });
+
+    return NextResponse.json({ queue });
 }
