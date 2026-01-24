@@ -1,72 +1,178 @@
 "use client";
 
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
-    Stethoscope,
-    UserCircle,
-    ShieldCheck,
-    Users,
-    Beaker,
-    Store,
-    Wallet,
-    UserCog,
-    Box,
-    User,
     Heart,
-    LayoutGrid
+    Mail,
+    Lock,
+    ArrowRight,
+    ShieldCheck,
+    Activity,
+    Dna,
+    AlertCircle
 } from "lucide-react";
-import Link from "next/link";
 
-export default function LoginRoleSelection() {
-    const roles = [
-        { name: "Doctor", icon: Stethoscope, href: "/login/doctor", color: "text-olive-600", bg: "bg-olive-50" },
-        { name: "Nurse", icon: UserCircle, href: "/login/nurse", color: "text-olive-600", bg: "bg-olive-50" },
-        { name: "Admin", icon: ShieldCheck, href: "/login/admin", color: "text-olive-700", bg: "bg-olive-100" },
-        { name: "Lab Tech", icon: Beaker, href: "/login/lab-tech", color: "text-olive-600", bg: "bg-olive-50" },
-        { name: "Pharmacist", icon: Store, href: "/login/pharmacist", color: "text-olive-600", bg: "bg-olive-50" },
-        { name: "Front Desk", icon: Users, href: "/login/front-desk", color: "text-olive-600", bg: "bg-olive-50" },
-        { name: "Billing", icon: Wallet, href: "/login/billing", color: "text-olive-600", bg: "bg-olive-50" },
-        { name: "HR Manager", icon: UserCog, href: "/login/hr", color: "text-olive-600", bg: "bg-olive-50" },
-        { name: "Inventory", icon: Box, href: "/login/inventory", color: "text-olive-600", bg: "bg-olive-50" },
-        { name: "Patient", icon: User, href: "/login/patient", color: "text-olive-600", bg: "bg-olive-50" },
-    ];
+export default function LoginPage() {
+    const router = useRouter();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+
+        try {
+            const result = await signIn("credentials", {
+                redirect: false,
+                email,
+                password,
+            });
+
+            if (result?.error) {
+                setError("Invalid credentials. Please verify your access.");
+                setLoading(false);
+            } else {
+                // Successful login
+                // Force a hard navigation to trigger middleware and fresh session fetch
+                window.location.href = "/";
+            }
+        } catch (err) {
+            setError("Connection failed. Try again.");
+            setLoading(false);
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-white flex flex-col font-sans">
-            <header className="py-12 px-8 flex flex-col items-center gap-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-[#0F172A] rounded-xl flex items-center justify-center">
-                        <Heart className="text-olive-400" size={28} fill="currentColor" />
+        <div className="flex h-screen bg-white overflow-hidden font-sans">
+            {/* LEFT SIDE: Branding & Stats (Dark Navy #0F172A) */}
+            <div className="hidden lg:flex w-[40%] bg-[#0F172A] p-16 flex-col justify-between relative overflow-hidden">
+                {/* Abstract Background Decoration */}
+                <div className="absolute top-[-10%] right-[-10%] opacity-10 pointer-events-none">
+                    <Activity size={400} className="text-olive-400 rotate-12" />
+                </div>
+                <div className="absolute bottom-[-5%] left-[-5%] opacity-5 pointer-events-none">
+                    <Dna size={300} className="text-olive-500" />
+                </div>
+
+                <div className="relative z-10 space-y-12">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-tr from-olive-600 to-olive-400 rounded-xl flex items-center justify-center shadow-lg shadow-olive-600/20">
+                            <Heart className="text-white" size={28} fill="currentColor" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">Medicore</h1>
+                            <p className="text-[10px] font-bold text-olive-400 tracking-[0.4em] uppercase mt-1">Enterprise Clinical</p>
+                        </div>
                     </div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Medicore</h1>
-                </div>
-                <div className="text-center space-y-2">
-                    <h2 className="text-4xl font-black text-slate-900 tracking-tight">Select Portal</h2>
-                    <p className="text-slate-500 text-sm font-medium uppercase tracking-[0.2em]">Authorized Access Only</p>
-                </div>
-            </header>
 
-            <main className="flex-1 max-w-6xl mx-auto w-full p-8 pb-32">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    {roles.map((r, i) => (
-                        <Link key={i} href={r.href} className="group">
-                            <div className="h-full bg-white border border-slate-100 p-8 rounded-[32px] shadow-sm hover:shadow-2xl hover:border-olive-400 transition-all flex flex-col items-center text-center group-hover:-translate-y-2">
-                                <div className={`w-16 h-16 ${r.bg} ${r.color} rounded-[24px] flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform`}>
-                                    <r.icon size={28} />
-                                </div>
-                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">{r.name}</h3>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase mt-2 tracking-widest">Portal Access</p>
+                    <div className="space-y-4">
+                        <h2 className="text-6xl font-black bg-gradient-to-r from-white via-white to-olive-400 bg-clip-text text-transparent leading-none">
+                            System<br />Login
+                        </h2>
+                        <p className="text-slate-400 text-lg leading-relaxed max-w-sm">
+                            Secure, centralized access control for all hospital personnel.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-8 pt-8 border-t border-slate-800">
+                        <div>
+                            <p className="text-3xl font-black text-white">Strict</p>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">RBAC Protocol</p>
+                        </div>
+                        <div>
+                            <p className="text-3xl font-black text-white">256-bit</p>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Encryption</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-bold text-slate-500 tracking-widest">V2.5.0</span>
+                        <div className="flex items-center gap-1.5 px-3 py-1 bg-olive-500/10 border border-olive-500/20 rounded-full">
+                            <ShieldCheck size={12} className="text-olive-400" />
+                            <span className="text-[10px] font-bold text-olive-400 uppercase tracking-widest">Secure Node</span>
+                        </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-[0.2em]">Yonder sentinel prtcl</span>
+                </div>
+            </div>
+
+            {/* RIGHT SIDE: Login Form (White) */}
+            <div className="flex-1 flex flex-col justify-center items-center p-8 bg-zinc-50/30">
+                <div className="w-full max-w-md space-y-10">
+                    <div className="space-y-2">
+                        <h3 className="text-3xl font-black text-slate-900 tracking-tight">Personnel Authentication</h3>
+                        <p className="text-slate-500 text-sm font-medium">Please verify your identity to access clinical portals.</p>
+                    </div>
+
+                    {error && (
+                        <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                            <AlertCircle className="text-red-500" size={20} />
+                            <p className="text-xs font-bold text-red-700">{error}</p>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Secure ID / Email</label>
+                            <div className="relative group">
+                                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-olive-600 transition-colors" />
+                                <input
+                                    required
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="user@medicore.net"
+                                    className="w-full bg-white border border-slate-200 p-4 pl-12 rounded-2xl outline-none focus:ring-4 focus:ring-olive-600/5 focus:border-olive-600 transition-all text-sm font-medium text-slate-900 placeholder:text-slate-300"
+                                />
                             </div>
-                        </Link>
-                    ))}
-                </div>
-            </main>
+                        </div>
 
-            <footer className="py-12 bg-slate-50 border-t border-slate-100 flex flex-col items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <LayoutGrid size={14} className="text-slate-300" />
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Medicore Cloud Infrastructure</span>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center ml-1">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Passcode</label>
+                            </div>
+                            <div className="relative group">
+                                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-olive-600 transition-colors" />
+                                <input
+                                    required
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••••••"
+                                    className="w-full bg-white border border-slate-200 p-4 pl-12 rounded-2xl outline-none focus:ring-4 focus:ring-olive-600/5 focus:border-olive-600 transition-all text-sm font-medium text-slate-900 placeholder:text-slate-300"
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            disabled={loading}
+                            className="w-full bg-[#6B8E23] hover:bg-[#556B2F] text-white p-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-olive-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-70 disabled:grayscale"
+                        >
+                            {loading ? (
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            ) : (
+                                <>
+                                    Authenticate <ArrowRight size={18} />
+                                </>
+                            )}
+                        </button>
+                    </form>
+
+                    <div className="pt-10 flex flex-col items-center gap-6">
+                        <div className="flex items-center gap-1.5 opacity-40">
+                            <ShieldCheck size={14} className="text-slate-900" />
+                            <span className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em]">Secured by Yonder Sentinel</span>
+                        </div>
+                    </div>
                 </div>
-            </footer>
+            </div>
         </div>
     );
 }

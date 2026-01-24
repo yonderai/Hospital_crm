@@ -24,23 +24,43 @@ async function seed() {
         // Create a Doctor
         const hashedPassword = await bcrypt.hash('password123', 10);
         const doctor = await User.create({
-            email: 'doctor@yonder.com',
+            email: 'doctor@medicore.com',
             password: hashedPassword,
             role: 'doctor',
-            firstName: 'Yuvraj',
-            lastName: 'Singh',
+            firstName: 'Gregory',
+            lastName: 'House',
             department: 'Oncology',
             isActive: true,
-            permissions: {
-                canView: ['all'],
-                canEdit: ['all'],
-                canDelete: [],
-                canApprove: ['all']
-            }
+            permissions: { canView: ['all'], canEdit: ['all'], canDelete: [], canApprove: ['all'] }
         });
         console.log('Doctor created:', doctor.email);
 
-        // Create Patients
+        // Create other roles
+        const roles = [
+            { email: 'nurse@medicore.com', role: 'nurse', first: 'Jackie', last: 'Peyton' },
+            { email: 'admin@medicore.com', role: 'admin', first: 'Lisa', last: 'Cuddy' },
+            { email: 'frontdesk@medicore.com', role: 'frontdesk', first: 'Pam', last: 'Beesly' },
+            { email: 'lab@medicore.com', role: 'labtech', first: 'Dexter', last: 'Morgan' },
+            { email: 'billing@medicore.com', role: 'billing', first: 'Skyler', last: 'White' },
+            { email: 'pharmacy@medicore.com', role: 'pharmacy_inventory', first: 'Walter', last: 'White' },
+            { email: 'hr@medicore.com', role: 'hr', first: 'Toby', last: 'Flenderson' },
+            { email: 'patient@medicore.com', role: 'patient', first: 'John', last: 'Doe' }
+        ];
+
+        for (const u of roles) {
+            await User.create({
+                email: u.email,
+                password: hashedPassword,
+                role: u.role,
+                firstName: u.first,
+                lastName: u.last,
+                isActive: true,
+                permissions: { canView: [], canEdit: [], canDelete: [], canApprove: [] }
+            });
+            console.log(`${u.role} created: ${u.email}`);
+        }
+
+        // Create Patients (Data for Doctor Dashboard)
         const patient1 = await Patient.create({
             mrn: 'MRN001',
             firstName: 'Alice',

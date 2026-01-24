@@ -18,6 +18,7 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 await dbConnect();
+
                 const user = await User.findOne({ email: credentials.email });
 
                 if (!user || !user.isActive) {
@@ -55,11 +56,11 @@ export const authOptions: NextAuthOptions = {
             return session;
         },
     },
+    secret: process.env.NEXTAUTH_SECRET,
     pages: {
         signIn: "/login",
     },
     session: {
         strategy: "jwt",
-        maxAge: 30 * 60,
     },
 };

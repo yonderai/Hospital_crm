@@ -4,12 +4,11 @@ export enum UserRole {
     ADMIN = "admin",
     DOCTOR = "doctor",
     NURSE = "nurse",
-    LAB_TECH = "lab-tech",
-    FRONT_DESK = "front-desk",
-    PHARMACIST = "pharmacist",
+    LAB_TECH = "labtech",
+    FRONT_DESK = "frontdesk",
+    PHARMACY_INVENTORY = "pharmacy_inventory",
     BILLING = "billing",
     HR = "hr",
-    INVENTORY = "inventory",
     PATIENT = "patient"
 }
 

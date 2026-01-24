@@ -43,18 +43,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Detect role from pathname if not in session/demoState
     const pathRole = pathname?.split('/')[1];
-    const role = (session?.user as any)?.role || demoState?.role || (["doctor", "nurse", "admin", "front-desk", "patient", "lab-tech", "pharmacist", "billing", "hr", "inventory"].includes(pathRole) ? pathRole : "doctor");
+
+    // Priority: Session Role -> Demo Role -> Path Role (if valid) -> Fallback
+    const role = (session?.user as any)?.role || demoState?.role ||
+        (["doctor", "nurse", "admin", "frontdesk", "patient", "labtech", "pharmacy_inventory", "billing", "hr"].includes(pathRole) ? pathRole : "doctor");
     const userName = session?.user?.name || demoState?.name || "Initializing...";
 
     // Role-based navigation mapping - Strictly separated as per requirements
     const navConfig: Record<string, string[]> = {
         doctor: ["Overview", "Patients", "Schedule"], // Clinical only
-        pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports"], // Pharmacy & Inventory
-        "lab-tech": ["Overview", "Test Scheduling", "Sample Tracking", "Processing Status", "Digital Reports"], // Diagnostics Hub
-        "front-desk": ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
+        pharmacy_inventory: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Procurement"], // Unified Pharmacy & Inventory
+        labtech: ["Overview", "Test Scheduling", "Sample Tracking", "Processing Status", "Digital Reports"], // Diagnostics Hub
+        frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
         nurse: ["Overview", "Duty Roster", "Assigned Patients", "Ward Management", "ICU Monitor", "Clinical Updates"], // Nurse Portal
         billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
-        finance: ["Overview", "Procurement", "Expenses", "Payroll", "CapEx", "Assets"], // Back Office / Finance
+        finance: ["Overview", "Procurement", "Expenses", "Payroll", "CapEx", "Assets"], // Back Office / Finance Needs Verification if Role Exists
         patient: ["Overview", "Medical Wallet", "Report Viewer", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
         hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
         admin: ["Overview", "Expense Oversight", "Stock Summary", "Staff Overview", "Salary Overview", "Medical Claims", "Hospital Chain", "Analytics"] // Master Control
@@ -165,28 +168,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </nav>
                 </div>
 
-                {/* Bottom Actions */}
-                <div className="space-y-6">
-                    <div className="p-4 bg-white rounded-2xl border border-olive-100 shadow-sm">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-olive-100 flex items-center justify-center text-olive-700 font-black text-xs uppercase">
-                                {userName?.[0] || "U"}
-                            </div>
-                            <div className="flex-1 overflow-hidden">
-                                <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
-                                <p className="text-[10px] font-bold text-olive-600 uppercase tracking-widest">{role}</p>
-                            </div>
-                        </div>
-                    </div>
+                {/* Bottom Actions - Logout Button */}
+                <div className="mt-auto pt-6 border-t border-olive-200">
                     <button
                         onClick={() => {
                             sessionStorage.clear();
                             signOut({ callbackUrl: "/login" });
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-olive-700 hover:bg-olive-100 rounded-xl transition-all group"
                     >
-                        <LogOut size={20} />
-                        <span className="text-sm font-bold tracking-tight uppercase tracking-widest">Terminate Session</span>
+                        <LogOut size={20} className="group-hover:text-olive-600" />
+                        <span className="text-sm font-bold tracking-tight">Logout</span>
                     </button>
                 </div>
             </aside>
@@ -215,13 +207,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             </button>
                         </div>
                         <div className="h-8 w-px bg-slate-100" />
-                        <div className="flex items-center gap-3">
+
+                        {/* User Profile ONLY */}
+                        <div className="flex items-center gap-4">
                             <div className="text-right">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Node</p>
-                                <p className="text-xs font-bold text-slate-900">Medicore-α-01</p>
+                                <p className="text-sm font-bold text-slate-900">{userName}</p>
+                                <p className="text-[10px] font-black text-olive-600 uppercase tracking-widest">{role}</p>
                             </div>
-                            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-olive-400 border border-slate-800 shadow-xl shadow-slate-900/10">
-                                <ShieldCheck size={20} />
+                            <div className="w-10 h-10 bg-olive-100 rounded-full flex items-center justify-center text-olive-700 font-black text-xs uppercase border-2 border-white shadow-sm">
+                                {userName?.[0] || "U"}
                             </div>
                         </div>
                     </div>
