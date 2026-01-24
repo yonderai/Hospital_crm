@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import Appointment from "@/lib/models/Appointment";
 import User from "@/lib/models/User";
+import Patient from "@/lib/models/Patient";
 
 // GET: Fetch appointments based on role
 export async function GET(req: Request) {
@@ -19,15 +20,16 @@ export async function GET(req: Request) {
         const role = (session.user as any).role;
         const userId = (session.user as any).id;
 
-        let query = {};
+        let query: any = {};
 
         if (role === 'doctor') {
             query = { providerId: userId };
-            // Optional: filter by date if needed, e.g. ?date=2024-01-24
         } else if (role === 'patient') {
-            query = { patientId: userId };
+            // Find the clinical patient profile for this user
+            const patient = await Patient.findOne({ "contact.email": session.user?.email });
+            if (!patient) return NextResponse.json([]); // No profile, no appointments
+            query = { patientId: patient._id };
         } else if (role === 'admin') {
-            // Admin sees all, or filter by params
             if (searchParams.get('doctorId')) query = { ...query, providerId: searchParams.get('doctorId') };
             if (searchParams.get('patientId')) query = { ...query, patientId: searchParams.get('patientId') };
         } else {
@@ -57,9 +59,9 @@ export async function GET(req: Request) {
 
         // Populate patient and provider details for display
         const appointments = await Appointment.find(query)
-            .populate('patientId', 'firstName lastName email')
+            .populate('patientId', 'firstName lastName mrn contact')
             .populate('providerId', 'firstName lastName department')
-            .sort({ startTime: 1 }); // Sort by time ascending
+            .sort({ startTime: 1 });
 
         return NextResponse.json(appointments);
 
@@ -78,14 +80,8 @@ export async function POST(req: Request) {
         }
 
         const role = (session.user as any).role;
-        // Only patients (and maybe admins/frontdesk) can book. For now, strict on Patient.
-        // User asked: "Patient can only create appointments"
         if (role !== 'patient' && role !== 'admin' && role !== 'frontdesk') {
-            // Allowing admin/frontdesk is practical, but strict request said "Patient can only create". 
-            // However, for testing I might need flexibility. Let's stick to Patient for now + Admin for debug.
-            if (role !== 'patient') {
-                return NextResponse.json({ error: "Only patients can book appointments" }, { status: 403 });
-            }
+            return NextResponse.json({ error: "Only patients or staff can book appointments" }, { status: 403 });
         }
 
         await dbConnect();
@@ -102,7 +98,22 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
         }
 
-        // Calculate endTime (default 30 mins for now)
+        // Determine targeted Patient ID
+        let targetPatientId = body.patientId;
+
+        if (role === 'patient') {
+            const patientProfile = await Patient.findOne({ "contact.email": session.user?.email });
+            if (!patientProfile) {
+                return NextResponse.json({ error: "Patient profile not found. Please contact administration." }, { status: 404 });
+            }
+            targetPatientId = patientProfile._id;
+        }
+
+        if (!targetPatientId) {
+            return NextResponse.json({ error: "Patient ID is required" }, { status: 400 });
+        }
+
+        // Calculate endTime (default 30 mins)
         const start = new Date(startTime);
         const end = new Date(start.getTime() + 30 * 60000);
 
@@ -110,32 +121,25 @@ export async function POST(req: Request) {
         const appointmentId = `APT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
         // Check for double booking
-        // "Prevent double booking for same doctor & time"
-        // Overlap logic: (StartA < EndB) && (EndA > StartB)
         const overlappingAppointment = await Appointment.findOne({
             providerId,
-            status: { $nin: ["cancelled", "no-show"] }, // Ignore cancelled/no-show
-            $or: [
-                {
-                    startTime: { $lt: end },
-                    endTime: { $gt: start }
-                }
-            ]
+            status: { $nin: ["cancelled", "no-show"] },
+            startTime: { $lt: end },
+            endTime: { $gt: start }
         });
 
         if (overlappingAppointment) {
             return NextResponse.json({
-                error: "Doctor is not available at this time. Please choose another slot.",
+                error: "Doctor is not available at this time.",
                 code: "DOUBLE_BOOKING"
             }, { status: 409 });
         }
 
-        // Determine createdBy
         const creatorRole = role === 'patient' ? 'patient' : 'staff';
 
         const newAppointment = await Appointment.create({
             appointmentId,
-            patientId: role === 'patient' ? (session.user as any).id : body.patientId, // Allow admins to specify patient? For now assume patient logged in or use body if admin
+            patientId: targetPatientId,
             providerId,
             startTime: start,
             endTime: end,

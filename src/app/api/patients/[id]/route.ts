@@ -8,9 +8,10 @@ import User from "@/lib/models/User";
 
 export async function GET(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const session = await getServerSession(authOptions);
         if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,7 +26,7 @@ export async function GET(
         await dbConnect();
 
         // Find patient
-        const patient = await Patient.findById(params.id)
+        const patient = await Patient.findById(id)
             .populate('assignedDoctorId', 'firstName lastName department');
 
         if (!patient) {

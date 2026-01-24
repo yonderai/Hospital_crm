@@ -5,12 +5,16 @@ import Patient from '../src/lib/models/Patient';
 import Appointment from '../src/lib/models/Appointment';
 import LabResult from '../src/lib/models/LabResult';
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/medicore";
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+    throw new Error("MONGODB_URI is not defined in environment variables");
+}
 
 async function seed() {
     try {
         console.log('Connecting to MongoDB...');
-        await mongoose.connect(MONGODB_URI);
+        await mongoose.connect(MONGODB_URI as string);
         console.log('Connected.');
 
         // Clear existing data

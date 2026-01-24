@@ -11,6 +11,7 @@ import {
     Plus,
     Filter
 } from "lucide-react";
+import Link from "next/link";
 
 export default function DoctorSchedule() {
     const [appointments, setAppointments] = useState<any[]>([]);
@@ -50,6 +51,7 @@ export default function DoctorSchedule() {
 
                     return {
                         id: apt.appointmentId,
+                        patientId: apt.patientId?._id,
                         time: start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         period: start.getHours() < 12 ? 'AM' : 'PM',
                         type: apt.type,
@@ -170,7 +172,9 @@ export default function DoctorSchedule() {
                                                         <User size={24} />
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-sm font-black text-slate-900 tracking-tight">{item.patientName}</h4>
+                                                        <Link href={`/doctor/patients/${item.patientId}`} className="group/name">
+                                                            <h4 className="text-sm font-black text-slate-900 tracking-tight group-hover/name:text-olive-700 transition-colors underline decoration-slate-200 underline-offset-4">{item.patientName}</h4>
+                                                        </Link>
                                                         <div className="flex items-center gap-3 mt-1">
                                                             <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                                                                 <Clock size={12} /> {item.duration}

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from '@/lib/mongoose';
-import Prescription from '@/lib/models/Prescription';
+import LabResult from '@/lib/models/LabResult';
 import Patient from '@/lib/models/Patient';
 
 export async function GET() {
@@ -18,22 +18,25 @@ export async function GET() {
         const patient = await Patient.findOne({ "contact.email": session.user?.email });
         if (!patient) return NextResponse.json({ data: [] });
 
-        const prescriptions = await Prescription.find({ patientId: patient._id })
-            .populate('providerId', 'firstName lastName department')
-            .sort({ prescribedDate: -1 });
+        const labs = await LabResult.find({ patientId: patient._id })
+            .populate('performedBy', 'firstName lastName')
+            .sort({ createdAt: -1 });
 
-        const data = prescriptions.map((rx: any) => ({
-            id: rx.prescriptionId,
-            date: new Date(rx.prescribedDate).toLocaleDateString(),
-            doctor: `Dr. ${rx.providerId?.firstName} ${rx.providerId?.lastName}`,
-            department: rx.providerId?.department || 'General',
-            medications: rx.medications,
-            status: rx.status.toUpperCase()
+        const data = labs.map((lab: any) => ({
+            id: lab._id,
+            title: lab.testType,
+            type: 'lab',
+            provider: lab.performedBy ? `Dr. ${lab.performedBy.firstName} ${lab.performedBy.lastName}` : 'Main Lab',
+            date: new Date(lab.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+            status: lab.status || 'final',
+            value: lab.resultValue,
+            unit: lab.unit,
+            abnormal: lab.abnormalFlag
         }));
 
         return NextResponse.json({ data });
     } catch (error) {
-        console.error("Prescription fetch error:", error);
+        console.error("Lab fetch error:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
