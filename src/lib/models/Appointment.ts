@@ -11,6 +11,7 @@ export interface IAppointment extends Document {
     type: "consultation" | "follow-up" | "procedure" | "emergency";
     reason: string;
     notes?: string;
+    createdBy: "patient" | "staff";
     createdAt: Date;
     updatedAt: Date;
 }
@@ -35,6 +36,12 @@ const AppointmentSchema = new Schema<IAppointment>(
         },
         reason: { type: String, required: true },
         notes: { type: String },
+        createdBy: {
+            type: String,
+            required: true,
+            enum: ["patient", "staff"],
+            default: "patient"
+        }
     },
     { timestamps: true }
 );

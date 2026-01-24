@@ -15,21 +15,77 @@ import {
 export default function DoctorSchedule() {
     const [appointments, setAppointments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedDate, setSelectedDate] = useState(new Date());
+
+    // Helper to format date for API (YYYY-MM-DD)
+    const formatDateForApi = (date: Date) => {
+        return date.toISOString().split('T')[0];
+    };
+
+    // Helper for display date
+    const formatDateDisplay = (date: Date) => {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
 
     useEffect(() => {
         const fetchSchedule = async () => {
+            setLoading(true);
             try {
-                const res = await fetch('/api/schedule?role=doctor');
+                // Fetch filtered by date
+                const dateStr = formatDateForApi(selectedDate);
+                const res = await fetch(`/api/appointments?date=${dateStr}`);
+                if (!res.ok) throw new Error("Failed to fetch");
+
                 const data = await res.json();
-                setAppointments(data.schedule);
+
+                const mapped = data.map((apt: any) => {
+                    const start = new Date(apt.startTime);
+                    const end = new Date(apt.endTime);
+                    const durationMins = Math.round((end.getTime() - start.getTime()) / 60000);
+
+                    return {
+                        id: apt.appointmentId,
+                        time: start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        period: start.getHours() < 12 ? 'AM' : 'PM',
+                        type: apt.type,
+                        patientName: `${apt.patientId?.firstName} ${apt.patientId?.lastName}`,
+                        duration: `${durationMins} min`,
+                        reason: apt.reason,
+                        status: apt.status
+                    };
+                });
+
+                setAppointments(mapped);
             } catch (error) {
                 console.error("Failed to fetch schedule:", error);
+                setAppointments([]);
             } finally {
                 setLoading(false);
             }
         };
         fetchSchedule();
-    }, []);
+    }, [selectedDate]);
+
+    const handlePrevDay = () => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(selectedDate.getDate() - 1);
+        setSelectedDate(newDate);
+    };
+
+    const handleNextDay = () => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(selectedDate.getDate() + 1);
+        setSelectedDate(newDate);
+    };
+
+    const handleToday = () => {
+        setSelectedDate(new Date());
+    };
 
     return (
         <DashboardLayout>
@@ -38,35 +94,40 @@ export default function DoctorSchedule() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">Clinical Schedule</h2>
-                        <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest">DR. YUVRAJ SINGH • THURSDAY, JAN 22 2026</p>
+                        <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest">
+                            DR. GREGORY HOUSE • {formatDateDisplay(selectedDate).toUpperCase()}
+                        </p>
                     </div>
                     <div className="flex gap-4">
                         <button className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-slate-900 shadow-sm transition-all">
                             <Filter size={20} />
                         </button>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all">
+                        {/* <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all">
                             <Plus size={16} /> Add Block
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 
-                {/* Calendar Navigation Mock */}
+                {/* Calendar Navigation */}
                 <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center justify-between">
                     <div className="flex items-center gap-6">
                         <div className="flex bg-slate-50 p-1 rounded-xl">
-                            <button className="px-6 py-2 bg-white text-slate-900 rounded-lg text-xs font-black uppercase tracking-widest shadow-sm">Day</button>
-                            <button className="px-6 py-2 text-slate-400 rounded-lg text-xs font-black uppercase tracking-widest">Week</button>
-                            <button className="px-6 py-2 text-slate-400 rounded-lg text-xs font-black uppercase tracking-widest">Month</button>
+                            <button
+                                onClick={handleToday}
+                                className="px-6 py-2 bg-white text-slate-900 rounded-lg text-xs font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-colors"
+                            >
+                                Today
+                            </button>
                         </div>
                         <div className="flex items-center gap-4">
-                            <button className="p-2 hover:bg-slate-50 rounded-lg"><ChevronLeft size={16} /></button>
-                            <span className="text-sm font-black text-slate-900">January 22, 2026</span>
-                            <button className="p-2 hover:bg-slate-50 rounded-lg"><ChevronRight size={16} /></button>
+                            <button onClick={handlePrevDay} className="p-2 hover:bg-slate-50 rounded-lg transition-colors"><ChevronLeft size={16} /></button>
+                            <span className="text-sm font-black text-slate-900 w-48 text-center">{formatDateDisplay(selectedDate)}</span>
+                            <button onClick={handleNextDay} className="p-2 hover:bg-slate-50 rounded-lg transition-colors"><ChevronRight size={16} /></button>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-olive-50 rounded-full border border-olive-100">
                         <div className="w-2 h-2 rounded-full bg-olive-500 animate-pulse"></div>
-                        <span className="text-[10px] font-bold text-olive-700 uppercase tracking-widest">Next Appt in 15m</span>
+                        <span className="text-[10px] font-bold text-olive-700 uppercase tracking-widest">Live Schedule</span>
                     </div>
                 </div>
 
@@ -81,6 +142,14 @@ export default function DoctorSchedule() {
                                 </div>
                             ))}
                         </div>
+                    ) : appointments.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-20 bg-slate-50/50">
+                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-300 mb-4">
+                                <CalendarIcon size={32} />
+                            </div>
+                            <h3 className="text-lg font-bold text-slate-900">No Appointments</h3>
+                            <p className="text-slate-500 text-sm mt-1">No appointments scheduled for {formatDateDisplay(selectedDate)}.</p>
+                        </div>
                     ) : (
                         <div className="divide-y divide-slate-50">
                             {appointments.map((item, idx) => (
@@ -91,8 +160,8 @@ export default function DoctorSchedule() {
                                     </div>
                                     <div className="flex-1 p-6">
                                         <div className={`p-6 rounded-[32px] border transition-all ${item.type === 'consultation'
-                                                ? 'bg-olive-50/50 border-olive-100 group-hover:border-olive-300'
-                                                : 'bg-orange-50/50 border-orange-100 group-hover:border-orange-300'
+                                            ? 'bg-olive-50/50 border-olive-100 group-hover:border-olive-300'
+                                            : 'bg-orange-50/50 border-orange-100 group-hover:border-orange-300'
                                             }`}>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-4">

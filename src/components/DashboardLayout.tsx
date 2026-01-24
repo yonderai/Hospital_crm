@@ -21,7 +21,10 @@ import {
     Aperture,
     Wrench,
     Wind,
-    FlaskConical
+    FlaskConical,
+    Scissors,
+    Pill,
+    Microscope
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -51,7 +54,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Role-based navigation mapping - Strictly separated as per requirements
     const navConfig: Record<string, string[]> = {
-        doctor: ["Overview", "Patients", "Schedule"], // Clinical only
+        doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking", "Laboratory", "Pharmacy", "Radiology", "Analytics"],
         pharmacy_inventory: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Procurement"], // Unified Pharmacy & Inventory
         labtech: ["Overview", "Test Scheduling", "Sample Tracking", "Processing Status", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
@@ -68,6 +71,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // Doctor
         { name: "Patients", href: `/${role}/patients`, icon: Users },
         { name: "Schedule", href: `/${role}/schedule`, icon: Calendar },
+        { name: "Clinical", href: `/${role}/clinical`, icon: FileText },
+        { name: "Surgery", href: `/${role}/or-management`, icon: Scissors },
+        { name: "ICU Tracking", href: `/${role}/icu-tracking`, icon: Activity },
+        { name: "Laboratory", href: `/${role}/laboratory`, icon: Microscope },
+        { name: "Pharmacy", href: `/${role}/pharmacy`, icon: Pill },
+        { name: "Radiology", href: `/${role}/radiology`, icon: Aperture },
         // Pharmacy & Inventory
         { name: "Dispensing", href: `/${role}/dispensing`, icon: Package },
         { name: "Inventory", href: `/${role}/inventory`, icon: Package },

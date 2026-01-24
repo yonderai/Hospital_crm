@@ -3,25 +3,37 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
-    Users,
     Search,
     Filter,
-    MoreVertical,
     Activity,
     FileText,
     Calendar,
     ChevronRight,
     UserPlus
 } from "lucide-react";
+import Link from "next/link";
 
 export default function DoctorPatients() {
     const [patients, setPatients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    // Debounce effect
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
+
     useEffect(() => {
         const fetchPatients = async () => {
+            setLoading(true);
             try {
-                const res = await fetch('/api/patients');
+                const query = debouncedSearch ? `?search=${encodeURIComponent(debouncedSearch)}` : '';
+                const res = await fetch(`/api/patients${query}`);
                 const data = await res.json();
                 setPatients(data.patients);
             } catch (error) {
@@ -31,7 +43,7 @@ export default function DoctorPatients() {
             }
         };
         fetchPatients();
-    }, []);
+    }, [debouncedSearch]); // Re-fetch when debounced search changes
 
     return (
         <DashboardLayout>
@@ -49,6 +61,8 @@ export default function DoctorPatients() {
                                 type="text"
                                 placeholder="Search by name, MRN, or condition..."
                                 className="bg-transparent border-none outline-none text-sm font-medium text-slate-900 w-full placeholder:text-slate-400"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                         <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all">
@@ -119,15 +133,15 @@ export default function DoctorPatients() {
                                         </td>
                                         <td className="px-8 py-6 text-right pr-8">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                                <button className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-olive-600 rounded-xl shadow-sm transition-all">
+                                                <Link href={`/doctor/patients/${p._id}`} className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-olive-600 rounded-xl shadow-sm transition-all" title="View Details">
                                                     <FileText size={18} />
-                                                </button>
-                                                <button className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-olive-600 rounded-xl shadow-sm transition-all">
+                                                </Link>
+                                                <Link href={`/doctor/patients/${p._id}/clinical`} className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-olive-600 rounded-xl shadow-sm transition-all" title="Clinical Summary">
                                                     <Activity size={18} />
-                                                </button>
-                                                <button className="p-2.5 bg-olive-700 text-white rounded-xl shadow-lg shadow-olive-600/20 hover:bg-olive-800 transition-all ml-2">
+                                                </Link>
+                                                <Link href={`/doctor/patients/${p._id}/chart`} className="p-2.5 bg-olive-700 text-white rounded-xl shadow-lg shadow-olive-600/20 hover:bg-olive-800 transition-all ml-2" title="Full Chart">
                                                     <ChevronRight size={18} />
-                                                </button>
+                                                </Link>
                                             </div>
                                         </td>
                                     </tr>
@@ -144,8 +158,8 @@ export default function DoctorPatients() {
 function FilterButton({ label, active = false, count = 0 }: any) {
     return (
         <button className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all whitespace-nowrap border ${active
-                ? 'bg-olive-700 text-white border-transparent shadow-lg shadow-olive-600/20'
-                : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
+            ? 'bg-olive-700 text-white border-transparent shadow-lg shadow-olive-600/20'
+            : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
             }`}>
             {label}
             {count > 0 && <span className={`px-2 py-0.5 rounded-lg ${active ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-400'}`}>{count}</span>}
