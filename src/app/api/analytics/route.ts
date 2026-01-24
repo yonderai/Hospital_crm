@@ -5,7 +5,7 @@ import Invoice from "@/lib/models/Invoice";
 import Claim from "@/lib/models/Claim";
 import Patient from "@/lib/models/Patient";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
     try {

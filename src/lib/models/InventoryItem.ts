@@ -15,6 +15,11 @@ export interface IInventoryItem extends Document {
     expiryDate?: Date;
     supplierId?: mongoose.Types.ObjectId;
     isActive: boolean;
+    batches?: {
+        lotNumber: string;
+        expiryDate: Date;
+        quantity: number;
+    }[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -40,6 +45,11 @@ const InventoryItemSchema = new Schema<IInventoryItem>(
         expiryDate: { type: Date },
         supplierId: { type: Schema.Types.ObjectId, ref: "Supplier" },
         isActive: { type: Boolean, default: true },
+        batches: [{
+            lotNumber: { type: String },
+            expiryDate: { type: Date },
+            quantity: { type: Number }
+        }]
     },
     { timestamps: true }
 );

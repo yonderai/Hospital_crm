@@ -3,7 +3,7 @@ import dbConnect from "@/lib/mongoose";
 import MedicalAsset from "@/lib/models/MedicalAsset";
 import MaintenanceLog from "@/lib/models/MaintenanceLog";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
     try {

@@ -1,50 +1,63 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import InventoryItem from "@/lib/models/InventoryItem";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
 
-export async function POST(req: NextRequest) {
+export async function GET() {
     try {
         const session = await getServerSession(authOptions);
-        if (!session) {
+        if (!session || !["pharmacist", "admin"].includes(session.user?.role as string)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         await dbConnect();
-        const data = await req.json();
-        const item = await InventoryItem.create(data);
-        return NextResponse.json(item, { status: 201 });
-    } catch (error: any) {
-        console.error("Inventory Item Creation Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        const items = await InventoryItem.find({}).sort({ name: 1 });
+        return NextResponse.json(items);
+
+    } catch (error) {
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
 
-export async function GET(req: NextRequest) {
+export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session) {
+        if (!session || session.user?.role !== "pharmacist") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         await dbConnect();
-        const { searchParams } = new URL(req.url);
-        const query = searchParams.get("q");
-        const category = searchParams.get("category");
+        const body = await req.json();
 
-        let filter: any = { isActive: true };
-        if (query) {
-            filter.$or = [
-                { name: { $regex: query, $options: "i" } },
-                { sku: { $regex: query, $options: "i" } }
-            ];
+        // Basic validation
+        if (!body.sku || !body.name) {
+            return NextResponse.json({ error: "SKU and Name required" }, { status: 400 });
         }
-        if (category) filter.category = category;
 
-        const items = await InventoryItem.find(filter).sort({ name: 1 });
-        return NextResponse.json(items);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const newItem = await InventoryItem.create(body);
+        return NextResponse.json({ success: true, item: newItem });
+
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json({ error: "Error creating item" }, { status: 500 });
+    }
+}
+
+export async function PUT(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session || session.user?.role !== "pharmacist") {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        await dbConnect();
+        const { _id, ...updates } = await req.json();
+
+        const updatedItem = await InventoryItem.findByIdAndUpdate(_id, updates, { new: true });
+        return NextResponse.json({ success: true, item: updatedItem });
+
+    } catch (error) {
+        return NextResponse.json({ error: "Error updating item" }, { status: 500 });
     }
 }

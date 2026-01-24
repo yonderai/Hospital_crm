@@ -107,6 +107,18 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: "Patient profile not found. Please contact administration." }, { status: 404 });
             }
             targetPatientId = patientProfile._id;
+
+            // STRICT RBAC: Patient can only book with assigned doctor
+            if (patientProfile.assignedDoctorId && patientProfile.assignedDoctorId.toString() !== providerId) {
+                return NextResponse.json({ error: "You can only book appointments with your assigned doctor." }, { status: 403 });
+            }
+        }
+
+        // Front Desk can book for anyone (targetPatientId is passed in body)
+        if (role === 'frontdesk') {
+            if (!targetPatientId) {
+                return NextResponse.json({ error: "Patient Selection is required." }, { status: 400 });
+            }
         }
 
         if (!targetPatientId) {

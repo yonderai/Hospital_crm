@@ -41,7 +41,7 @@ export async function GET() {
         startTime: demoTime.toISOString(),
         status: 'scheduled',
         queuePosition: null,
-        isDemo: true
+        // isDemo Removed as it's not in the type definition
     });
 
     return NextResponse.json({ data });

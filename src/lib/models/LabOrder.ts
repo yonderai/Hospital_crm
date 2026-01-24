@@ -6,8 +6,10 @@ export interface ILabOrder extends Document {
     orderingProviderId: mongoose.Types.ObjectId;
     encounterId?: mongoose.Types.ObjectId;
     tests: string[];
+    scheduledAt?: Date;
+    technicianId?: mongoose.Types.ObjectId;
     priority: "routine" | "urgent" | "stat";
-    status: "ordered" | "collected" | "in-progress" | "completed" | "cancelled";
+    status: "ordered" | "scheduled" | "collected" | "in-progress" | "completed" | "cancelled";
     sampleCollectedAt?: Date;
     results: {
         testName: string;
@@ -30,6 +32,8 @@ const LabOrderSchema = new Schema<ILabOrder>(
         orderingProviderId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
         encounterId: { type: Schema.Types.ObjectId, ref: "Encounter" },
         tests: { type: [String], required: true },
+        scheduledAt: { type: Date },
+        technicianId: { type: Schema.Types.ObjectId, ref: "User" },
         priority: {
             type: String,
             default: "routine",
@@ -38,7 +42,7 @@ const LabOrderSchema = new Schema<ILabOrder>(
         status: {
             type: String,
             default: "ordered",
-            enum: ["ordered", "collected", "in-progress", "completed", "cancelled"]
+            enum: ["ordered", "scheduled", "collected", "in-progress", "completed", "cancelled"]
         },
         sampleCollectedAt: { type: Date },
         results: [

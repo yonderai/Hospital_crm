@@ -12,7 +12,10 @@ export interface IPurchaseOrder extends Document {
     supplierId: mongoose.Types.ObjectId;
     items: IPOItem[];
     totalAmount: number;
+    subtotal: number;
+    tax: number;
     status: "draft" | "ordered" | "received" | "cancelled";
+    expectedDeliveryDate?: Date;
     orderedAt?: Date;
     receivedAt?: Date;
     notes?: string;
@@ -32,6 +35,8 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder>(
         poNumber: { type: String, required: true, unique: true },
         supplierId: { type: Schema.Types.ObjectId, ref: "Supplier", required: true, index: true },
         items: [POItemSchema],
+        subtotal: { type: Number, required: true, default: 0 },
+        tax: { type: Number, required: true, default: 0 },
         totalAmount: { type: Number, required: true },
         status: {
             type: String,
@@ -39,6 +44,7 @@ const PurchaseOrderSchema = new Schema<IPurchaseOrder>(
             enum: ["draft", "ordered", "received", "cancelled"],
             default: "draft"
         },
+        expectedDeliveryDate: { type: Date },
         orderedAt: { type: Date },
         receivedAt: { type: Date },
         notes: { type: String },

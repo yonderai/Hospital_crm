@@ -4,7 +4,7 @@ import Patient from "@/lib/models/Patient";
 import Encounter from "@/lib/models/Encounter";
 import { convertToFHIRPatient, convertToFHIREncounter } from "@/lib/interop/fhir";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
     try {

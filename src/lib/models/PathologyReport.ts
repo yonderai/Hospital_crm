@@ -7,6 +7,7 @@ export interface IPathologyReport extends Document {
     grossDescription: string;
     microscopicDescription: string;
     diagnosis: string;
+    reportUrl?: string;
     clinicalHistory?: string;
     pathologistId: mongoose.Types.ObjectId;
     status: "draft" | "final";
@@ -23,6 +24,7 @@ const PathologyReportSchema = new Schema<IPathologyReport>(
         grossDescription: { type: String, required: true },
         microscopicDescription: { type: String, required: true },
         diagnosis: { type: String, required: true },
+        reportUrl: { type: String },
         clinicalHistory: { type: String },
         pathologistId: { type: Schema.Types.ObjectId, ref: "User", required: true },
         status: {

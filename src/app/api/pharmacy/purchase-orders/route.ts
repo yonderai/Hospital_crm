@@ -3,7 +3,7 @@ import dbConnect from "@/lib/mongoose";
 import PurchaseOrder from "@/lib/models/PurchaseOrder";
 import InventoryItem from "@/lib/models/InventoryItem";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
     try {

@@ -24,7 +24,8 @@ import {
     FlaskConical,
     Scissors,
     Pill,
-    Microscope
+    Microscope,
+    ShoppingBag
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -45,17 +46,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }, []);
 
     // Detect role from pathname if not in session/demoState
-    const pathRole = pathname?.split('/')[1];
+    const rawPathRole = pathname?.split('/')[1];
+    const pathRole = rawPathRole === 'pharmacy' ? 'pharmacist' : rawPathRole;
 
     // Priority: Session Role -> Demo Role -> Path Role (if valid) -> Fallback
-    const role = (session?.user as any)?.role || demoState?.role ||
-        (["doctor", "nurse", "admin", "frontdesk", "patient", "labtech", "pharmacy_inventory", "billing", "hr"].includes(pathRole) ? pathRole : "doctor");
+    let role = (session?.user as any)?.role || demoState?.role ||
+        (["doctor", "nurse", "admin", "frontdesk", "patient", "labtech", "pharmacist", "billing", "hr"].includes(pathRole) ? pathRole : "doctor");
+
+    // Normalize specific roles
+    if (role === 'pharmacy_inventory') role = 'pharmacist';
     const userName = session?.user?.name || demoState?.name || "Initializing...";
 
     // Role-based navigation mapping - Strictly separated as per requirements
     const navConfig: Record<string, string[]> = {
         doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking", "Laboratory", "Pharmacy", "Radiology", "Analytics"],
-        pharmacy_inventory: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Procurement"], // Unified Pharmacy & Inventory
+        pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Purchase Orders"], // Unified Pharmacy & Inventory
         labtech: ["Overview", "Test Scheduling", "Sample Tracking", "Processing Status", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
         nurse: ["Overview", "Duty Roster", "Assigned Patients", "Ward Management", "ICU Monitor", "Clinical Updates"], // Nurse Portal
@@ -67,7 +72,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
 
     const navigationItems = [
-        { name: "Overview", href: `/${role}/dashboard`, icon: LayoutGrid },
+        { name: "Overview", href: role === 'pharmacist' ? `/${role}/overview` : `/${role}/dashboard`, icon: LayoutGrid },
         // Doctor
         { name: "Patients", href: `/${role}/patients`, icon: Users },
         { name: "Schedule", href: `/${role}/schedule`, icon: Calendar },
@@ -80,8 +85,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // Pharmacy & Inventory
         { name: "Dispensing", href: `/${role}/dispensing`, icon: Package },
         { name: "Inventory", href: `/${role}/inventory`, icon: Package },
-        { name: "Batch & Expiry", href: `/${role}/expiry`, icon: Activity },
+        { name: "Batch & Expiry", href: `/${role}/batch-expiry`, icon: Activity },
         { name: "Usage Reports", href: `/${role}/reports`, icon: BarChart3 },
+        { name: "Purchase Orders", href: `/${role}/procurement`, icon: ShoppingBag },
         // Diagnostics Hub
         { name: "Test Scheduling", href: `/${role}/test-scheduling`, icon: Calendar },
         { name: "Sample Tracking", href: `/${role}/sample-tracking`, icon: Activity },
@@ -138,7 +144,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     const navigation = navigationItems.filter(item =>
         navConfig[role]?.includes(item.name)
-    );
+    ).map(item => {
+        // Handle role-to-path mapping
+        let pathRole = role;
+        if (role === 'pharmacist') pathRole = 'pharmacy';
+
+        // Fix specific overrides if needed, otherwise use mapping
+        let href = item.href;
+        if (!href.includes(`/${pathRole}/`)) {
+            href = href.replace(`/${role}/`, `/${pathRole}/`);
+        }
+
+        return { ...item, href };
+    });
 
     return (
         <div className="flex h-screen bg-[#F8FAFC]">

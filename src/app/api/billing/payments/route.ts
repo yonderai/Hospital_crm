@@ -3,7 +3,7 @@ import dbConnect from "@/lib/mongoose";
 import Payment from "@/lib/models/Payment";
 import Invoice from "@/lib/models/Invoice";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
