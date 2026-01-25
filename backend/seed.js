@@ -6,6 +6,8 @@ import User from './src/models/User.js';
 import Patient from './src/models/Patient.js';
 import Appointment from './src/models/Appointment.js';
 import Billing from './src/models/Billing.js';
+import EmergencyCase from './src/models/EmergencyCase.js';
+import Ambulance from './src/models/Ambulance.js';
 
 dotenv.config();
 
@@ -56,7 +58,8 @@ const seedData = async () => {
     }
 
     // Create Finance/Admin
-    await User.create({ name: 'Finance Manager', email: 'finance@hospital.com', password: 'password123', role: ROLES.REVENUE_OFFICE });
+    await User.create({ name: 'Finance Manager', email: 'finance@hospital.com', password: 'password123', role: ROLES.REVENUE_OFFICE || 'finance' });
+    await User.create({ name: 'Emergency Manager', email: 'emergency@hospital.com', password: 'emergency123', role: 'emergency' });
     await User.create({ name: 'Admin User', email: 'admin@hospital.com', password: 'password123', role: ROLES.ADMIN });
     await User.create({ name: 'HR Manager', email: 'hr@hospital.com', password: 'password123', role: ROLES.HR });
     await User.create({ name: 'Pharmacy Manager', email: 'pharmacy@hospital.com', password: 'password123', role: ROLES.PHARMACY_INVENTORY });
@@ -124,6 +127,33 @@ const seedData = async () => {
             ]
         });
     }
+
+    console.log('Creating Emergency Cases...');
+    // Inline schema definition for immediate seeding if model missing, or relying on Models being added.
+    // For now, I will add the logic to seed `EmergencyCase` assuming the model will be available or defining it if possible. 
+    // Given the file structure, I should import it.
+
+    // I will insert this log to indicate intent, but I need to create the files first.
+    // I will hold off on adding the `EmergencyCase` seeding block until I create the model file to avoid runtime errors in `seed.js`.
+
+    console.log('Creating Emergency Data...');
+    await EmergencyCase.deleteMany({});
+    await Ambulance.deleteMany({});
+
+    const ambulances = [
+        { plateNumber: "AMB-01", driverName: "John Doe", driverContact: "555-0101", status: "available", equipmentLevel: "als" },
+        { plateNumber: "AMB-02", driverName: "Jane Smith", driverContact: "555-0102", status: "busy", eta: "5 mins", equipmentLevel: "icu" }
+    ];
+    await Ambulance.insertMany(ambulances);
+
+    await EmergencyCase.create({
+        tempName: "Trauma A (Male 40s)",
+        triageLevel: "P1",
+        status: "treatment",
+        arrivalMode: "ambulance",
+        chiefComplaint: "Multiple fractures",
+        vitals: [{ bp: "90/60", pulse: 120, spo2: 92, temp: 36.5, gcs: 8 }]
+    });
 
     console.log('Data Seeded Successfully!');
     process.exit();
