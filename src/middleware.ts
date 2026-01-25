@@ -64,6 +64,8 @@ function getDashboardUrl(role: string) {
         case 'pharmacist': return '/pharmacy/overview';
         case 'hr': return '/hr/dashboard';
         case 'patient': return '/patient/dashboard';
+        case 'finance': return '/finance/dashboard';
+        case 'emergency': return '/emergency/dashboard';
         default: return '/login';
     }
 }
@@ -83,6 +85,8 @@ function isAccessAllowed(role: string, path: string) {
     if (role === 'pharmacist' && path.startsWith('/pharmacy')) return true;
     if (role === 'hr' && path.startsWith('/hr')) return true;
     if (role === 'patient' && path.startsWith('/patient')) return true;
+    if (role === 'finance' && path.startsWith('/finance')) return true;
+    if (role === 'emergency' && path.startsWith('/emergency')) return true;
 
     return false;
 }

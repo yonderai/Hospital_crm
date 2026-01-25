@@ -63,7 +63,6 @@ export default function DigitalReports() {
         const data = new FormData();
         data.append("file", formData.file);
         data.append("data", JSON.stringify({
-            orderId: formData.orderId, // This needs to be a valid ObjectId in real backend calls
             // For this mock, we assume user types a valid ID or we need a way to select it.
             // Given limitations, I'll alert if it fails.
             // Actually, orderId must be ObjectId.

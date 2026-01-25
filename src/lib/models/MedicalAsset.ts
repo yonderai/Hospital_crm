@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IMedicalAsset extends Document {
     assetTag: string;
     name: string;
-    category: "imaging" | "monitoring" | "surgical" | "laboratory" | "facility";
+    category: "imaging" | "monitoring" | "surgical" | "laboratory" | "facility" | "furniture" | "it-hardware" | "generator" | "vehicle";
     manufacturer: string;
     modelNumber: string;
     serialNumber: string;
@@ -28,7 +28,7 @@ const MedicalAssetSchema = new Schema<IMedicalAsset>(
         category: {
             type: String,
             required: true,
-            enum: ["imaging", "monitoring", "surgical", "laboratory", "facility"],
+            enum: ["imaging", "monitoring", "surgical", "laboratory", "facility", "furniture", "it-hardware", "generator", "vehicle"],
         },
         manufacturer: { type: String, required: true },
         modelNumber: { type: String, required: true },

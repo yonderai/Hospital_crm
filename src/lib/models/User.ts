@@ -9,7 +9,9 @@ export enum UserRole {
     PHARMACY_INVENTORY = "pharmacy_inventory",
     BILLING = "billing",
     HR = "hr",
-    PATIENT = "patient"
+    PATIENT = "patient",
+    FINANCE = "finance",
+    EMERGENCY = "emergency"
 }
 
 export interface IUser extends Document {
@@ -41,8 +43,8 @@ const UserSchema = new Schema<IUser>(
         password: { type: String, required: false }, // OAuth users might not have password
         role: {
             type: String,
+            enum: ["doctor", "nurse", "admin", "frontdesk", "labtech", "pathology", "billing", "pharmacist", "hr", "patient", "finance", "emergency"],
             required: true,
-            enum: Object.values(UserRole)
         },
         firstName: { type: String, required: true },
         lastName: { type: String, required: true },

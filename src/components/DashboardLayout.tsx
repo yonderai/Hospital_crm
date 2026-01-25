@@ -65,7 +65,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
         nurse: ["Overview", "Duty Roster", "Assigned Patients", "Ward Management", "ICU Monitor", "Clinical Updates"], // Nurse Portal
         billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
-        finance: ["Overview", "Procurement", "Expenses", "Payroll", "CapEx", "Assets"], // Back Office / Finance Needs Verification if Role Exists
+        finance: ["Overview", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
         patient: ["Overview", "Medical Wallet", "Report Viewer", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
         hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
         admin: ["Overview", "Expense Oversight", "Stock Summary", "Staff Overview", "Salary Overview", "Medical Claims", "Hospital Chain", "Analytics"] // Master Control
@@ -116,9 +116,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // Back Office / Finance
         { name: "Procurement", href: `/${role}/procurement`, icon: Package },
         { name: "Expenses", href: `/${role}/expenses`, icon: DollarSign },
+        { name: "Utilities", href: `/${role}/utilities`, icon: Wind },
+        { name: "Maintenance", href: `/${role}/maintenance`, icon: Wrench },
+        { name: "Assets", href: `/${role}/assets`, icon: Activity },
         { name: "Payroll", href: `/${role}/payroll`, icon: Users },
-        { name: "CapEx", href: `/${role}/capex`, icon: BarChart3 },
-        { name: "Assets", href: `/${role}/assets`, icon: Wrench },
+
         // Patient Portal
         { name: "Medical Wallet", href: `/${role}/wallet`, icon: FileText },
         { name: "Report Viewer", href: `/${role}/viewer`, icon: Beaker },
