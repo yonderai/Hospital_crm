@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏥 Hospital Management System - Emergency & Finance Portals
 
-## Getting Started
+A comprehensive Hospital Management System featuring specialized portals for **Emergency Room Operations**, **Finance Management**, and **Administrator Controls**. Built with Next.js, MongoDB, and TailwindCSS.
 
-First, run the development server:
+## 🚀 Features
 
+### 🚑 Emergency Portal
+*   **Real-time Dashboard:** Track active cases, incoming ambulances, and waiting triage patients.
+*   **Quick Registration:** "Trauma-X" rapid entry for unidentified critical patients.
+*   **Triage System:** P1-P5 priority levels with vital sign tracking.
+*   **Ambulance View:** Monitor ambulance fleet status (Available/Busy/Maintenance).
+
+### 💰 Finance Portal
+*   **Expense Management:** Track operating costs (Utilities, Maintenance, Payroll).
+*   **Asset Management:** Registry of high-value medical equipment.
+*   **Vendor & Procurement:** Manage suppliers and purchase orders.
+*   **Audit Logs:** Full financial transparency and compliance tracking.
+
+### 🔐 Multi-Role Access
+*   **RBAC System:** Secure login for Doctors, Nurses, Admin, Finance Managers, and ER Staff.
+*   **Middleware Protection:** Route guards ensure users only access authorized areas.
+
+---
+
+## 🛠️ Tech Stack
+*   **Frontend:** Next.js 15 (App Router), TailwindCSS, Lucide Icons
+*   **Backend:** Next.js server actions / API Routes
+*   **Database:** MongoDB (with Mongoose ODM)
+*   **Auth:** NextAuth.js (Credentials Provider)
+
+---
+
+## ⚙️ Getting Started
+
+Follow these steps to set up the project locally:
+
+### 1. Clone the Repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <your-repo-url>
+cd hospital
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Environment Setup
+Copy the example environment file:
+```bash
+cp .env.example .env
+```
+*(Note: The provided `.env.example` contains the dev database connection string for quick start)*
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Seed the Database
+Populate the database with test users, roles, and demo data:
+```bash
+npm run seed
+```
+This will create:
+*   **Admin:** `admin@hospital.com` / `password123`
+*   **Emergency Manager:** `emergency@hospital.com` / `emergency123`
+*   **Finance Manager:** `finance@hospital.com` / `password123`
+*   **Doctor:** `doctor1@hospital.com` / `password123`
+*   Plus sample Patients, Ambulances, and Emergency Cases.
 
-## Learn More
+### 5. Run the Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧪 Test Accounts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Role | Email | Password |
+|------|-------|----------|
+| **Emergency** | `emergency@hospital.com` | `emergency123` |
+| **Finance** | `finance@hospital.com` | `password123` |
+| **Admin** | `admin@hospital.com` | `password123` |
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
