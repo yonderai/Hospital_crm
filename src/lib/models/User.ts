@@ -11,7 +11,9 @@ export enum UserRole {
     HR = "hr",
     PATIENT = "patient",
     FINANCE = "finance",
-    EMERGENCY = "emergency"
+    EMERGENCY = "emergency",
+    MAINTENANCE = "maintenance",
+    BACK_OFFICE = "backoffice"
 }
 
 export interface IUser extends Document {
@@ -35,6 +37,14 @@ export interface IUser extends Document {
     mfaSecret?: string;
     createdAt: Date;
     updatedAt: Date;
+    // HR Fields
+    employeeId?: string;
+    mobile?: string;
+    joiningDate?: Date;
+    specialization?: string;
+    consultationFee?: number;
+    shift?: string;
+    ward?: string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -43,7 +53,7 @@ const UserSchema = new Schema<IUser>(
         password: { type: String, required: false }, // OAuth users might not have password
         role: {
             type: String,
-            enum: ["doctor", "nurse", "admin", "frontdesk", "labtech", "pathology", "billing", "pharmacist", "hr", "patient", "finance", "emergency"],
+            enum: ["doctor", "nurse", "admin", "frontdesk", "labtech", "pathology", "billing", "pharmacist", "hr", "patient", "finance", "emergency", "maintenance", "backoffice"],
             required: true,
         },
         firstName: { type: String, required: true },
@@ -61,6 +71,14 @@ const UserSchema = new Schema<IUser>(
         lastLogin: { type: Date },
         mfaEnabled: { type: Boolean, default: false },
         mfaSecret: { type: String },
+        // HR / Staff Extensions
+        employeeId: { type: String, unique: true, sparse: true },
+        mobile: { type: String },
+        joiningDate: { type: Date },
+        specialization: { type: String },   // Doctor
+        consultationFee: { type: Number },  // Doctor
+        shift: { type: String },            // Nurse
+        ward: { type: String },             // Nurse
     },
     { timestamps: true }
 );

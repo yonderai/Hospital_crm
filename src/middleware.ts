@@ -66,6 +66,8 @@ function getDashboardUrl(role: string) {
         case 'patient': return '/patient/dashboard';
         case 'finance': return '/finance/dashboard';
         case 'emergency': return '/emergency/dashboard';
+        case 'maintenance': return '/maintenance/dashboard';
+        case 'backoffice': return '/backoffice/dashboard';
         default: return '/login';
     }
 }
@@ -87,6 +89,8 @@ function isAccessAllowed(role: string, path: string) {
     if (role === 'patient' && path.startsWith('/patient')) return true;
     if (role === 'finance' && path.startsWith('/finance')) return true;
     if (role === 'emergency' && path.startsWith('/emergency')) return true;
+    if (role === 'maintenance' && path.startsWith('/maintenance')) return true;
+    if (role === 'backoffice' && path.startsWith('/backoffice')) return true;
 
     return false;
 }

@@ -92,9 +92,7 @@ export default function DoctorDashboard() {
                         <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest">DR. GREGORY HOUSE • DIAGNOSTIC MEDICINE</p>
                     </div>
                     <div className="flex gap-4">
-                        <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all">
-                            <Plus size={16} /> New Ad-hoc Visit
-                        </button>
+                        {/* Action buttons removed */}
                     </div>
                 </div>
 
@@ -198,15 +196,7 @@ export default function DoctorDashboard() {
                             <Activity className="absolute bottom-[-10%] right-[-10%] text-white/5" size={200} />
                         </div>
 
-                        <div className="bg-white rounded-[40px] border border-slate-100 p-8 shadow-sm">
-                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Quick Directives</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <QuickAction icon={Pill} label="Medication" color="bg-orange-50 text-orange-600" />
-                                <QuickAction icon={Beaker} label="Lab Request" color="bg-olive-100 text-olive-700" />
-                                <QuickAction icon={Users} label="Consult" color="bg-olive-50 text-olive-600" />
-                                <QuickAction icon={Calendar} label="Schedule" color="bg-olive-50 text-olive-500" />
-                            </div>
-                        </div>
+                        {/* Quick Directives removed */}
                     </div>
                 </div>
             </div>

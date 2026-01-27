@@ -1,279 +1,201 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import Link from "next/link";
 import {
     Users,
     Calendar,
     Clock,
     Plus,
     Search,
-    CheckCircle
+    CheckCircle,
+    Activity,
+    Bed,
+    FileText,
+    ArrowRight,
+    UserPlus,
+    CreditCard
 } from "lucide-react";
 
-interface Doctor {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    department: string;
-    customId: string;
-}
-
-interface Patient {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    mrn: string;
-}
-
-interface AppointmentSlot {
-    startTime: string;
-    status: string;
-}
-
-const TIME_SLOTS = [
-    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-    "12:00", "12:30", "14:00", "14:30", "15:00", "15:30",
-    "16:00", "16:30"
-];
-
 export default function FrontDeskDashboard() {
-    const [doctors, setDoctors] = useState<Doctor[]>([]);
-    const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
-    const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-    const [bookedSlots, setBookedSlots] = useState<string[]>([]);
-    const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+    const [stats, setStats] = useState({
+        registrationsToday: 24,
+        inQueue: 8,
+        doctorsActive: 0,
+        availableBeds: 12
+    });
+    const [doctors, setDoctors] = useState([]);
 
-    // Patient Selection
-    const [patientQuery, setPatientQuery] = useState("");
-    const [manualPatientId, setManualPatientId] = useState("");
-
-    // In a real app we would have a patient search API. For this strict demo with strict RBAC,
-    // we will simulate the "Front desk selects existing patient" by just hardcoding the known ones 
-    // or allowing manual ID entry if the API is restricted.
-    // However, I will define the known patients here for ease of testing.
-    const KNOWN_PATIENTS = [
-        { _id: 'PAT001', firstName: 'Alice', lastName: 'Cooper', mrn: 'PAT001' },
-        { _id: 'PAT002', firstName: 'Bob', lastName: 'Marley', mrn: 'PAT002' }
+    // Mock Data for Queue
+    const queue = [
+        { id: 1, name: "Alice Cooper", time: "10:42 AM", reason: "Fever", status: "Waiting", type: "Walk-in" },
+        { id: 2, name: "Bob Marley", time: "10:45 AM", reason: "Follow-up", status: "Waiting", type: "Appointment" },
+        { id: 3, name: "John Doe", time: "10:50 AM", reason: "Chest Pain", status: "Triage", type: "Emergency" },
     ];
-    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Fetch Doctors
+        // Fetch Doctors for count
         fetch('/api/frontdesk/doctors')
             .then(res => res.json())
-            .then(data => setDoctors(data));
+            .then(data => {
+                setDoctors(data);
+                setStats(prev => ({ ...prev, doctorsActive: data.length || 5 }));
+            })
+            .catch(() => setStats(prev => ({ ...prev, doctorsActive: 5 }))); // Fallback
     }, []);
 
-    // Fetch schedule when doctor/date changes
-    useEffect(() => {
-        if (selectedDoctor && selectedDate) {
-            setLoading(true);
-            fetch(`/api/frontdesk/doctors/${selectedDoctor._id}/schedule?date=${selectedDate}`)
-                .then(res => res.json())
-                .then((data: AppointmentSlot[]) => {
-                    const times = data.map(d => new Date(d.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
-                    setBookedSlots(times);
-                })
-                .finally(() => setLoading(false));
-        }
-    }, [selectedDoctor, selectedDate]);
-
-    const handleBook = async () => {
-        if (!selectedDoctor || !selectedSlot) return;
-
-        // If manual ID is entered, use that logic or find from known
-        // We really need the Mongo _id for the API to work if it's strictly typed? 
-        // The API actually looks up by _id mostly but for 'frontdesk' role override we passed `targetPatientId`.
-        // If we only have MRN, we might fail unless we look it up.
-        // Let's assume the user selects from the KNOWN list which has the Real ID?
-        // Wait, the KNOWN list above uses Mock IDs. I need the REAL DB IDs.
-        // I will trust the user to copy-paste the ID from the logs/previous step if needed OR
-        // I will implement a check.
-
-        let pId = selectedPatient?._id;
-
-        // Manual override Attempt (If they paste a real MongoID)
-        if (!pId && manualPatientId) pId = manualPatientId;
-
-        if (!pId) return alert("Please select a patient or enter a valid ID");
-
-        // Construct ISO date
-        const startDateTime = new Date(`${selectedDate}T${selectedSlot}:00`);
-
-        const res = await fetch('/api/appointments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                patientId: pId, // This must be the Mongo _id
-                providerId: selectedDoctor._id,
-                startTime: startDateTime,
-                reason: "Front Desk Booking",
-                type: "consultation"
-            })
-        });
-
-        if (res.ok) {
-            alert("Appointment Confirmed!");
-            setBookedSlots([...bookedSlots, selectedSlot]);
-            setSelectedSlot(null);
-        } else {
-            const err = await res.json();
-            alert(`Error: ${err.error}`);
-        }
-    };
+    const actions = [
+        { label: "New Registration", icon: UserPlus, color: "text-blue-600", bg: "bg-blue-50", href: "/frontdesk/registration" },
+        { label: "Book Appointment", icon: Calendar, color: "text-olive-600", bg: "bg-olive-50", href: "/frontdesk/appointments" },
+        { label: "Collect Fees", icon: CreditCard, color: "text-emerald-600", bg: "bg-emerald-50", href: "/frontdesk/fees" },
+        { label: "Bed Allocation", icon: Bed, color: "text-purple-600", bg: "bg-purple-50", href: "/frontdesk/bed-allocation" },
+    ];
 
     return (
         <DashboardLayout>
-            <div className="flex h-[calc(100vh-100px)] gap-6">
-                {/* Left Panel: Booking Flow */}
-                <div className="w-1/3 flex flex-col gap-6">
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <Users size={20} className="text-olive-600" /> 1. Select Patient
-                        </h3>
-
-                        {/* Manual ID Input (Fallback for Demo) */}
-                        <div className="mb-4">
-                            <label className="text-xs font-bold text-slate-500 uppercase">Patient ID (Mongo ID)</label>
-                            <input
-                                placeholder="Paste Patient ID here"
-                                className="w-full p-2 border rounded-lg text-sm mt-1 focus:ring-2 focus:ring-olive-500 outline-none"
-                                value={manualPatientId}
-                                onChange={e => {
-                                    setManualPatientId(e.target.value);
-                                    setSelectedPatient(null);
-                                }}
-                            />
-                            <p className="text-[10px] text-slate-400 mt-1">
-                                For testing: Use ID from seed logs.
-                            </p>
-                        </div>
-
-                        {/* Quick Select for Demo */}
-                        <div className="space-y-2">
-                            <p className="text-xs font-bold text-slate-500 uppercase">Quick Select (Demo)</p>
-                            {/* We don't have Real IDs here unless we fetched them. So these buttons might fail if clicked unless we update KNOWN_PATIENTS with real IDs. */}
-                            {/* User Instruction: Please use manual ID for robustness in this step or I'd need to fetch patients */}
-                            <div className="text-xs text-red-500 bg-red-50 p-2 rounded">
-                                NOTE: Requires exact Patient ID.
-                            </div>
-                        </div>
-
-                        {selectedDoctor && selectedSlot && (manualPatientId || selectedPatient) && (
-                            <div className="mt-4 p-3 bg-olive-50 border border-olive-200 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-bottom-2">
-                                <div>
-                                    <p className="text-sm font-bold text-olive-800">Ready to Book</p>
-                                </div>
-                                <CheckCircle size={16} className="text-olive-600" />
-                            </div>
-                        )}
+            <div className="space-y-10">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Front Desk Operations</h2>
+                        <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest">Reception & Triage Control</p>
                     </div>
-
-                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex-1 flex flex-col justify-end">
-                        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <CheckCircle size={20} className="text-olive-600" /> 3. Confirm
-                        </h3>
-                        <div className="space-y-4 text-sm text-slate-600 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <div className="flex justify-between">
-                                <span>Doctor:</span>
-                                <span className="font-bold">{selectedDoctor ? `Dr. ${selectedDoctor.lastName}` : '-'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Date:</span>
-                                <span className="font-bold">{selectedDate}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Time:</span>
-                                <span className="font-bold text-olive-600">{selectedSlot || '-'}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Patient ID:</span>
-                                <span className="font-bold font-mono text-xs">{manualPatientId || selectedPatient?._id || '-'}</span>
-                            </div>
+                    <div className="flex gap-4">
+                        <div className="px-4 py-2 bg-white border border-slate-200 rounded-xl flex items-center gap-2 shadow-sm">
+                            <Clock size={16} className="text-slate-400" />
+                            <span className="text-sm font-bold text-slate-700">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                        <button
-                            disabled={!selectedDoctor || !selectedSlot || (!manualPatientId && !selectedPatient)}
-                            onClick={handleBook}
-                            className="w-full py-4 bg-olive-600 text-white font-bold rounded-2xl hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-olive-600/20"
-                        >
-                            Book Appointment
-                        </button>
                     </div>
                 </div>
 
-                {/* Right Panel: Doctor Schedule */}
-                <div className="flex-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <Calendar size={24} className="text-olive-600" /> 2. Doctor Schedule
-                        </h3>
-                        <div className="flex gap-4">
-                            <input
-                                type="date"
-                                className="p-2 border rounded-lg text-sm font-medium focus:ring-2 focus:ring-olive-500 outline-none"
-                                value={selectedDate}
-                                onChange={e => setSelectedDate(e.target.value)}
-                            />
+                {/* KPI Cards */}
+                <div className="grid grid-cols-4 gap-6">
+                    <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                                <UserPlus size={20} />
+                            </div>
+                            <span className="px-2 py-1 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold uppercase tracking-wider">+12%</span>
                         </div>
+                        <h3 className="text-3xl font-black text-slate-900">{stats.registrationsToday}</h3>
+                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">Registrations Today</p>
                     </div>
 
-                    {/* Doctor List Horizontal */}
-                    <div className="flex gap-3 overflow-x-auto pb-4 mb-4">
-                        {doctors.map(doc => (
-                            <button
-                                key={doc._id}
-                                onClick={() => setSelectedDoctor(doc)}
-                                className={`px-4 py-3 rounded-xl border flex flex-col items-start min-w-[140px] transition-all ${selectedDoctor?._id === doc._id ? 'bg-olive-600 border-olive-600 text-white shadow-lg shadow-olive-600/20 scale-105' : 'bg-slate-50 border-slate-100 text-slate-600 hover:bg-white hover:shadow'}`}
-                            >
-                                <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${selectedDoctor?._id === doc._id ? 'text-olive-200' : 'text-slate-400'}`}>{doc.department}</span>
-                                <span className="font-bold text-sm">Dr. {doc.lastName}</span>
+                    <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-orange-50 text-orange-600 rounded-xl">
+                                <Users size={20} />
+                            </div>
+                        </div>
+                        <h3 className="text-3xl font-black text-slate-900">{stats.inQueue}</h3>
+                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">Patients in Queue</p>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-olive-50 text-olive-600 rounded-xl">
+                                <Activity size={20} />
+                            </div>
+                        </div>
+                        <h3 className="text-3xl font-black text-slate-900">{stats.doctorsActive}</h3>
+                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">Doctors On Duty</p>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
+                                <Bed size={20} />
+                            </div>
+                            <span className="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold uppercase tracking-wider">Critical</span>
+                        </div>
+                        <h3 className="text-3xl font-black text-slate-900">{stats.availableBeds}</h3>
+                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">Available Beds</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-8">
+                    {/* Live Queue */}
+                    <div className="col-span-2 bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
+                        <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                            <h3 className="text-lg font-black text-slate-900">Live Queue</h3>
+                            <button className="text-xs font-bold text-olive-600 hover:text-olive-700 flex items-center gap-1">
+                                View All <ArrowRight size={14} />
                             </button>
-                        ))}
+                        </div>
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50">
+                                <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    <th className="px-8 py-4">Patient</th>
+                                    <th className="px-8 py-4">Time</th>
+                                    <th className="px-8 py-4">Reason</th>
+                                    <th className="px-8 py-4">Type</th>
+                                    <th className="px-8 py-4">Status</th>
+                                    <th className="px-8 py-4"></th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {queue.map((p, i) => (
+                                    <tr key={i} className="group hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-8 py-4 font-bold text-slate-900">{p.name}</td>
+                                        <td className="px-8 py-4 text-sm text-slate-500">{p.time}</td>
+                                        <td className="px-8 py-4 text-sm text-slate-600">{p.reason}</td>
+                                        <td className="px-8 py-4">
+                                            <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${p.type === 'Emergency' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                                                }`}>{p.type}</span>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <span className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                                                <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
+                                                {p.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-4">
+                                            <button className="p-2 text-slate-400 hover:text-olive-600 hover:bg-olive-50 rounded-lg transition-all">
+                                                <ArrowRight size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
 
-                    {/* Slots Grid */}
-                    <div className="flex-1 bg-slate-50 rounded-3xl p-6 overflow-y-auto border border-slate-100/50">
-                        {!selectedDoctor ? (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-4">
-                                <Users size={48} className="opacity-20" />
-                                <p>Select a doctor above to view availability</p>
+                    {/* Quick Actions */}
+                    <div className="space-y-6">
+                        <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8">
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Quick Actions</h3>
+                            <div className="grid grid-cols-1 gap-4">
+                                {actions.map((action, i) => (
+                                    <Link key={i} href={action.href} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
+                                        <div className={`p-3 rounded-xl ${action.bg} ${action.color} group-hover:scale-110 transition-transform`}>
+                                            <action.icon size={20} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-900">{action.label}</h4>
+                                            <p className="text-xs text-slate-400 font-medium group-hover:text-slate-500">Access Module</p>
+                                        </div>
+                                        <ArrowRight size={16} className="ml-auto text-slate-300 group-hover:text-slate-400 -translate-x-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                                    </Link>
+                                ))}
                             </div>
-                        ) : loading ? (
-                            <div className="h-full flex items-center justify-center text-slate-400">
-                                <span className="w-6 h-6 border-2 border-slate-200 border-t-olive-600 rounded-full animate-spin mr-2"></span>
-                                Loading...
-                            </div>
-                        ) : (
-                            <div>
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Available Slots</h4>
-                                <div className="grid grid-cols-4 gap-4">
-                                    {TIME_SLOTS.map(time => {
-                                        const isBooked = bookedSlots.includes(time);
-                                        const isSelected = selectedSlot === time;
-                                        return (
-                                            <button
-                                                key={time}
-                                                disabled={isBooked}
-                                                onClick={() => setSelectedSlot(time)}
-                                                className={`
-                                                    p-4 rounded-2xl border flex items-center justify-center gap-2 font-bold transition-all
-                                                    ${isBooked ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-60' :
-                                                        isSelected ? 'bg-olive-600 border-olive-600 text-white shadow-xl shadow-olive-600/20 scale-105' :
-                                                            'bg-white border-slate-100 text-slate-600 hover:border-olive-300 hover:text-olive-600 hover:shadow-lg hover:shadow-olive-600/5'}
-                                                `}
-                                            >
-                                                <Clock size={16} />
-                                                {time}
-                                                {isBooked && <span className="hidden">Booked</span>}
-                                            </button>
-                                        );
-                                    })}
+                        </div>
+
+                        <div className="bg-slate-900 rounded-[32px] p-8 text-white relative overflow-hidden">
+                            <div className="relative z-10">
+                                <h3 className="text-lg font-black uppercase tracking-tight mb-2">Hospital Occupancy</h3>
+                                <div className="flex items-end gap-2 mb-1">
+                                    <span className="text-4xl font-black text-white">84%</span>
+                                    <span className="text-sm font-bold text-slate-400 mb-1">Full</span>
                                 </div>
+                                <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                    <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 w-[84%] h-full rounded-full"></div>
+                                </div>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-4">12 Beds Remaining</p>
                             </div>
-                        )}
+                            <Activity className="absolute -bottom-4 -right-4 text-slate-800/50" size={120} />
+                        </div>
                     </div>
                 </div>
             </div>

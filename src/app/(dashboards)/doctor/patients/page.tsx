@@ -15,6 +15,9 @@ import Link from "next/link";
 
 export default function DoctorPatients() {
     const [patients, setPatients] = useState<any[]>([]);
+    const [filteredPatients, setFilteredPatients] = useState<any[]>([]);
+    const [counts, setCounts] = useState({ all: 0, inPatient: 0, outPatient: 0, critical: 0, postOp: 0 });
+    const [activeFilter, setActiveFilter] = useState('all');
     const [loading, setLoading] = useState(true);
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -35,7 +38,8 @@ export default function DoctorPatients() {
                 const query = debouncedSearch ? `?search=${encodeURIComponent(debouncedSearch)}` : '';
                 const res = await fetch(`/api/patients${query}`);
                 const data = await res.json();
-                setPatients(data.patients);
+                setPatients(data.patients || []);
+                setCounts(data.counts || { all: 0, inPatient: 0, outPatient: 0, critical: 0, postOp: 0 });
             } catch (error) {
                 console.error("Failed to fetch patients:", error);
             } finally {
@@ -44,6 +48,15 @@ export default function DoctorPatients() {
         };
         fetchPatients();
     }, [debouncedSearch]); // Re-fetch when debounced search changes
+
+    // Filter effect
+    useEffect(() => {
+        if (activeFilter === 'all') {
+            setFilteredPatients(patients);
+        } else {
+            setFilteredPatients(patients.filter(p => p.category === activeFilter));
+        }
+    }, [activeFilter, patients]);
 
     return (
         <DashboardLayout>
@@ -65,19 +78,16 @@ export default function DoctorPatients() {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all">
-                            <UserPlus size={16} /> Register Patient
-                        </button>
                     </div>
                 </div>
 
                 {/* Filters */}
                 <div className="flex items-center gap-6 overflow-x-auto pb-2 noscrollbar">
-                    <FilterButton label="All Patients" active count={patients.length} />
-                    <FilterButton label="In-Patient" count={12} />
-                    <FilterButton label="Out-Patient" count={28} />
-                    <FilterButton label="Critical Care" count={4} />
-                    <FilterButton label="Post-Op" count={15} />
+                    <FilterButton label="All Patients" active={activeFilter === 'all'} count={counts.all} onClick={() => setActiveFilter('all')} />
+                    <FilterButton label="In-Patient" active={activeFilter === 'inpatient'} count={counts.inPatient} onClick={() => setActiveFilter('inpatient')} />
+                    <FilterButton label="Out-Patient" active={activeFilter === 'outpatient'} count={counts.outPatient} onClick={() => setActiveFilter('outpatient')} />
+                    <FilterButton label="Critical Care" active={activeFilter === 'critical'} count={counts.critical} onClick={() => setActiveFilter('critical')} />
+                    <FilterButton label="Post-Op" active={activeFilter === 'post-op'} count={counts.postOp} onClick={() => setActiveFilter('post-op')} />
                 </div>
 
                 {/* Patient List Table */}
@@ -100,7 +110,7 @@ export default function DoctorPatients() {
                                     </tr>
                                 ))
                             ) : (
-                                patients.map((p, idx) => (
+                                filteredPatients.map((p, idx) => (
                                     <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">
@@ -155,9 +165,9 @@ export default function DoctorPatients() {
     );
 }
 
-function FilterButton({ label, active = false, count = 0 }: any) {
+function FilterButton({ label, active = false, count = 0, onClick }: any) {
     return (
-        <button className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all whitespace-nowrap border ${active
+        <button onClick={onClick} className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all whitespace-nowrap border ${active
             ? 'bg-olive-700 text-white border-transparent shadow-lg shadow-olive-600/20'
             : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'
             }`}>

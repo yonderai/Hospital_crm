@@ -49,19 +49,19 @@ export default function EmergencyRegistration() {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-                <h2 className="text-3xl font-black text-white tracking-tight italic uppercase">Patient Registration</h2>
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight italic uppercase">Patient Registration</h2>
                 <p className="text-slate-500 text-[10px] font-black mt-1 uppercase tracking-[0.4em]">Fast-Track Entry</p>
             </div>
 
             <div className="grid grid-cols-2 gap-8">
-                <div className="bg-slate-950 border border-slate-800 rounded-[32px] p-8">
-                    <h3 className="text-xl font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
-                        <UserPlus className="text-red-500" /> New Unknown Patient
+                <div className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm">
+                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-wider mb-6 flex items-center gap-2">
+                        <UserPlus className="text-red-600" /> New Unknown Patient
                     </h3>
                     <div className="space-y-4">
-                        <div className="p-4 bg-red-900/10 border border-red-900/20 rounded-2xl">
-                            <p className="text-red-400 text-xs font-bold uppercase tracking-wider mb-2">Auto-Generated Alias</p>
-                            <p className="text-2xl font-black text-white">{tempName}</p>
+                        <div className="p-4 bg-red-50 border border-red-100 rounded-2xl">
+                            <p className="text-red-500 text-xs font-bold uppercase tracking-wider mb-2">Auto-Generated Alias</p>
+                            <p className="text-2xl font-black text-slate-900">{tempName}</p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -70,7 +70,7 @@ export default function EmergencyRegistration() {
                                     type="number"
                                     value={age}
                                     onChange={(e) => setAge(e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-red-500 transition-all"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-bold outline-none focus:border-red-500 transition-all focus:bg-white"
                                 />
                             </div>
                             <div>
@@ -78,7 +78,7 @@ export default function EmergencyRegistration() {
                                 <select
                                     value={gender}
                                     onChange={(e) => setGender(e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-red-500 transition-all"
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-bold outline-none focus:border-red-500 transition-all focus:bg-white"
                                 >
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
@@ -89,7 +89,7 @@ export default function EmergencyRegistration() {
                         <button
                             onClick={handleRegister}
                             disabled={submitting}
-                            className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-900/20 mt-4 disabled:opacity-50"
+                            className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg shadow-red-600/20 mt-4 disabled:opacity-50"
                         >
                             {submitting ? "Registering..." : "Quick Register (Trauma)"}
                         </button>

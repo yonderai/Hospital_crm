@@ -90,8 +90,8 @@ export default function DoctorClinical() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    {/* Left: Task List & Orders */}
-                    <div className="lg:col-span-2 space-y-10">
+                    {/* Main Content - Full Width */}
+                    <div className="lg:col-span-3 space-y-10">
                         {/* Task List */}
                         <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden min-h-[500px]">
                             <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
@@ -162,53 +162,7 @@ export default function DoctorClinical() {
                         </div>
                     </div>
 
-                    {/* Right: Quick Tools & CDS */}
-                    <div className="space-y-10">
-                        <div className="bg-[#0F172A] rounded-[40px] p-8 text-white relative overflow-hidden shadow-2xl">
-                            <div className="relative z-10 space-y-6">
-                                <h4 className="text-xl font-black tracking-tight leading-none italic uppercase">Intelligence Tools</h4>
-                                <div className="space-y-4">
-                                    <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all cursor-pointer group">
-                                        <Clipboard className="text-olive-400 group-hover:scale-110 transition-transform" size={20} />
-                                        <div>
-                                            <p className="text-sm font-black italic uppercase">Care Protocols</p>
-                                            <p className="text-[10px] text-slate-400 mt-0.5">ICD-10 Sync Active</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all cursor-pointer group">
-                                        <Beaker className="text-olive-400 group-hover:scale-110 transition-transform" size={20} />
-                                        <div>
-                                            <p className="text-sm font-black italic uppercase">Therapeutic DB</p>
-                                            <p className="text-[10px] text-slate-400 mt-0.5">Interaction Engine v2.4</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <Activity className="absolute bottom-[-10%] right-[-10%] text-white/5" size={200} />
-                        </div>
-
-                        <div className="bg-white rounded-[40px] border border-slate-100 p-8 shadow-sm">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 italic">Clinical Workflows</h4>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-olive-400 transition-all group">
-                                    <CheckCircle size={20} className="text-olive-600 group-hover:scale-110 transition-transform" />
-                                    <span className="text-[9px] font-black uppercase text-slate-700 mt-3 tracking-tighter">Clearance</span>
-                                </button>
-                                <button className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-olive-400 transition-all group">
-                                    <FileText size={20} className="text-blue-600 group-hover:scale-110 transition-transform" />
-                                    <span className="text-[9px] font-black uppercase text-slate-700 mt-3 tracking-tighter">Discharge</span>
-                                </button>
-                                <button className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-olive-400 transition-all group">
-                                    <Pill size={20} className="text-amber-600 group-hover:scale-110 transition-transform" />
-                                    <span className="text-[9px] font-black uppercase text-slate-700 mt-3 tracking-tighter">Inventory</span>
-                                </button>
-                                <button className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-olive-400 transition-all group">
-                                    <Activity size={20} className="text-red-600 group-hover:scale-110 transition-transform" />
-                                    <span className="text-[9px] font-black uppercase text-slate-700 mt-3 tracking-tighter">Vitals Sync</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Right column removed */}
                 </div>
             </div>
         </DashboardLayout>

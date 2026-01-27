@@ -25,7 +25,11 @@ import {
     Scissors,
     Pill,
     Microscope,
-    ShoppingBag
+    ShoppingBag,
+    Ambulance,
+    Siren,
+    Stethoscope,
+    AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -59,7 +63,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Role-based navigation mapping - Strictly separated as per requirements
     const navConfig: Record<string, string[]> = {
-        doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking", "Laboratory", "Pharmacy", "Radiology", "Analytics"],
+        doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking"],
         pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Purchase Orders"], // Unified Pharmacy & Inventory
         labtech: ["Overview", "Test Scheduling", "Sample Tracking", "Processing Status", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
@@ -68,7 +72,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         finance: ["Overview", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
         patient: ["Overview", "Medical Wallet", "Report Viewer", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
         hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
-        admin: ["Overview", "Expense Oversight", "Stock Summary", "Staff Overview", "Salary Overview", "Medical Claims", "Hospital Chain", "Analytics"] // Master Control
+        admin: ["Overview", "Expense Oversight", "Stock Summary", "Staff Overview", "Salary Overview", "Medical Claims", "Hospital Chain", "Analytics"], // Master Control
+        emergency: ["Overview", "Triage", "Clinical Workspace", "Ambulance", "Alerts"] // Emergency
     };
 
     const navigationItems = [
@@ -142,6 +147,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Medical Claims", href: `/${role}/claims-overview`, icon: ShieldCheck },
         { name: "Hospital Chain", href: `/${role}/chain-management`, icon: LayoutGrid },
         { name: "Analytics", href: `/${role}/analytics`, icon: BarChart3 },
+        // Emergency
+        { name: "Triage", href: `/${role}/triage`, icon: Activity },
+        { name: "Clinical Workspace", href: `/${role}/clinical`, icon: Stethoscope },
+        { name: "Ambulance", href: `/${role}/ambulance`, icon: Ambulance },
+        { name: "Alerts", href: `/${role}/alerts`, icon: AlertTriangle },
     ];
 
     const navigation = navigationItems.filter(item =>
