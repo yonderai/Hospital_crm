@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from '@/lib/db';
-import LabResult from '@/lib/models/LabResult';
+import LabOrder from '@/lib/models/LabOrder';
 
 export async function GET(
     req: Request,
@@ -17,8 +17,9 @@ export async function GET(
 
         await dbConnect();
 
-        const labs = await LabResult.find({ patientId: id })
-            .populate('performedBy', 'firstName lastName')
+        const labs = await LabOrder.find({ patientId: id })
+            .populate('orderingProviderId', 'firstName lastName')
+            .populate('reviewedBy', 'firstName lastName')
             .sort({ createdAt: -1 });
 
         return NextResponse.json(labs);
@@ -47,13 +48,14 @@ export async function POST(
             return NextResponse.json({ error: 'Test type is required' }, { status: 400 });
         }
 
-        const newLab = await LabResult.create({
+        const newLab = await LabOrder.create({
             patientId: id,
-            testType,
-            status: 'pending',
-            performedBy: (session.user as any).id,
-            resultValue: 'Pending',
+            orderId: `LAB-${Date.now()}`,
+            tests: [testType], // Wrapped in array as per LabOrder model
+            status: 'ordered',
+            orderingProviderId: (session.user as any).id,
             priority: priority || 'routine',
+            results: [],
             createdAt: new Date()
         });
 

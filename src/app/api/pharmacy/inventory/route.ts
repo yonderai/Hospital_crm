@@ -7,7 +7,7 @@ import InventoryItem from "@/lib/models/InventoryItem";
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || !["pharmacist", "admin"].includes(session.user?.role as string)) {
+        if (!session || !["pharmacist", "pharmacy", "admin"].includes(session.user?.role as string)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 

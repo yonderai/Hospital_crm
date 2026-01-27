@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const patientSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    email: { type: String, unique: true },
+    email: { type: String, unique: true, sparse: true },
     phone: { type: String, required: true },
     dob: { type: Date, required: true },
     gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },

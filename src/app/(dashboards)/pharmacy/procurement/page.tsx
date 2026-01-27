@@ -29,7 +29,14 @@ export default function ProcurementPage() {
         fetch("/api/pharmacy/procurement")
             .then(res => res.json())
             .then(data => {
-                setOrders(data);
+                // Ensure data is an array
+                const ordersData = Array.isArray(data) ? data : [];
+                setOrders(ordersData);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Error fetching procurement orders:', err);
+                setOrders([]);
                 setLoading(false);
             });
     }, []);

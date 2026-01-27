@@ -25,9 +25,16 @@ export default function BatchExpiryPage() {
         fetch("/api/pharmacy/inventory")
             .then(res => res.json())
             .then(data => {
+                // Ensure data is an array before filtering
+                const inventoryData = Array.isArray(data) ? data : [];
                 // Filter items that have expiry dates
-                const batchItems = data.filter((i: any) => i.expiryDate);
+                const batchItems = inventoryData.filter((i: any) => i.expiryDate);
                 setItems(batchItems);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Error fetching inventory:', err);
+                setItems([]);
                 setLoading(false);
             });
     }, []);

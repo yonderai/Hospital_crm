@@ -4,6 +4,7 @@ export interface IPatient extends Document {
     mrn: string;
     firstName: string;
     lastName: string;
+    name?: string; // Optional for compatibility
     dob: Date;
     gender: string;
     contact: {
@@ -35,11 +36,12 @@ const PatientSchema = new Schema<IPatient>(
         mrn: { type: String, required: true, unique: true, index: true },
         firstName: { type: String, required: true },
         lastName: { type: String, required: true },
+        name: { type: String }, // For compatibility with backend/seed model
         dob: { type: Date, required: true },
         gender: { type: String, required: true },
         contact: {
             phone: { type: String, required: true },
-            email: { type: String },
+            email: { type: String, unique: true, sparse: true },
             address: { type: String },
         },
         emergencyContact: {

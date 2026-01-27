@@ -1,9 +1,12 @@
 import mongoose, { Schema, Document } from "mongoose";
+import "./Patient";
+import "./User";
 
 export interface ILabOrder extends Document {
     orderId: string;
     patientId: mongoose.Types.ObjectId;
-    orderingProviderId: mongoose.Types.ObjectId;
+    orderingProviderId?: mongoose.Types.ObjectId;
+    orderSource: "internal" | "direct";
     encounterId?: mongoose.Types.ObjectId;
     tests: string[];
     scheduledAt?: Date;
@@ -29,7 +32,8 @@ const LabOrderSchema = new Schema<ILabOrder>(
     {
         orderId: { type: String, required: true, unique: true },
         patientId: { type: Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
-        orderingProviderId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+        orderingProviderId: { type: Schema.Types.ObjectId, ref: "User", index: true },
+        orderSource: { type: String, enum: ["internal", "direct"], default: "internal" },
         encounterId: { type: Schema.Types.ObjectId, ref: "Encounter" },
         tests: { type: [String], required: true },
         scheduledAt: { type: Date },
