@@ -13,7 +13,8 @@ import {
     Clock,
     Calendar,
     Image as ImageIcon,
-    Sliders
+    Sliders,
+    AlertCircle
 } from "lucide-react";
 
 export default function PatientChart() {
@@ -82,30 +83,78 @@ export default function PatientChart() {
 // --- TAB COMPONENTS ---
 
 function TimelineView({ patientId }: { patientId: any }) {
-    // Mocking specific timeline data if API is not fully ready for "events", but usually fetching encounters
-    // For now, let's fetch encounters and map them to timeline
-    // If encounter API doesn't support list by patient easily without auth context, we might rely on a unified "history" endpoint
-    // Assuming we can fetch patient details which might include history, or fetch encounters
-    // Logic: Fetch encounters for this patient.
-
     const [events, setEvents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Mock fetch for timeline
-        // In real app: fetch(`/api/clinical/history?patient=${patientId}`)
-        setEvents([
-            { date: "Oct 24, 2025", title: "General Consultation", desc: "Routine checkup. BP 120/80.", icon: FileText },
-            { date: "Sep 15, 2025", title: "Lab Results", desc: "CBC Panel. Normal range.", icon: Microscope },
-            { date: "Aug 02, 2025", title: "Prescription", desc: "Amoxicillin 500mg - 7 Days", icon: Pill },
-            { date: "Jul 10, 2025", title: "Emergency Visit", desc: "Acute abdominal pain. Ultrasound performed.", icon: Activity },
-        ]);
+        const fetchTimeline = async () => {
+            try {
+                const [labsRes, radRes, medsRes] = await Promise.all([
+                    fetch(`/api/patients/${patientId}/labs`),
+                    fetch(`/api/patients/${patientId}/radiology`),
+                    fetch(`/api/patients/${patientId}/prescriptions`)
+                ]);
+
+                const labs = labsRes.ok ? await labsRes.json() : [];
+                const radiology = radRes.ok ? await radRes.json() : [];
+                const prescriptions = medsRes.ok ? await medsRes.json() : [];
+
+                const allEvents: any[] = [];
+
+                // Map Labs
+                labs.forEach((l: any) => {
+                    allEvents.push({
+                        date: new Date(l.createdAt).toLocaleDateString(),
+                        timestamp: new Date(l.createdAt).getTime(),
+                        title: `Lab Order: ${(l.tests || []).join(', ')}`,
+                        desc: `Status: ${l.status.toUpperCase()}`,
+                        icon: Microscope
+                    });
+                });
+
+                // Map Radiology
+                radiology.forEach((r: any) => {
+                    allEvents.push({
+                        date: new Date(r.createdAt).toLocaleDateString(),
+                        timestamp: new Date(r.createdAt).getTime(),
+                        title: `Imaging: ${r.imagingType} (${r.bodyPart})`,
+                        desc: `Priority: ${r.priority.toUpperCase()} - ${r.status}`,
+                        icon: ImageIcon
+                    });
+                });
+
+                // Map Prescriptions
+                prescriptions.forEach((p: any) => {
+                    allEvents.push({
+                        date: new Date(p.prescribedDate).toLocaleDateString(),
+                        timestamp: new Date(p.prescribedDate).getTime(),
+                        title: `Prescription: ${p.medications.map((m: any) => m.drugName).join(', ')}`,
+                        desc: `Status: ${p.status.toUpperCase()}`,
+                        icon: Pill
+                    });
+                });
+
+                // Sort by timestamp desc
+                allEvents.sort((a, b) => b.timestamp - a.timestamp);
+                setEvents(allEvents);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchTimeline();
     }, [patientId]);
+
+    if (loading) return <div className="p-8 text-center text-slate-400 italic animate-pulse tracking-widest uppercase text-xs font-bold">Aggregating Longitudinal Timeline...</div>;
 
     return (
         <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 left-8 bottom-0 w-0.5 bg-slate-100"></div>
             <div className="space-y-12 relative z-10 pl-12">
-                {events.map((evt, i) => (
+                {events.length === 0 ? (
+                    <div className="text-slate-400 italic py-10">No clinical events recorded for this patient.</div>
+                ) : events.map((evt, i) => (
                     <TimelineItem key={i} {...evt} />
                 ))}
             </div>
@@ -113,12 +162,11 @@ function TimelineView({ patientId }: { patientId: any }) {
     );
 }
 
+
 function SOAPView({ patientId }: { patientId: any }) {
-    // Ideally fetch SOAP notes from Encounters
     const [notes, setNotes] = useState<any[]>([]);
 
     useEffect(() => {
-        // Mocking Encounters with SOAP
         setNotes([
             {
                 date: "Oct 24, 2025",
@@ -175,53 +223,72 @@ function SOAPView({ patientId }: { patientId: any }) {
 
 function MedicationsView({ patientId }: { patientId: any }) {
     const [meds, setMeds] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchMeds = async () => {
-            // Fetch from API
             try {
                 const res = await fetch(`/api/patients/${patientId}/prescriptions`);
                 if (res.ok) {
                     const data = await res.json();
-                    setMeds(data);
-                } else {
-                    // Fallback mock
-                    setMeds([
-                        { drugName: "Lisinopril", dosage: "10mg", frequency: "Daily", status: "Active" },
-                        { drugName: "Atorvastatin", dosage: "20mg", frequency: "Nightly", status: "Active" }
-                    ]);
+                    const flatMeds = data.flatMap((rx: any) =>
+                        rx.medications.map((m: any) => ({
+                            ...m,
+                            status: rx.status,
+                            date: new Date(rx.prescribedDate).toLocaleDateString(),
+                            prescriptionId: rx.prescriptionId
+                        }))
+                    );
+                    setMeds(flatMeds);
                 }
             } catch (e) {
                 console.error(e);
+            } finally {
+                setLoading(false);
             }
         };
         fetchMeds();
     }, [patientId]);
 
+    if (loading) return <div className="p-8 text-center text-slate-400 italic animate-pulse tracking-widest uppercase text-xs font-bold">Accessing Pharmacy Records...</div>;
+
     return (
         <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
+            <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+                <div>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Active & Historical Medications</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Longitudinal Prescription Log</p>
+                </div>
+                <Pill size={24} className="text-olive-500 opacity-30" />
+            </div>
             <table className="w-full text-left">
-                <thead className="bg-slate-50">
+                <thead className="bg-slate-50/50">
                     <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <th className="px-8 py-4">Medication</th>
-                        <th className="px-8 py-4">Dosage</th>
-                        <th className="px-8 py-4">Frequency</th>
-                        <th className="px-8 py-4">Status</th>
+                        <th className="px-10 py-5">Medication</th>
+                        <th className="px-10 py-5">Dosage</th>
+                        <th className="px-10 py-5">Frequency</th>
+                        <th className="px-10 py-5">Date</th>
+                        <th className="px-10 py-5">Status</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                     {meds.length === 0 ? (
-                        <tr><td colSpan={4} className="p-8 text-center text-slate-400">No active medications</td></tr>
+                        <tr><td colSpan={5} className="p-10 text-center text-slate-400 italic">No medication history found</td></tr>
                     ) : meds.map((m, i) => (
-                        <tr key={i}>
-                            <td className="px-8 py-4 font-bold text-slate-900 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-olive-100 text-olive-600 flex items-center justify-center"><Pill size={14} /></div>
-                                {m.drugName}
+                        <tr key={i} className="hover:bg-slate-50/30 transition-colors">
+                            <td className="px-10 py-6 font-bold text-slate-900 flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-2xl bg-olive-50 text-olive-600 flex items-center justify-center border border-olive-100"><Pill size={18} /></div>
+                                <div>
+                                    <p className="font-black text-sm italic tracking-tight">{m.drugName}</p>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{m.prescriptionId}</p>
+                                </div>
                             </td>
-                            <td className="px-8 py-4 text-sm text-slate-600">{m.dosage}</td>
-                            <td className="px-8 py-4 text-sm text-slate-600">{m.frequency}</td>
-                            <td className="px-8 py-4">
-                                <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide">{m.status}</span>
+                            <td className="px-10 py-6 text-sm font-bold text-slate-600">{m.dosage}</td>
+                            <td className="px-10 py-6 text-sm text-slate-500 italic">{m.frequency}</td>
+                            <td className="px-10 py-6 text-xs font-bold text-slate-400 uppercase">{m.date}</td>
+                            <td className="px-10 py-6">
+                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${m.status === 'active' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-slate-50 text-slate-400 border-slate-100'
+                                    }`}>{m.status}</span>
                             </td>
                         </tr>
                     ))}
@@ -233,100 +300,146 @@ function MedicationsView({ patientId }: { patientId: any }) {
 
 function LabsImagingView({ patientId }: { patientId: any }) {
     const [labs, setLabs] = useState<any[]>([]);
-    const [scanSize, setScanSize] = useState(256); // Slider State
+    const [radiology, setRadiology] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [scanSize, setScanSize] = useState(256);
 
     useEffect(() => {
-        const fetchLabs = async () => {
+        const fetchData = async () => {
             try {
-                const res = await fetch(`/api/patients/${patientId}/labs`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setLabs(data);
-                } else {
-                    // Fallback Mock
-                    setLabs([
-                        { type: 'result', testName: "CBC with Diff", date: "Oct 24, 2025", result: "Normal", value: "WBC 7.5" },
-                        { type: 'image', testName: "Chest X-Ray PA/Lat", date: "Oct 10, 2025", result: "Clear", src: "https://prod-images-static.radiopaedia.org/images/157210/332ea51c33be85f8cd20c2921501aa_jumbo.jpg" }
-                    ]);
-                }
+                const [labsRes, radRes] = await Promise.all([
+                    fetch(`/api/patients/${patientId}/labs`),
+                    fetch(`/api/patients/${patientId}/radiology`)
+                ]);
+
+                if (labsRes.ok) setLabs(await labsRes.json());
+                if (radRes.ok) setRadiology(await radRes.json());
             } catch (e) {
                 console.error(e);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchLabs();
+        fetchData();
     }, [patientId]);
 
-    // Split into Labs (text) and Imaging (visual) for demo, or mix
-    const images = labs.filter(l => l.type === 'image' || l.src);
-    const textLabs = labs.filter(l => !l.src);
+    if (loading) return <div className="p-8 text-center text-slate-400 italic animate-pulse tracking-widest uppercase text-xs font-bold">Synchronizing Clinical Diagnostics...</div>;
+
+    const flatResults = labs.flatMap((order: any) =>
+        (order.results || []).map((r: any) => ({
+            testName: r.testName,
+            date: new Date(order.resultDate || order.createdAt).toLocaleDateString(),
+            result: order.status,
+            value: `${r.value} ${r.unit}`,
+            abnormal: r.abnormalFlag
+        }))
+    );
+
+    const displayLabs = flatResults.length > 0 ? flatResults : labs.map(order => ({
+        testName: (order.tests || []).join(', '),
+        date: new Date(order.createdAt).toLocaleDateString(),
+        result: order.status,
+        value: 'Pending',
+        abnormal: false
+    }));
 
     return (
         <div className="space-y-8">
-            {/* Imaging Section with Slider */}
-            {images.length > 0 && (
+            {radiology.length > 0 && (
                 <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-black text-slate-900">Medical Imaging</h3>
-                        <div className="flex items-center gap-4 bg-slate-50 px-4 py-2 rounded-xl">
-                            <Sliders size={16} className="text-slate-400" />
+                    <div className="flex justify-between items-center mb-10">
+                        <div>
+                            <h3 className="text-xl font-black text-slate-900 tracking-tight">Diagnostic Imaging</h3>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Radiology Archive</p>
+                        </div>
+                        <div className="flex items-center gap-4 bg-slate-50 px-5 py-3 rounded-2xl border border-slate-100">
+                            <Sliders size={14} className="text-slate-400" />
                             <input
                                 type="range"
-                                min="128"
-                                max="512"
+                                min="160"
+                                max="480"
                                 value={scanSize}
                                 onChange={(e) => setScanSize(Number(e.target.value))}
                                 className="w-32 accent-olive-600"
                             />
-                            <span className="text-[10px] font-bold text-slate-400 w-12 text-right">{scanSize}px</span>
+                            <span className="text-[9px] font-black text-slate-400 w-10 text-right">{scanSize}px</span>
                         </div>
                     </div>
-                    <div className="flex flex-wrap gap-6">
-                        {images.map((img, i) => (
+                    <div className="flex flex-wrap gap-10">
+                        {radiology.map((item, i) => (
                             <div key={i} className="group relative">
                                 <div
-                                    className="bg-slate-900 rounded-2xl overflow-hidden shadow-lg transition-all border-4 border-slate-900 group-hover:border-olive-500"
+                                    className="bg-slate-900 rounded-[32px] overflow-hidden shadow-2xl transition-all border-8 border-slate-900 group-hover:border-olive-500 relative"
                                     style={{ width: `${scanSize}px`, height: `${scanSize}px` }}
                                 >
-                                    {/* Placeholder for actual image if src is valid, else dummy */}
                                     <img
-                                        src={img.src || "/placeholder-xray.jpg"}
-                                        alt={img.testName}
-                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                        onError={(e) => { (e.target as any).src = 'https://placehold.co/400x400/101010/FFF?text=Scan+Image'; }}
+                                        src={`https://placehold.co/600x600/101010/FFF?text=${item.imagingType}+${item.bodyPart}`}
+                                        alt={item.imagingType}
+                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
                                     />
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
-                                        <div className="bg-black/50 p-2 rounded-full backdrop-blur-sm">
-                                            <ImageIcon className="text-white" size={24} />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 group-hover:opacity-0 transition-opacity flex flex-col justify-end p-6">
+                                        <p className="text-white text-xs font-black uppercase tracking-widest">{item.bodyPart}</p>
+                                        <p className="text-slate-400 text-[9px] font-bold mt-1">{new Date(item.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none transition-all scale-75 group-hover:scale-100">
+                                        <div className="bg-white/10 backdrop-blur-md p-4 rounded-full border border-white/20">
+                                            <ImageIcon className="text-white" size={32} />
                                         </div>
                                     </div>
                                 </div>
-                                <p className="mt-3 text-sm font-bold text-slate-900 text-center w-full max-w-[200px] mx-auto">{img.testName}</p>
-                                <p className="text-xs text-center text-slate-400">{img.date}</p>
+                                <div className="mt-5 text-center px-4">
+                                    <h4 className="text-sm font-black text-slate-900 tracking-tight uppercase italic">{item.imagingType}</h4>
+                                    <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest mt-2 inline-block ${item.status === 'completed' ? 'bg-olive-50 text-olive-600 border border-olive-100' : 'bg-slate-50 text-slate-400 border border-slate-100'
+                                        }`}>
+                                        {item.status}
+                                    </span>
+                                </div>
                             </div>
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* Lab Results Table */}
             <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-slate-50"><h3 className="text-lg font-black text-slate-900">Laboratory Results</h3></div>
+                <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Laboratory Results</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Biochemical Analysis Archive</p>
+                    </div>
+                    <Microscope size={24} className="text-olive-500 opacity-30" />
+                </div>
                 <table className="w-full text-left">
-                    <thead className="bg-slate-50">
+                    <thead className="bg-slate-50/50">
                         <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            <th className="px-8 py-4">Test Name</th>
-                            <th className="px-8 py-4">Date</th>
-                            <th className="px-8 py-4">Result</th>
-                            <th className="px-8 py-4">Value</th>
+                            <th className="px-10 py-5">Test Parameter</th>
+                            <th className="px-10 py-5">Date</th>
+                            <th className="px-10 py-5">Status</th>
+                            <th className="px-10 py-5">Result Value</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
-                        {textLabs.map((l, i) => (
-                            <tr key={i}>
-                                <td className="px-8 py-4 font-bold text-slate-900">{l.testName}</td>
-                                <td className="px-8 py-4 text-sm text-slate-500">{l.date}</td>
-                                <td className="px-8 py-4"><span className="bg-slate-100 px-2 py-1 rounded text-xs font-bold text-slate-700">{l.result}</span></td>
-                                <td className="px-8 py-4 text-sm font-mono text-slate-600">{l.value}</td>
+                        {displayLabs.length === 0 ? (
+                            <tr><td colSpan={4} className="p-10 text-center text-slate-400 italic">No lab history recorded</td></tr>
+                        ) : displayLabs.map((l, i) => (
+                            <tr key={i} className="hover:bg-slate-50/30 transition-colors">
+                                <td className="px-10 py-6">
+                                    <p className="font-black text-slate-900 text-sm italic tracking-tight uppercase">{l.testName}</p>
+                                </td>
+                                <td className="px-10 py-6 text-xs font-bold text-slate-500 uppercase tracking-tight">{l.date}</td>
+                                <td className="px-10 py-6">
+                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${l.result === 'completed' ? 'bg-olive-50 text-olive-600 border-olive-100' : 'bg-slate-50 text-slate-400 border-slate-100'
+                                        }`}>
+                                        {l.result}
+                                    </span>
+                                </td>
+                                <td className="px-10 py-6">
+                                    <div className="flex items-center gap-4">
+                                        <p className={`text-lg font-black italic tracking-tighter ${l.abnormal ? 'text-red-600 underline decoration-2 underline-offset-4' : 'text-slate-900'}`}>
+                                            {l.value}
+                                        </p>
+                                        {l.abnormal && <AlertCircle size={14} className="text-red-500" />}
+                                    </div>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -340,7 +453,6 @@ function ProceduresView({ patientId }: { patientId: any }) {
     const [procedures, setProcedures] = useState<any[]>([]);
 
     useEffect(() => {
-        // Fetch orcases
         setProcedures([
             { name: "Appendectomy", date: "Jul 11, 2025", surgeon: "Dr. Cutter", status: "Completed" }
         ]);

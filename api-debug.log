@@ -1,0 +1,57 @@
+
+[2026-01-27T13:20:11.972Z] REQUEST: {"isNewPatient":true,"patientData":{"firstName":"mayank","lastName":"dhariwal","dob":"2026-01-27","gender":"male","phone":"9891256834"},"tests":["blood glucose"],"priority":"routine"}
+
+[2026-01-27T13:20:11.972Z] ERROR: E11000 duplicate key error collection: yonder_medicare.patients index: email_1 dup key: { email: null }
+STACK: MongoServerError: E11000 duplicate key error collection: yonder_medicare.patients index: email_1 dup key: { email: null }
+    at InsertOneOperation.handleOk (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\mongodb\lib\operations\insert.js:51:19)
+    at tryOperation (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\mongodb\lib\operations\execute_operation.js:216:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async executeOperation (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\mongodb\lib\operations\execute_operation.js:80:16)
+    at async Collection.insertOne (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\mongodb\lib\collection.js:154:16)
+    at async model.$__save (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\mongoose\lib\model.js:398:16)
+    at async model.save (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\mongoose\lib\model.js:609:5)
+    at async C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\mongoose\lib\model.js:2714:9
+    at async Promise.all (index 0)
+    at async model.create (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\mongoose\lib\model.js:2699:11)
+    at async POST (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\.next\dev\server\chunks\[root-of-the-server]__1fb7bae8._.js:664:32)
+    at async AppRouteRouteModule.do (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:37866)
+    at async AppRouteRouteModule.handle (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:45156)
+    at async responseGenerator (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\.next\dev\server\chunks\node_modules_next_dcf12ba9._.js:16028:38)
+    at async AppRouteRouteModule.handleResponse (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:187713)
+    at async handleResponse (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\.next\dev\server\chunks\node_modules_next_dcf12ba9._.js:16091:32)
+    at async Module.handler (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\.next\dev\server\chunks\node_modules_next_dcf12ba9._.js:16144:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\base-server.js:1422:9)
+    at async DevServer.renderPageComponent (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\base-server.js:1474:24)
+    at async DevServer.renderToResponseImpl (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\base-server.js:1524:32)
+    at async DevServer.pipeImpl (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\base-server.js:1018:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\base-server.js:909:17)
+    at async C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\mayan\OneDrive\Documents\Yonder\Hospital_crm\node_modules\next\dist\server\lib\start-server.js:226:13)
+[2026-01-27T14:11:18.711Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-27T14:11:18.734Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-27T14:11:18.938Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-27T14:11:19.135Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-27T14:11:19.136Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-27T14:11:19.245Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-27T14:11:38.124Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-27T14:11:38.126Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-27T14:11:38.190Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-27T14:11:38.395Z] RX API: RX API - Prescriptions found: 1
+[2026-01-27T14:11:38.458Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-27T14:11:38.459Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-27T14:11:38.498Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-27T14:11:38.697Z] RX API: RX API - Prescriptions found: 1
+[2026-01-27T14:11:43.978Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-27T14:11:43.983Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-27T14:11:44.044Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-27T14:11:44.335Z] RX API: RX API - Prescriptions found: 1
+[2026-01-27T14:11:44.702Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-27T14:11:44.707Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-27T14:11:44.757Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-27T14:11:44.909Z] RX API: RX API - Prescriptions found: 1

@@ -37,17 +37,18 @@ export default async function middleware(req: NextRequest) {
 
     // Authentication Check
     if (!isAuth) {
+        console.log(`[Middleware] No token found for ${pathname}. Redirecting to /login`);
         return NextResponse.redirect(new URL("/login", req.url));
     }
 
     // RBAC Check
     const role = token?.role as string;
     if (!isAccessAllowed(role, pathname)) {
-        // Redirect to their own dashboard if they try to access wrong one, or access-denied
-        // For strict security, access-denied is better, or just redirect to their home.
-        // User asked for "Redirect to /access-denied".
+        console.log(`[Middleware] Access DENIED for role: ${role} on path: ${pathname}`);
         return NextResponse.redirect(new URL("/access-denied", req.url));
     }
+
+    console.log(`[Middleware] Access ALLOWED for role: ${role} on path: ${pathname}`);
 
     return NextResponse.next();
 }
@@ -58,10 +59,12 @@ function getDashboardUrl(role: string) {
         case 'nurse': return '/nurse/dashboard';
         case 'admin': return '/admin/dashboard';
         case 'frontdesk': return '/frontdesk/dashboard';
-        case 'labtech': return '/lab/dashboard';
+        case 'labtech':
+        case 'lab': return '/lab/dashboard';
         case 'pathology': return '/pathology/overview';
         case 'billing': return '/billing/dashboard';
-        case 'pharmacist': return '/pharmacy/overview';
+        case 'pharmacist':
+        case 'pharmacy': return '/pharmacy/overview';
         case 'hr': return '/hr/dashboard';
         case 'patient': return '/patient/dashboard';
         case 'finance': return '/finance/dashboard';
@@ -81,10 +84,10 @@ function isAccessAllowed(role: string, path: string) {
     if (role === 'nurse' && path.startsWith('/nurse')) return true;
     if (role === 'admin' && path.startsWith('/admin')) return true;
     if (role === 'frontdesk' && path.startsWith('/frontdesk')) return true;
-    if (role === 'labtech' && path.startsWith('/lab')) return true;
+    if ((role === 'labtech' || role === 'lab') && path.startsWith('/lab')) return true;
     if (role === 'pathology' && path.startsWith('/pathology')) return true;
     if (role === 'billing' && path.startsWith('/billing')) return true;
-    if (role === 'pharmacist' && path.startsWith('/pharmacy')) return true;
+    if ((role === 'pharmacist' || role === 'pharmacy') && path.startsWith('/pharmacy')) return true;
     if (role === 'hr' && path.startsWith('/hr')) return true;
     if (role === 'patient' && path.startsWith('/patient')) return true;
     if (role === 'finance' && path.startsWith('/finance')) return true;

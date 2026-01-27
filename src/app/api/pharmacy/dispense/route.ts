@@ -24,12 +24,9 @@ export async function POST(req: Request) {
         }
 
         // 1. Calculate Charges & Deduct Inventory
-        let medicineCharges = 0;
         const invoiceItems = [];
 
         for (const med of prescription.medications) {
-            // Find Inventory Item by Name (Loose matching for demo)
-            // In prod, Prescription should store InventoryItemID
             const inventoryItem = await InventoryItem.findOne({
                 name: { $regex: new RegExp(med.drugName, 'i') }
             });
@@ -47,13 +44,13 @@ export async function POST(req: Request) {
             }
 
             const total = med.quantity * MEDICINE_PRICE_PER_UNIT;
-            medicineCharges += total;
 
             invoiceItems.push({
                 description: `Pharmacy: ${med.drugName} (${med.quantity} units)`,
                 quantity: med.quantity,
                 unitPrice: MEDICINE_PRICE_PER_UNIT,
-                total: total
+                total: total,
+                category: "Medicines"
             });
         }
 

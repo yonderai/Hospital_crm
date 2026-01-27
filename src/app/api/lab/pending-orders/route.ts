@@ -1,0 +1,41 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import dbConnect from "@/lib/mongoose";
+import LabOrder from "@/lib/models/LabOrder";
+import Patient from "@/lib/models/Patient";
+import User from "@/lib/models/User";
+
+export async function GET(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session || !["lab", "labtech"].includes(session.user?.role as string)) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        await dbConnect();
+
+        // Fetch all lab orders that are pending (ordered, scheduled, or collected)
+        const pendingOrders = await LabOrder.find({
+            status: { $in: ["ordered", "scheduled", "collected", "in-progress"] }
+        })
+            .populate("patientId", "firstName lastName mrn contact")
+            .populate("orderingProviderId", "firstName lastName department")
+            .sort({ priority: 1, createdAt: 1 }) // stat (highest priority) first
+            .lean();
+
+        // Sort by priority (stat > urgent > routine)
+        const priorityOrder = { stat: 1, urgent: 2, routine: 3 };
+        pendingOrders.sort((a, b) => {
+            const priorityDiff = priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder];
+            if (priorityDiff !== 0) return priorityDiff;
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        });
+
+        return NextResponse.json(pendingOrders);
+
+    } catch (error) {
+        console.error("Error fetching pending lab orders:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}

@@ -34,7 +34,14 @@ export default function InventoryPage() {
         fetch("/api/pharmacy/inventory")
             .then(res => res.json())
             .then(data => {
-                setItems(data);
+                // Ensure data is an array
+                const inventoryData = Array.isArray(data) ? data : [];
+                setItems(inventoryData);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('Error fetching inventory:', err);
+                setItems([]);
                 setLoading(false);
             });
     }, []);

@@ -1,4 +1,3 @@
-
 "use client";
 
 import DashboardLayout from "@/components/DashboardLayout";
@@ -20,15 +19,25 @@ import { useState, useEffect } from "react";
 export default function PatientDashboard() {
     const { data: session } = useSession();
     const [appointments, setAppointments] = useState<any[]>([]);
+    const [billing, setBilling] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const res = await fetch('/api/appointments');
-                if (res.ok) {
-                    const data = await res.json();
+                const [apptRes, billRes] = await Promise.all([
+                    fetch('/api/appointments'),
+                    fetch('/api/patient/billing')
+                ]);
+
+                if (apptRes.ok) {
+                    const data = await apptRes.json();
                     setAppointments(data.filter((a: any) => new Date(a.date) >= new Date()).slice(0, 3));
+                }
+
+                if (billRes.ok) {
+                    const data = await billRes.json();
+                    setBilling(data);
                 }
             } catch (err) {
                 console.error(err);
@@ -40,6 +49,7 @@ export default function PatientDashboard() {
     }, []);
 
     const nextAppt = appointments[0];
+    const balance = billing?.stats?.balanceDue || 0;
     const userFirstName = session?.user?.name?.split(' ')[0] || 'Patient';
 
     return (
@@ -84,7 +94,7 @@ export default function PatientDashboard() {
                         <PatientWidget title="Health Records" value="SYNC" sub="Verified Repository" icon={FileText} color="text-purple-500" bg="bg-purple-50" />
                     </Link>
                     <Link href="/patient/billing" className="block">
-                        <PatientWidget title="Balance" value="$0.00" sub="Clear Account" icon={Wallet} color="text-emerald-500" bg="bg-emerald-50" />
+                        <PatientWidget title="Balance" value={`$${balance.toLocaleString()}`} sub={balance > 0 ? "Outstanding" : "Clear Account"} icon={Wallet} color="text-emerald-500" bg="bg-emerald-50" />
                     </Link>
                     <Link href="/patient/prescriptions" className="block">
                         <PatientWidget title="Prescriptions" value="Live" sub="My Medications" icon={Stethoscope} color="text-olive-600" bg="bg-olive-50" />

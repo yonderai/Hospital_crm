@@ -15,6 +15,7 @@ export interface IInvoice extends Document {
     items: IInvoiceItem[];
     totalAmount: number;
     amountPaid: number;
+    insuranceCoverage: number;
     balanceDue: number;
     status: "draft" | "sent" | "partial" | "paid" | "void" | "overdue";
     dueDate: Date;
@@ -39,6 +40,7 @@ const InvoiceSchema = new Schema<IInvoice>(
         items: [InvoiceItemSchema],
         totalAmount: { type: Number, required: true },
         amountPaid: { type: Number, default: 0 },
+        insuranceCoverage: { type: Number, default: 0 },
         balanceDue: { type: Number, required: true },
         status: {
             type: String,
