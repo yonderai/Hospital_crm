@@ -74,9 +74,21 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ## 🧪 Test Accounts
 
-| Role | Email | Password |
-|------|-------|----------|
-| **Emergency** | `emergency@hospital.com` | `emergency123` |
-| **Finance** | `finance@hospital.com` | `password123` |
-| **Admin** | `admin@hospital.com` | `password123` |
+**Password for ALL accounts:** `a`
+
+| Role | Email |
+|------|-------|
+| **Admin** | `admin@medicore.com` |
+| **Doctor** | `doctor@medicore.com` |
+| **Nurse** | `nurse@medicore.com` |
+| **Emergency** | `emergency@medicore.com` |
+| **Finance** | `finance@medicore.com` |
+| **HR** | `hr@medicore.com` |
+| **Front Desk** | `frontdesk@medicore.com` |
+| **Lab Tech** | `lab@medicore.com` |
+| **Pharmacist** | `pharmacy@medicore.com` |
+| **Billing** | `billing@medicore.com` |
+| **Maintenance** | `maintenance@medicore.com` |
+| **Back Office** | `backoffice@medicore.com` |
+| **Patient** | `patient@medicore.com` |
 

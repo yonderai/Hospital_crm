@@ -47,19 +47,25 @@ async function seed() {
 
         const Patient = mongoose.models.Patient || mongoose.model('Patient', patientSchema);
 
+        // All system roles
         const roles = [
-            { email: 'admin@medicore.com', role: 'admin', first: 'Admin', last: 'User' },
-            { email: 'doctor@medicore.com', role: 'doctor', first: 'Gregory', last: 'House', dept: 'Diagnostic Medicine' },
-            { email: 'nurse@medicore.com', role: 'nurse', first: 'Jackie', last: 'Peyton' },
-            { email: 'lab@medicore.com', role: 'labtech', first: 'Dexter', last: 'Morgan' },
-            { email: 'frontdesk@medicore.com', role: 'frontdesk', first: 'Pam', last: 'Beesly' },
-            { email: 'pharmacy@medicore.com', role: 'pharmacy_inventory', first: 'Walter', last: 'White' },
-            { email: 'billing@medicore.com', role: 'billing', first: 'Skyler', last: 'White' },
-            { email: 'hr@medicore.com', role: 'hr', first: 'Toby', last: 'Flenderson' },
-            { email: 'patient@medicore.com', role: 'patient', first: 'John', last: 'Doe' }
+            { email: 'admin@medicore.com', role: 'admin', first: 'Admin', last: 'User', password: 'a' },
+            { email: 'doctor@medicore.com', role: 'doctor', first: 'Gregory', last: 'House', dept: 'Diagnostic Medicine', password: 'a' },
+            { email: 'nurse@medicore.com', role: 'nurse', first: 'Jackie', last: 'Peyton', password: 'a' },
+            { email: 'lab@medicore.com', role: 'labtech', first: 'Dexter', last: 'Morgan', password: 'a' },
+            { email: 'frontdesk@medicore.com', role: 'frontdesk', first: 'Pam', last: 'Beesly', password: 'a' },
+            { email: 'pharmacy@medicore.com', role: 'pharmacist', first: 'Walter', last: 'White', password: 'a' }, // 'pharmacy_inventory' -> 'pharmacist' or keeping enum compatible? User.ts enum says 'pharmacist'.
+            { email: 'billing@medicore.com', role: 'billing', first: 'Skyler', last: 'White', password: 'a' },
+            { email: 'hr@medicore.com', role: 'hr', first: 'Toby', last: 'Flenderson', password: 'a' },
+            { email: 'finance@medicore.com', role: 'finance', first: 'Gordon', last: 'Gekko', password: 'a' },
+            { email: 'emergency@medicore.com', role: 'emergency', first: 'John', last: 'Carter', password: 'a' },
+            { email: 'maintenance@medicore.com', role: 'maintenance', first: 'Fix-It', last: 'Felix', password: 'a' },
+            { email: 'backoffice@medicore.com', role: 'backoffice', first: 'Milton', last: 'Waddams', password: 'a' },
+            { email: 'patient@medicore.com', role: 'patient', first: 'John', last: 'Doe', password: 'a' }
         ];
 
-        const hashedPassword = await bcrypt.hash('password123', 10);
+        // Hash "a" for everyone, or use individual if provided (but we are standardizing to 'a' as requested/implied)
+        const hashedPassword = await bcrypt.hash('a', 10);
 
         let doctorId = null;
 
