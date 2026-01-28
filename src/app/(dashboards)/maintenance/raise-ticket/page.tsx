@@ -2,21 +2,57 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Save, AlertCircle } from "lucide-react";
+import { Upload, Save, AlertCircle, X, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 export default function RaiseTicketPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [formData, setFormData] = useState({
         title: "",
         description: "",
         category: "Other",
         priority: "Low",
         estimatedCost: "",
+        images: [] as string[],
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.length) return;
+
+        setUploading(true);
+        const file = e.target.files[0];
+        const data = new FormData();
+        data.append("file", file);
+
+        try {
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: data,
+            });
+
+            if (!res.ok) throw new Error("Upload failed");
+
+            const { url } = await res.json();
+            setFormData(prev => ({ ...prev, images: [...prev.images, url] }));
+        } catch (error) {
+            console.error(error);
+            alert("Failed to upload attachment");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const removeAttachment = (indexToRemove: number) => {
+        setFormData(prev => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== indexToRemove)
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -126,19 +162,59 @@ export default function RaiseTicketPage() {
 
                 <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Attachments</label>
-                    <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors cursor-pointer">
-                        <Upload size={24} className="mb-2" />
-                        <span className="text-sm">Click to upload photos or documents</span>
+
+                    {/* File List */}
+                    {formData.images.length > 0 && (
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            {formData.images.map((url, idx) => (
+                                <div key={idx} className="relative group border border-slate-200 rounded-lg p-2 bg-slate-50 flex items-center gap-2">
+                                    <div className="w-10 h-10 bg-slate-200 rounded flex-shrink-0 overflow-hidden relative">
+                                        {url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                                            <Image src={url} alt="Attachment" fill className="object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-xs font-bold text-slate-500">FILE</div>
+                                        )}
+                                    </div>
+                                    <span className="text-xs text-slate-600 truncate flex-1">{url.split('/').pop()}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeAttachment(idx)}
+                                        className="p-1 hover:bg-red-100 text-slate-400 hover:text-red-500 rounded-full transition-colors"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Upload Area */}
+                    <div className="relative border-2 border-dashed border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors cursor-pointer group">
+                        <input
+                            type="file"
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                            onChange={handleFileUpload}
+                            accept="image/*,video/*,application/pdf"
+                            disabled={uploading}
+                        />
+                        {uploading ? (
+                            <Loader2 size={24} className="animate-spin text-olive-600 mb-2" />
+                        ) : (
+                            <Upload size={24} className="mb-2 group-hover:text-olive-600 transition-colors" />
+                        )}
+                        <span className="text-sm group-hover:text-olive-600 transition-colors">
+                            {uploading ? "Uploading..." : "Click to upload photos or documents"}
+                        </span>
                     </div>
-                    <p className="text-xs text-slate-400">Supported formats: JPG, PNG, PDF</p>
+                    <p className="text-xs text-slate-400">Supported formats: JPG, PNG, PDF, MP4</p>
                 </div>
 
                 <div className="pt-4 flex items-center justify-end gap-4">
                     <button type="button" onClick={() => router.back()} className="px-6 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
                     <button
                         type="submit"
-                        disabled={loading}
-                        className="px-6 py-3 bg-olive-600 text-white font-bold rounded-xl hover:bg-olive-700 transition-colors flex items-center gap-2 shadow-lg shadow-olive-600/20"
+                        disabled={loading || uploading}
+                        className="px-6 py-3 bg-olive-600 text-white font-bold rounded-xl hover:bg-olive-700 transition-colors flex items-center gap-2 shadow-lg shadow-olive-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? "Submitting..." : <><Save size={18} /> Raise Ticket</>}
                     </button>

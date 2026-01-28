@@ -65,7 +65,7 @@ const seedData = async () => {
     await User.create({ name: 'HR Manager', email: 'hr@hospital.com', password: 'password123', role: ROLES.HR });
     await User.create({ name: 'Pharmacy Manager', email: 'pharmacy@hospital.com', password: 'password123', role: ROLES.PHARMACY_INVENTORY });
 
-    console.log('Creating Patients...');
+    console.log('Creating Patients...');i
     const patients = [];
     const patientNames = ['Alice Cooper', 'Bob Marley', 'Charlie Brown', 'David Bowie', 'Elvis Presley', 'Freddie Mercury', 'George Michael', 'Harry Styles', 'Iggy Pop', 'John Lennon'];
 

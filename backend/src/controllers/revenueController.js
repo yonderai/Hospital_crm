@@ -1,5 +1,5 @@
 import Billing from '../models/Billing.js';
-import Patient from '../models/Patient.json'; // Wait, let me check the model import
+
 import PatientModel from '../models/Patient.js';
 
 // @desc    Generate a new invoice
