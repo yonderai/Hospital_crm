@@ -35,6 +35,7 @@ export interface IUser extends Document {
     lastLogin?: Date;
     mfaEnabled: boolean;
     mfaSecret?: string;
+    forcePasswordChange?: boolean;
     createdAt: Date;
     updatedAt: Date;
     // HR Fields
@@ -71,6 +72,7 @@ const UserSchema = new Schema<IUser>(
         lastLogin: { type: Date },
         mfaEnabled: { type: Boolean, default: false },
         mfaSecret: { type: String },
+        forcePasswordChange: { type: Boolean, default: false },
         // HR / Staff Extensions
         employeeId: { type: String, unique: true, sparse: true },
         mobile: { type: String },

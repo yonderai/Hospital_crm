@@ -8,6 +8,10 @@ export default async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
     // Public Paths
+    if (pathname.startsWith("/api")) {
+        console.log(`Middleware: API request to ${pathname}, method: ${req.method}`);
+    }
+
     if (
         pathname.startsWith("/_next") ||
         pathname.startsWith("/api/auth") ||

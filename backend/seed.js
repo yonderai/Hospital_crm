@@ -59,6 +59,7 @@ const seedData = async () => {
 
     // Create Finance/Admin
     await User.create({ name: 'Finance Manager', email: 'finance@hospital.com', password: 'password123', role: ROLES.REVENUE_OFFICE || 'finance' });
+    await User.create({ firstName: 'Maintenance', lastName: 'Staff', email: 'maintenance@hospital.com', password: 'a', role: 'maintenance', department: 'Maintenance', employeeId: 'maintenance' });
     await User.create({ name: 'Emergency Manager', email: 'emergency@hospital.com', password: 'emergency123', role: 'emergency' });
     await User.create({ name: 'Admin User', email: 'admin@hospital.com', password: 'password123', role: ROLES.ADMIN });
     await User.create({ name: 'HR Manager', email: 'hr@hospital.com', password: 'password123', role: ROLES.HR });

@@ -5,11 +5,12 @@ import { Activity } from "lucide-react";
 
 export default function adminexpenseoversightPage() {
     return (
-        <GenericModulePage 
+        <GenericModulePage
             title="EXPENSE OVERSIGHT"
             subtitle=" PORTAL"
             description="Access your expense-oversight management system. Real-time tracking and automated reporting active."
             icon={Activity}
+            dataEndpoint="/api/admin/expense-oversight"
         />
     );
 }

@@ -72,7 +72,7 @@ export default function AnalyticsDashboard() {
 
                 {/* KPI Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <KPIComponent title="Lifetime Revenue" value="$4.82M" change="+14.2%" up icon={DollarSign} />
+                    <KPIComponent title="Lifetime Revenue" value="₹4.82M" change="+14.2%" up icon={DollarSign} />
                     <KPIComponent title="Active Patients" value="12,405" change="+5.7%" up icon={Users} />
                     <KPIComponent title="Avg. Length of Stay" value="4.2 Days" change="-0.8%" down icon={Activity} />
                     <KPIComponent title="Clinical Efficiency" value="96.4%" change="+2.1%" up icon={Target} />
@@ -98,7 +98,7 @@ export default function AnalyticsDashboard() {
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tick={{ fontWeight: 800 }} />
-                                    <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tick={{ fontWeight: 800 }} tickFormatter={(value) => `$${value / 1000}k`} />
+                                    <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tick={{ fontWeight: 800 }} tickFormatter={(value) => `₹${value / 1000}k`} />
                                     <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontSize: '10px' }} />
                                     <Area type="monotone" dataKey="revenue" stroke="#6B8E23" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                                 </AreaChart>

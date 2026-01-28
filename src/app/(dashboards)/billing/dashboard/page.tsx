@@ -98,7 +98,7 @@ export default function BillingDashboard() {
                                 <h4 className="font-bold text-slate-800">{inv.patientId.firstName} {inv.patientId.lastName}</h4>
                                 <div className="flex justify-between items-end mt-2">
                                     <p className="text-xs text-slate-400">{new Date(inv.updatedAt).toLocaleDateString()}</p>
-                                    <p className="text-sm font-black text-emerald-600">${inv.balanceDue.toLocaleString()}</p>
+                                    <p className="text-sm font-black text-emerald-600">₹{inv.balanceDue.toLocaleString()}</p>
                                 </div>
                             </div>
                         ))}
@@ -117,7 +117,7 @@ export default function BillingDashboard() {
                             <div className="flex justify-between items-start mb-8 pb-8 border-b border-slate-100">
                                 <div>
                                     <div className="text-xs font-bold text-slate-400 uppercase mb-1">Total Due</div>
-                                    <h2 className="text-4xl font-black text-slate-900">${selectedInvoice.balanceDue.toLocaleString()}</h2>
+                                    <h2 className="text-4xl font-black text-slate-900">₹{selectedInvoice.balanceDue.toLocaleString()}</h2>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-xs font-bold text-slate-400 uppercase">Patient</div>
@@ -132,7 +132,7 @@ export default function BillingDashboard() {
                                     {selectedInvoice.items.map((item, idx) => (
                                         <div key={idx} className="flex justify-between items-center p-3 border-b border-slate-50 last:border-0">
                                             <span className="text-sm text-slate-600 font-medium">{item.description}</span>
-                                            <span className="text-sm font-bold text-slate-900">${item.total}</span>
+                                            <span className="text-sm font-bold text-slate-900">₹{item.total}</span>
                                         </div>
                                     ))}
                                 </div>

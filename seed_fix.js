@@ -8,10 +8,12 @@ async function seed() {
         console.log('Connecting to:', MONGODB_URI);
         await mongoose.connect(MONGODB_URI);
         console.log('Connected.');
+        console.log('DB Name:', mongoose.connection.db.databaseName);
 
         // Define schema
         const userSchema = new mongoose.Schema({
             email: { type: String, required: true, unique: true, index: true },
+            employeeId: { type: String },
             password: { type: String, required: true },
             role: { type: String, required: true },
             firstName: { type: String, required: true },
@@ -57,9 +59,9 @@ async function seed() {
             { email: 'pharmacy@medicore.com', role: 'pharmacist', first: 'Walter', last: 'White', password: 'a' }, // 'pharmacy_inventory' -> 'pharmacist' or keeping enum compatible? User.ts enum says 'pharmacist'.
             { email: 'billing@medicore.com', role: 'billing', first: 'Skyler', last: 'White', password: 'a' },
             { email: 'hr@medicore.com', role: 'hr', first: 'Toby', last: 'Flenderson', password: 'a' },
-            { email: 'finance@medicore.com', role: 'finance', first: 'Gordon', last: 'Gekko', password: 'a' },
-            { email: 'emergency@medicore.com', role: 'emergency', first: 'John', last: 'Carter', password: 'a' },
-            { email: 'maintenance@medicore.com', role: 'maintenance', first: 'Fix-It', last: 'Felix', password: 'a' },
+            { email: 'finance@hospital.com', role: 'finance', first: 'Gordon', last: 'Gekko', password: 'password123', employeeId: 'FIN-001' },
+            { email: 'emergency@medicore.com', role: 'emergency', first: 'John', last: 'Carter', password: 'a', employeeId: 'EMG-001' },
+            { email: 'maintenance@hospital.com', role: 'maintenance', first: 'Fix-It', last: 'Felix', password: 'a', employeeId: 'maintenance' },
             { email: 'backoffice@medicore.com', role: 'backoffice', first: 'Milton', last: 'Waddams', password: 'a' },
             { email: 'patient@medicore.com', role: 'patient', first: 'John', last: 'Doe', password: 'a' }
         ];
@@ -78,7 +80,8 @@ async function seed() {
 
             const user = await User.create({
                 email: u.email,
-                password: hashedPassword,
+                employeeId: u.employeeId,
+                password: await bcrypt.hash(u.password, 10),
                 role: u.role,
                 firstName: u.first,
                 lastName: u.last,
@@ -91,7 +94,7 @@ async function seed() {
                     canApprove: ['all']
                 }
             });
-            console.log(`${u.role} created: ${user.email}`);
+            console.log(`${u.role} created: ${user.email} (ID: ${user._id})`);
 
             if (u.role === 'doctor') doctorId = user._id;
 

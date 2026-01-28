@@ -131,10 +131,10 @@ export default function PayrollPage() {
                                                 {record.month}/{record.year}
                                             </td>
                                             <td className="px-8 py-4 text-sm font-bold text-slate-600">
-                                                ${record.baseSalary.toLocaleString()}
+                                                ₹{record.baseSalary.toLocaleString()}
                                             </td>
                                             <td className="px-8 py-4 text-sm font-black text-slate-900">
-                                                ${record.netPay.toLocaleString()}
+                                                ₹{record.netPay.toLocaleString()}
                                             </td>
                                             <td className="px-8 py-4">
                                                 <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${record.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'

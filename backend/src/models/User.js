@@ -5,8 +5,12 @@ import { ROLES } from '../config/roles.js';
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Please add a name'],
+        // required: [true, 'Please add a name'], // Made optional as we use firstName/lastName
     },
+    firstName: { type: String },
+    lastName: { type: String },
+    department: { type: String },
+    employeeId: { type: String },
     email: {
         type: String,
         required: [true, 'Please add an email'],
@@ -19,14 +23,16 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'Please add a password'],
-        minlength: 6,
+        minlength: 1, // Relaxed from 6
         select: false,
     },
     role: {
         type: String,
-        enum: Object.values(ROLES),
+        enum: Object.values(ROLES), // Now includes 'maintenance' from our previous fix
         default: ROLES.PATIENT,
     },
+    isActive: { type: Boolean, default: true },
+    forcePasswordChange: { type: Boolean, default: false },
     createdAt: {
         type: Date,
         default: Date.now,

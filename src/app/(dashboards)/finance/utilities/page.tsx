@@ -153,7 +153,7 @@ export default function UtilitiesPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Total Amount ($)</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Total Amount (₹)</label>
                                     <input
                                         type="number"
                                         className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-olive-500 transition-all"
@@ -262,7 +262,7 @@ export default function UtilitiesPage() {
                                                 {bill.consumption} <span className="text-xs text-slate-400">{bill.unit}</span>
                                             </td>
                                             <td className="px-8 py-4 text-sm font-black text-slate-900">
-                                                ${bill.amount.toLocaleString()}
+                                                ₹{bill.amount.toLocaleString()}
                                             </td>
                                             <td className="px-8 py-4">
                                                 <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${bill.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'

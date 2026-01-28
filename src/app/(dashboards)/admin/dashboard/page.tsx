@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 
 import DashboardLayout from "@/components/DashboardLayout";
 import {
@@ -34,12 +35,30 @@ const revenueData = [
 ];
 
 export default function AdminDashboard() {
-    const stats = [
-        { title: "Total Staff", value: "156", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
-        { title: "Dept. Occupancy", value: "87%", icon: TrendingUp, color: "text-olive-600", bg: "bg-olive-50" },
-        { title: "Monthly Revenue", value: "$2.4M", icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
-        { title: "Pending Approvals", value: "12", icon: AlertCircle, color: "text-red-500", bg: "bg-red-50" },
-    ];
+    const [stats, setStats] = useState([
+        { title: "Total Staff", value: "---", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
+        { title: "Dept. Occupancy", value: "---", icon: TrendingUp, color: "text-olive-600", bg: "bg-olive-50" },
+        { title: "Monthly Revenue", value: "---", icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
+        { title: "Pending Approvals", value: "---", icon: AlertCircle, color: "text-red-500", bg: "bg-red-50" },
+    ]);
+
+    useEffect(() => {
+        fetch('/api/admin/dashboard')
+            .then(res => res.json())
+            .then(data => {
+                if (data.stats) {
+                    // Map string icons back to components if needed, or just keep structure if API returns matching keys
+                    // The API returns "icon": "Users", we need to map it.
+                    const iconMap: any = { Users, TrendingUp, DollarSign, AlertCircle };
+                    const mappedStats = data.stats.map((s: any) => ({
+                        ...s,
+                        icon: iconMap[s.icon] || Users
+                    }));
+                    setStats(mappedStats);
+                }
+            })
+            .catch(err => console.error("Failed to fetch dashboard stats", err));
+    }, []);
 
     return (
         <DashboardLayout>
@@ -50,14 +69,7 @@ export default function AdminDashboard() {
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">Enterprise Ops Console</h2>
                         <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest">ADMINISTRATOR • MEDICORE GLOBAL HUB</p>
                     </div>
-                    <div className="flex gap-4">
-                        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all">
-                            System Settings
-                        </button>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all">
-                            <Plus size={16} /> Add Staff Member
-                        </button>
-                    </div>
+
                 </div>
 
                 {/* Stats Grid */}
@@ -108,7 +120,7 @@ export default function AdminDashboard() {
                                         tickLine={false}
                                         axisLine={false}
                                         tick={{ fontWeight: 800 }}
-                                        tickFormatter={(value) => `$${value}`}
+                                        tickFormatter={(value) => `₹${value}`}
                                     />
                                     <Tooltip
                                         contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontSize: '12px' }}

@@ -13,23 +13,41 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
+                console.log("Authorize called with:", credentials?.email);
                 if (!credentials?.email || !credentials?.password) {
+                    console.log("Missing credentials");
                     throw new Error("Missing email or password");
                 }
 
                 await dbConnect();
 
-                const user = await User.findOne({ email: credentials.email });
+                const user = await User.findOne({
+                    $or: [
+                        { email: credentials.email },
+                        { employeeId: credentials.email }
+                    ]
+                }).select('+password'); // Ensure password is selected
 
-                if (!user || !user.isActive) {
-                    throw new Error("No active user found with this email");
+                if (!user) {
+                    console.log("User not found for:", credentials.email);
+                    throw new Error("No active user found with this email/ID");
                 }
+
+                if (!user.isActive) {
+                    console.log("User inactive:", user.email);
+                    throw new Error("User account is inactive");
+                }
+
+                console.log("User found:", user.email, "Role:", user.role, "Hash:", user.password ? "Present" : "Missing");
 
                 const isValid = await bcrypt.compare(credentials.password, user.password);
 
                 if (!isValid) {
+                    console.log("Password invalid for:", user.email);
                     throw new Error("Invalid password");
                 }
+
+                console.log("Login successful for:", user.email);
 
                 return {
                     id: user._id.toString(),

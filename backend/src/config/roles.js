@@ -8,5 +8,7 @@ export const ROLES = {
   REVENUE_OFFICE: 'REVENUE_OFFICE',
   BACK_OFFICE_FINANCE: 'BACK_OFFICE_FINANCE',
   PATIENT: 'PATIENT',
-  HR: 'HR'
+  HR: 'HR',
+  MAINTENANCE: 'maintenance',
+  EMERGENCY: 'emergency'
 };

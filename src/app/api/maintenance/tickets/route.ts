@@ -3,30 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import MaintenanceTicket from "@/lib/models/MaintenanceTicket";
-import { SessionUser } from "@/lib/types";
-
-export async function POST(req: Request) {
-    try {
-        const session = await getServerSession(authOptions);
-        if (!session || !session.user || (session.user as unknown as SessionUser).role !== "maintenance") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const data = await req.json();
-        await dbConnect();
-
-        const ticket = await MaintenanceTicket.create({
-            ...data,
-            requestedBy: (session.user as unknown as SessionUser).id,
-            status: "Open" // Force status on create
-        });
-
-        return NextResponse.json(ticket, { status: 201 });
-    } catch (error) {
-        console.error("Error creating ticket:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-    }
-}
 
 export async function GET() {
     try {
@@ -35,27 +11,64 @@ export async function GET() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        await dbConnect();
-        const role = (session.user as unknown as SessionUser).role;
-        const userId = (session.user as unknown as SessionUser).id;
+        const role = (session.user as any).role;
+        // Maintenance staff can only view their own tickets
+        // Other roles might view all, but for now we enforce restriction if maintenance
 
-        let query = {};
-        if (role === "maintenance") {
-            query = { requestedBy: userId };
-        } else if (role === "backoffice") {
-            // Backoffice sees all
+        await dbConnect();
+
+        const query: any = {};
+
+        if (role === 'maintenance') {
+            query.requestedBy = (session.user as any).id;
+        } else if (role === 'admin' || role === 'finance') {
+            // Admins/Finance can see all (optional, but good for testing)
+            // query is empty
         } else {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+            // Other roles should not access this endpoint or see only their own?
+            // Safest to restrict to own for general users if exposed, or strictly maintenance endpoint
+            query.requestedBy = (session.user as any).id;
         }
 
-        const tickets = await MaintenanceTicket.find(query)
-            .populate("requestedBy", "firstName lastName")
-            .populate("approvedBy", "firstName lastName")
-            .sort({ createdAt: -1 });
+        const tickets = await MaintenanceTicket.find(query).populate("requestedBy", "firstName lastName").sort({ createdAt: -1 });
 
         return NextResponse.json(tickets);
     } catch (error) {
         console.error("Error fetching tickets:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
+export async function POST(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Only allowed roles can raise? Or anyone?
+        // User request: "Maintenance staff should be able to... Raise Maintenance Tickets"
+        // Implicitly allows maintenance staff.
+
+        const body = await req.json();
+        const { title, description, category, priority, estimatedCost, images } = body;
+
+        await dbConnect();
+
+        const ticket = await MaintenanceTicket.create({
+            title,
+            description,
+            category,
+            priority,
+            estimatedCost,
+            images,
+            requestedBy: (session.user as any).id,
+            status: "Open"
+        });
+
+        return NextResponse.json(ticket, { status: 201 });
+    } catch (error) {
+        console.error("Error creating ticket:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

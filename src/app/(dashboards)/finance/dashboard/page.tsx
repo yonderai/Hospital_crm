@@ -109,7 +109,7 @@ export default function FinanceDashboard() {
     const stats = [
         {
             title: "Total Ops Cost (Month)",
-            value: data ? `$${data.currentMonth.totalCost.toLocaleString()}` : "$0",
+            value: data ? `₹${data.currentMonth.totalCost.toLocaleString()}` : "₹0",
             change: "+2.5%",
             icon: DollarSign,
             color: "text-olive-700",
@@ -174,7 +174,7 @@ export default function FinanceDashboard() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Amount ($)</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Amount (₹)</label>
                                         <input
                                             type="number"
                                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-olive-500 transition-all"
@@ -260,7 +260,7 @@ export default function FinanceDashboard() {
                                 <BarChart data={trajectoryData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tick={{ fontWeight: 800 }} />
-                                    <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tick={{ fontWeight: 800 }} tickFormatter={(v) => `$${v}`} />
+                                    <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tick={{ fontWeight: 800 }} tickFormatter={(v) => `₹${v}`} />
                                     <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} />
                                     <Bar dataKey="revenue" radius={[6, 6, 0, 0]} barSize={40}>
                                         {trajectoryData.map((entry, index) => (

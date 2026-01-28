@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IMaintenanceTicket extends Document {
     title: string;
     description: string;
-    category: "Elevator" | "Plumbing" | "Electrical" | "Equipment" | "Furniture" | "Other";
+    category: "Elevator" | "Plumbing" | "Electrical" | "Equipment" | "Furniture" | "HVAC" | "Other";
     priority: "Low" | "Medium" | "High" | "Critical";
     status: "Open" | "Pending Approval" | "Approved" | "Rejected" | "In Progress" | "Completed";
     images?: string[];
@@ -27,7 +27,7 @@ const MaintenanceTicketSchema = new Schema<IMaintenanceTicket>(
         category: {
             type: String,
             required: true,
-            enum: ["Elevator", "Plumbing", "Electrical", "Equipment", "Furniture", "Other"],
+            enum: ["Elevator", "Plumbing", "Electrical", "Equipment", "Furniture", "HVAC", "Other"],
         },
         priority: {
             type: String,

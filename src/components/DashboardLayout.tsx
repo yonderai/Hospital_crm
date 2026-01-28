@@ -29,7 +29,10 @@ import {
     Ambulance,
     Siren,
     Stethoscope,
-    AlertTriangle
+    AlertTriangle,
+    ChevronLeft,
+    Building,
+    ClipboardList
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -40,6 +43,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Demo Mode Fallback: Use sessionStorage if no real session exists
     const [demoState, setDemoState] = useState<{ role: string, name: string } | null>(null);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     useEffect(() => {
         const storedRole = sessionStorage.getItem("userRole");
@@ -55,7 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Priority: Session Role -> Demo Role -> Path Role (if valid) -> Fallback
     let role = (session?.user as any)?.role || demoState?.role ||
-        (["doctor", "nurse", "admin", "frontdesk", "patient", "lab", "labtech", "pharmacy", "pharmacist", "billing", "hr"].includes(pathRole) ? pathRole : "doctor");
+        (["doctor", "nurse", "admin", "frontdesk", "patient", "labtech", "pharmacist", "billing", "hr"].includes(pathRole) ? pathRole : "doctor");
 
     // Normalize specific roles for navigation config
     if (role === 'pharmacy_inventory') role = 'pharmacist';
@@ -79,8 +83,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         finance: ["Overview", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
         patient: ["Overview", "Insurance", "Report Viewer", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
         hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
-        admin: ["Overview", "Expense Oversight", "Stock Summary", "Staff Overview", "Salary Overview", "Medical Claims", "Hospital Chain", "Analytics"], // Master Control
-        emergency: ["Overview", "Triage", "Clinical Workspace", "Ambulance", "Alerts"] // Emergency
+        admin: ["Overview", "User Management", "Staff Overview", "Departments & Services", "Stock Summary", "Billing & Payments", "Expense Oversight", "Salary Overview", "Medical Claims", "Hospital Chain", "Reports", "Analytics", "Settings"], // Master Control
+        emergency: ["Overview", "Triage", "Clinical Workspace", "Ambulance", "Alerts"], // Emergency
+        maintenance: ["Overview", "My Tickets", "Raise Ticket", "Profile"] // Maintenance Staff
     };
 
     const navigationItems = [
@@ -157,10 +162,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Hospital Chain", href: `/${urlRole}/chain-management`, icon: LayoutGrid },
         { name: "Analytics", href: `/${urlRole}/analytics`, icon: BarChart3 },
         // Emergency
-        { name: "Triage", href: `/${urlRole}/triage`, icon: Activity },
-        { name: "Clinical Workspace", href: `/${urlRole}/clinical`, icon: Stethoscope },
-        { name: "Ambulance", href: `/${urlRole}/ambulance`, icon: Ambulance },
-        { name: "Alerts", href: `/${urlRole}/alerts`, icon: AlertTriangle },
+        { name: "Triage", href: `/${role}/triage`, icon: Activity },
+        { name: "Clinical Workspace", href: `/${role}/clinical`, icon: Stethoscope },
+        { name: "Ambulance", href: `/${role}/ambulance`, icon: Ambulance },
+        { name: "Alerts", href: `/${role}/alerts`, icon: AlertTriangle },
     ];
 
     const navigation = navigationItems.filter(item =>
@@ -182,21 +187,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
         <div className="flex h-screen bg-[#F8FAFC]">
             {/* SIDEBAR (Light Olive #F5F7F0) */}
-            <aside className="w-72 bg-olive-50 p-8 flex flex-col justify-between border-r border-olive-200">
-                <div className="space-y-12">
-                    {/* Logo */}
-                    <Link href={`/${role}/dashboard`} className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-tr from-olive-600 to-olive-400 rounded-xl flex items-center justify-center">
+            <aside className={`${isCollapsed ? 'w-24 px-4' : 'w-72 px-8'} bg-olive-50 flex flex-col h-screen border-r border-olive-200 transition-all duration-300 relative`}>
+
+                {/* Collapse Toggle */}
+                <button
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className="absolute -right-3 top-12 w-6 h-6 bg-white border border-olive-200 rounded-full flex items-center justify-center text-olive-600 hover:text-olive-700 hover:bg-olive-50 shadow-sm z-50"
+                >
+                    <ChevronLeft size={14} className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Logo Section */}
+                <div className="pt-8 pb-8 shrink-0">
+                    <Link href={`/${role}/dashboard`} className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+                        <div className="w-10 h-10 bg-gradient-to-tr from-olive-600 to-olive-400 rounded-xl flex items-center justify-center shrink-0">
                             <Heart className="text-white" size={24} fill="currentColor" />
                         </div>
-                        <div>
-                            <h1 className="text-xl font-black text-olive-900 tracking-tighter uppercase leading-none">Medicore</h1>
-                            <p className="text-[8px] font-bold text-olive-600 tracking-[0.4em] uppercase mt-1">Enterprise</p>
-                        </div>
+                        {!isCollapsed && (
+                            <div className="overflow-hidden whitespace-nowrap">
+                                <h1 className="text-xl font-black text-olive-900 tracking-tighter uppercase leading-none">Medicore</h1>
+                                <p className="text-[8px] font-bold text-olive-600 tracking-[0.4em] uppercase mt-1">Enterprise</p>
+                            </div>
+                        )}
                     </Link>
+                </div>
 
-                    {/* Navigation */}
-                    <nav className="space-y-2">
+                {/* Scrollable Navigation */}
+                <div className="flex-1 overflow-y-auto min-h-0 -mx-4 px-4 space-y-2 scrollbar-thin scrollbar-thumb-olive-200 scrollbar-track-transparent">
+                    <nav className="space-y-2 pb-4">
                         {navigation.map((item) => {
                             const isActive = pathname === item.href;
                             return (
@@ -206,10 +224,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${isActive
                                         ? "bg-olive-600 text-white shadow-lg shadow-olive-600/20"
                                         : "text-slate-500 hover:text-olive-900 hover:bg-olive-100"
-                                        }`}
+                                        } ${isCollapsed ? 'justify-center' : ''}`}
+                                    title={isCollapsed ? item.name : ''}
                                 >
-                                    <item.icon size={20} className={isActive ? "text-olive-100" : "text-slate-400 group-hover:text-olive-700"} />
-                                    <span className="text-sm font-bold tracking-tight">{item.name}</span>
+                                    <item.icon size={20} className={`shrink-0 ${isActive ? "text-olive-100" : "text-slate-400 group-hover:text-olive-700"}`} />
+                                    {!isCollapsed && <span className="text-sm font-bold tracking-tight whitespace-nowrap overflow-hidden">{item.name}</span>}
                                 </Link>
                             );
                         })}
@@ -217,16 +236,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
 
                 {/* Bottom Actions - Logout Button */}
-                <div className="mt-auto pt-6 border-t border-olive-200">
+                <div className="mt-auto py-6 shrink-0 border-t border-olive-200 bg-olive-50 z-10">
                     <button
                         onClick={() => {
                             sessionStorage.clear();
                             signOut({ callbackUrl: "/login" });
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-olive-700 hover:bg-olive-100 rounded-xl transition-all group"
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-olive-700 hover:bg-olive-100 rounded-xl transition-all group ${isCollapsed ? 'justify-center' : ''}`}
+                        title={isCollapsed ? "Logout" : ''}
                     >
-                        <LogOut size={20} className="group-hover:text-olive-600" />
-                        <span className="text-sm font-bold tracking-tight">Logout</span>
+                        <LogOut size={20} className="shrink-0 group-hover:text-olive-600" />
+                        {!isCollapsed && <span className="text-sm font-bold tracking-tight">Logout</span>}
                     </button>
                 </div>
             </aside>
