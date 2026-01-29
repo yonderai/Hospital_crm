@@ -10,13 +10,14 @@ import {
     Calendar,
     ChevronRight,
     Search,
-    User,
+    User as UserIcon,
     ArrowUpRight,
     Stethoscope
 } from "lucide-react";
 
 export default function PatientClinicalPage() {
     const [stats, setStats] = useState<any[]>([]);
+    const [surgeries, setSurgeries] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -29,6 +30,21 @@ export default function PatientClinicalPage() {
             ]);
             setLoading(false);
         }, 600);
+
+        const fetchPatientData = async () => {
+            try {
+                // For demo, we assume patientId is "64b0f1a2e4b0f1a2e4b0f1a2" (John Doe)
+                const patientId = "64b0f1a2e4b0f1a2e4b0f1a2";
+                const res = await fetch(`/api/patients/${patientId}/surgery`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setSurgeries(data);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchPatientData();
     }, []);
 
     return (
@@ -91,6 +107,32 @@ export default function PatientClinicalPage() {
                                 icon={FileText}
                             />
                         </div>
+
+                        {surgeries.length > 0 && (
+                            <div className="p-8 border-t border-slate-50 bg-slate-50/10">
+                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                    <Activity size={14} /> Surgical History
+                                </h3>
+                                <div className="space-y-4">
+                                    {surgeries.map((s) => (
+                                        <div key={s._id} className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-3xl group hover:border-teal-400 transition-all">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center">
+                                                    <Activity size={18} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-black text-slate-900">{s.procedureName}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(s.scheduledDate).toLocaleDateString()} • {s.startTime}</p>
+                                                </div>
+                                            </div>
+                                            <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${s.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                {s.status}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Care Team */}
@@ -136,7 +178,7 @@ function TeamMember({ name, role, status }: any) {
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
-                    <User size={18} />
+                    <UserIcon size={18} />
                 </div>
                 <div>
                     <p className="text-sm font-bold text-white">{name}</p>

@@ -150,7 +150,7 @@ export default function LabRadiologyPage() {
                                                     {order.imagingType} - {order.bodyPart}
                                                 </h3>
                                                 <p className="text-sm font-bold text-slate-500">
-                                                    {order.patientId.firstName} {order.patientId.lastName} (MRN: {order.patientId.mrn})
+                                                    {order.patientId?.firstName} {order.patientId?.lastName} (MRN: {order.patientId?.mrn})
                                                 </p>
                                             </div>
                                         </div>
@@ -159,9 +159,9 @@ export default function LabRadiologyPage() {
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ordering Physician</p>
                                                 <p className="text-sm font-bold text-slate-900">
-                                                    Dr. {order.orderedBy.firstName} {order.orderedBy.lastName}
+                                                    Dr. {order.orderedBy?.firstName} {order.orderedBy?.lastName}
                                                 </p>
-                                                <p className="text-xs text-slate-500">{order.orderedBy.department}</p>
+                                                <p className="text-xs text-slate-500">{order.orderedBy?.department}</p>
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Order Date</p>
@@ -209,7 +209,7 @@ export default function LabRadiologyPage() {
                                 <div>
                                     <h4 className="text-3xl font-black text-slate-900">Radiology Report</h4>
                                     <p className="text-blue-600 text-sm font-bold mt-2">
-                                        {selectedOrder.imagingType} - {selectedOrder.bodyPart} | {selectedOrder.patientId.firstName} {selectedOrder.patientId.lastName}
+                                        {selectedOrder.imagingType} - {selectedOrder.bodyPart} | {selectedOrder.patientId?.firstName} {selectedOrder.patientId?.lastName}
                                     </p>
                                 </div>
                                 <button

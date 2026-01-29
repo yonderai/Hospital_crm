@@ -165,31 +165,41 @@ function TimelineView({ patientId }: { patientId: any }) {
 
 function SOAPView({ patientId }: { patientId: any }) {
     const [notes, setNotes] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setNotes([
-            {
-                date: "Oct 24, 2025",
-                provider: "Dr. House",
-                s: "Patient reports persistent mild headache for 3 days.",
-                o: "BP 130/85, Temp 98.6F. PERRLA.",
-                a: "Tension headache likely.",
-                p: "Monitor. OTC analgesics as needed. Hydration."
-            },
-            {
-                date: "Jul 10, 2025",
-                provider: "Dr. Wilson",
-                s: "Acute abdominal pain, RLQ.",
-                o: "Tenderness at McBurney's point. Rebound +.",
-                a: "Rule out Appendicitis.",
-                p: "Stat Ultrasound. CBC. NPO."
+        const fetchNotes = async () => {
+            try {
+                const res = await fetch(`/api/patients/${patientId}/consultations`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setNotes(data.map((c: any) => ({
+                        date: new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                        provider: `${c.providerId?.firstName || 'Dr.'} ${c.providerId?.lastName || 'Provider'}`,
+                        s: c.soapNotes?.subjective || "No subjective notes.",
+                        o: c.soapNotes?.objective || "No objective findings.",
+                        a: c.soapNotes?.assessment || "Assessment pending.",
+                        p: c.soapNotes?.plan || "Plan not recorded."
+                    })));
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
             }
-        ]);
+        };
+        fetchNotes();
     }, [patientId]);
+
+    if (loading) return <div className="p-8 text-center text-slate-400 italic animate-pulse">Retrieving Clinical Narratives...</div>;
 
     return (
         <div className="space-y-6">
-            {notes.map((note, i) => (
+            {notes.length === 0 ? (
+                <div className="bg-white p-12 rounded-[30px] border border-slate-100 shadow-sm text-center">
+                    <p className="text-slate-400 italic">No formal SOAP notes recorded for this patient.</p>
+                </div>
+            ) : notes.map((note, i) => (
                 <div key={i} className="bg-white p-8 rounded-[30px] border border-slate-100 shadow-sm">
                     <div className="flex justify-between items-start mb-6">
                         <div>
@@ -451,27 +461,111 @@ function LabsImagingView({ patientId }: { patientId: any }) {
 
 function ProceduresView({ patientId }: { patientId: any }) {
     const [procedures, setProcedures] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setProcedures([
-            { name: "Appendectomy", date: "Jul 11, 2025", surgeon: "Dr. Cutter", status: "Completed" }
-        ]);
+        const fetchProcedures = async () => {
+            try {
+                const res = await fetch(`/api/patients/${patientId}/surgery`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setProcedures(data);
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProcedures();
     }, [patientId]);
 
+    if (loading) return <div className="p-8 text-center text-slate-400 italic animate-pulse">Retrieving Surgical Records...</div>;
+
     return (
-        <div className="space-y-4">
-            {procedures.map((proc, i) => (
-                <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                            <Scissors size={20} />
+        <div className="space-y-6">
+            {procedures.length === 0 ? (
+                <div className="bg-white p-12 rounded-[30px] border border-slate-100 shadow-sm text-center">
+                    <p className="text-slate-400 italic font-medium uppercase tracking-[0.2em]">No surgical procedures recorded for this patient</p>
+                </div>
+            ) : procedures.map((proc, i) => (
+                <div key={i} className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm transition-all hover:shadow-md">
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-5">
+                            <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center border border-blue-100 shadow-inner">
+                                <Scissors size={24} />
+                            </div>
+                            <div>
+                                <h4 className="text-xl font-black text-slate-900 italic uppercase italic tracking-tight">{proc.procedureName}</h4>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+                                    {new Date(proc.scheduledDate).toLocaleDateString()} • Surgeon: {proc.surgeonId?.firstName} {proc.surgeonId?.lastName}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 className="font-bold text-slate-900">{proc.name}</h4>
-                            <p className="text-xs text-slate-500 font-bold uppercase tracking-wide">{proc.date} • {proc.surgeon}</p>
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border ${proc.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'
+                            }`}>{proc.status}</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Vitals Section */}
+                        <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+                            <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <Activity size={12} className="text-blue-500" /> Intra-operative Vitals
+                            </h5>
+                            {proc.vitals && Object.keys(proc.vitals).length > 0 ? (
+                                <div className="grid grid-cols-2 gap-4">
+                                    {proc.vitals.bloodPressure && (
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">BP (mmHg)</p>
+                                            <p className="text-lg font-black text-slate-800 tabular-nums">{proc.vitals.bloodPressure}</p>
+                                        </div>
+                                    )}
+                                    {proc.vitals.heartRate && (
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Heart Rate</p>
+                                            <p className="text-lg font-black text-slate-800 tabular-nums">{proc.vitals.heartRate} <span className="text-[10px] opacity-30">BPM</span></p>
+                                        </div>
+                                    )}
+                                    {proc.vitals.oxygenSaturation && (
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">SpO2</p>
+                                            <p className="text-lg font-black text-slate-800 tabular-nums">{proc.vitals.oxygenSaturation}%</p>
+                                        </div>
+                                    )}
+                                    {proc.vitals.temperature && (
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Temp</p>
+                                            <p className="text-lg font-black text-slate-800 tabular-nums">{proc.vitals.temperature}°C</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <p className="text-[10px] text-slate-400 italic">No vitals recorded during this procedure.</p>
+                            )}
+                        </div>
+
+                        {/* Medications Section */}
+                        <div className="bg-olive-50/30 p-6 rounded-3xl border border-olive-100/50">
+                            <h5 className="text-[10px] font-black text-olive-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <Pill size={12} /> Post-Op Prescriptions
+                            </h5>
+                            {proc.medications && proc.medications.length > 0 ? (
+                                <div className="space-y-4">
+                                    {proc.medications.map((med: any, idx: number) => (
+                                        <div key={idx} className="flex justify-between items-start pb-2 border-b border-olive-100/50 last:border-0 last:pb-0">
+                                            <div>
+                                                <p className="text-xs font-black text-olive-900 leading-tight tracking-tight uppercase italic">{med.drugName}</p>
+                                                <p className="text-[10px] text-olive-600 font-bold mt-0.5">{med.dosage} • {med.frequency}</p>
+                                            </div>
+                                            {med.instructions && <p className="text-[9px] text-slate-400 italic max-w-[120px] text-right">{med.instructions}</p>}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-[10px] text-olive-500/70 italic">No specific medications recorded for this case.</p>
+                            )}
                         </div>
                     </div>
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{proc.status}</span>
                 </div>
             ))}
         </div>

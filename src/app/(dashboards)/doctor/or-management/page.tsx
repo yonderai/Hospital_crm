@@ -18,59 +18,33 @@ import {
 } from "lucide-react";
 
 export default function ORDashboard() {
-    const [cases, setCases] = useState<any[]>([]);
+    const [allCases, setAllCases] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Mock data for OR Cases
-        const mockCases = [
-            {
-                _id: "OR-101",
-                patientId: { firstName: "John", lastName: "Doe", mrn: "MRN-001" },
-                procedureName: "Laparoscopic Cholecystectomy",
-                scheduledDate: new Date(),
-                startTime: "08:30 AM",
-                orRoomId: "OR-01",
-                status: "in-progress",
-                surgeonId: { firstName: "Dr. Robert", lastName: "Smith" }
-            },
-            {
-                _id: "OR-102",
-                patientId: { firstName: "Sarah", lastName: "Connor", mrn: "MRN-002" },
-                procedureName: "Total Knee Replacement",
-                scheduledDate: new Date(),
-                startTime: "10:00 AM",
-                orRoomId: "OR-02",
-                status: "scheduled",
-                surgeonId: { firstName: "Dr. Alice", lastName: "Zheng" }
-            },
-            {
-                _id: "OR-103",
-                patientId: { firstName: "Mike", lastName: "Ross", mrn: "MRN-003" },
-                procedureName: "Appendectomy",
-                scheduledDate: new Date(),
-                startTime: "11:30 AM",
-                orRoomId: "OR-01",
-                status: "scheduled",
-                surgeonId: { firstName: "Dr. Robert", lastName: "Smith" }
-            },
-            {
-                _id: "OR-104",
-                patientId: { firstName: "Emily", lastName: "Blunt", mrn: "MRN-004" },
-                procedureName: "Cataract Surgery",
-                scheduledDate: new Date(),
-                startTime: "07:00 AM",
-                orRoomId: "OR-03",
-                status: "completed",
-                surgeonId: { firstName: "Dr. David", lastName: "Lee" }
+        const fetchCases = async () => {
+            try {
+                const res = await fetch("/api/doctor/surgery");
+                if (res.ok) {
+                    const data = await res.json();
+                    setAllCases(data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch surgeries:", err);
+            } finally {
+                setLoading(false);
             }
-        ];
-
-        setTimeout(() => {
-            setCases(mockCases);
-            setLoading(false);
-        }, 800);
+        };
+        fetchCases();
     }, []);
+
+    const activeCases = allCases.filter(c => c.status === "in-progress").length;
+    const today = new Date().toISOString().split('T')[0];
+    const scheduledToday = allCases.filter(c =>
+        new Date(c.scheduledDate).toISOString().split('T')[0] === today && c.status === 'scheduled'
+    ).length;
+    const occupiedSuites = new Set(allCases.filter(c => c.status === "in-progress").map(c => c.orRoomId)).size;
+    const pendingAnalytics = allCases.filter(c => c.status === "scheduled").length;
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -107,10 +81,10 @@ export default function ORDashboard() {
                 {/* Status Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[
-                        { label: "Active Cases", val: "2", icon: Timer, color: "text-blue-600", bg: "bg-blue-50" },
-                        { label: "Scheduled Today", val: "8", icon: Calendar, color: "text-olive-600", bg: "bg-olive-50" },
-                        { label: "Suites Occupied", val: "3/5", icon: CheckCircle2, color: "text-purple-600", bg: "bg-purple-50" },
-                        { label: "Pending Analytics", val: "1", icon: AlertCircle, color: "text-orange-600", bg: "bg-orange-50" },
+                        { label: "Active Cases", val: activeCases.toString(), icon: Timer, color: "text-blue-600", bg: "bg-blue-50" },
+                        { label: "Scheduled Today", val: scheduledToday.toString(), icon: Calendar, color: "text-olive-600", bg: "bg-olive-50" },
+                        { label: "Suites Occupied", val: `${occupiedSuites}/5`, icon: CheckCircle2, color: "text-purple-600", bg: "bg-purple-50" },
+                        { label: "Pending Analytics", val: pendingAnalytics.toString(), icon: AlertCircle, color: "text-orange-600", bg: "bg-orange-50" },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-5">
                             <div className={`${stat.bg} ${stat.color} w-12 h-12 rounded-2xl flex items-center justify-center`}>
@@ -159,7 +133,21 @@ export default function ORDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {cases.map((cs) => (
+                                {allCases.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-20 text-center">
+                                            <div className="flex flex-col items-center gap-4">
+                                                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200">
+                                                    <Calendar size={32} />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm font-black text-slate-900 uppercase italic tracking-widest">no pending surgery</p>
+                                                    <p className="text-[10px] text-slate-400 font-bold uppercase">All surgical suites are currently clear</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : allCases.map((cs: any) => (
                                     <tr key={cs._id} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="px-6 py-5">
                                             <div className="flex flex-col">
@@ -173,8 +161,8 @@ export default function ORDashboard() {
                                                     <User size={18} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-slate-900">{cs.patientId.firstName} {cs.patientId.lastName}</p>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">{cs.patientId.mrn}</p>
+                                                    <p className="text-sm font-bold text-slate-900">{cs.patientId?.firstName} {cs.patientId?.lastName}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">{cs.patientId?.mrn}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -182,7 +170,9 @@ export default function ORDashboard() {
                                             <p className="text-sm font-semibold text-slate-700">{cs.procedureName}</p>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <span className="text-sm font-medium text-slate-600">{cs.surgeonId.firstName} {cs.surgeonId.lastName}</span>
+                                            <span className="text-sm font-medium text-slate-600">
+                                                {cs.surgeonId ? `${cs.surgeonId.firstName} ${cs.surgeonId.lastName}` : "TBD"}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-5">
                                             <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${getStatusColor(cs.status)}`}>

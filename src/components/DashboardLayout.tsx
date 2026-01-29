@@ -72,7 +72,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const navConfig: Record<string, string[]> = {
         doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking"],
         pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Purchase Orders"], // Unified Pharmacy & Inventory
-        labtech: ["Overview", "Pending Lab Orders", "Radiology", "Test Scheduling", "Sample Tracking", "Processing Status", "Digital Reports"], // Diagnostics Hub
+        labtech: ["Overview", "Pending Lab Orders", "Radiology", "Test Scheduling", "Sample Tracking", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
         nurse: ["Overview", "Duty Roster", "Assigned Patients", "Ward Management", "ICU Monitor", "Clinical Updates"], // Nurse Portal
         billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
@@ -93,7 +93,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "ICU Tracking", href: `/${urlRole}/icu-tracking`, icon: Activity },
         { name: "Laboratory", href: `/${urlRole}/laboratory`, icon: Microscope },
         { name: "Pharmacy", href: `/${urlRole}/pharmacy`, icon: Pill },
-        { name: "Radiology", href: `/${urlRole}/radiology`, icon: Aperture },
         // Pharmacy & Inventory
         { name: "Dispensing", href: `/${urlRole}/dispensing`, icon: Package },
         { name: "Inventory", href: `/${urlRole}/inventory`, icon: Package },
@@ -105,7 +104,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Radiology", href: `/${urlRole}/radiology`, icon: Aperture },
         { name: "Test Scheduling", href: `/${urlRole}/test-scheduling`, icon: Calendar },
         { name: "Sample Tracking", href: `/${urlRole}/sample-tracking`, icon: Activity },
-        { name: "Processing Status", href: `/${urlRole}/status`, icon: Activity },
+
         { name: "Digital Reports", href: `/${urlRole}/digital-reports`, icon: FileText },
         // Front Desk
         { name: "Registration", href: `/${urlRole}/registration`, icon: Users },

@@ -13,12 +13,19 @@ export async function GET() {
 
         await dbConnect();
 
-        const prescriptions = await Prescription.find({ status: "active" })
+        const prescriptions = await Prescription.find({
+            status: "active",
+            patientId: { $ne: null },
+            providerId: { $ne: null }
+        })
             .populate("patientId", "firstName lastName mrn")
             .populate("providerId", "firstName lastName")
             .sort({ prescribedDate: 1 });
 
-        return NextResponse.json(prescriptions);
+        // Extra client-side filter to be safe against ghost references
+        const validPrescriptions = prescriptions.filter(p => p.patientId && p.providerId);
+
+        return NextResponse.json(validPrescriptions);
 
     } catch (error) {
         console.error("Error fetching pharmacy queue:", error);

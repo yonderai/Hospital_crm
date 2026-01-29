@@ -23,7 +23,34 @@ export async function POST(req: Request) {
             status: "closed", // Auto-close for this flow
         });
 
-        // 2. Auto-Billing Trigger: Consultation Fee
+        // 2. Auto-Close Appointment & Existing Encounter if applicable
+        if (data.appointmentId) {
+            const Appointment = (await import("@/lib/models/Appointment")).default;
+            await Appointment.findByIdAndUpdate(
+                data.appointmentId,
+                { status: "completed" }
+            );
+        }
+
+        if (data.encounterId) {
+            await Encounter.findByIdAndUpdate(
+                data.encounterId,
+                { status: "closed" }
+            );
+        } else {
+            // Proactive cleanup: Close any other open encounters for this patient/provider combo
+            await Encounter.updateMany(
+                {
+                    patientId: data.patientId,
+                    providerId: session.user.id,
+                    status: "open",
+                    _id: { $ne: encounter._id }
+                },
+                { status: "closed" }
+            );
+        }
+
+        // 3. Auto-Billing Trigger: Consultation Fee
         // Check if there is an open invoice for this patient today? Or just create a new one/add to existing.
         // Simplified: Find draft invoice or create new.
 

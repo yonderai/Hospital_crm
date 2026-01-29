@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function ConsultationForm({ patientId, onSuccess }: { patientId: string; onSuccess: () => void }) {
+export default function ConsultationForm({ patientId, appointmentId, encounterId, onSuccess }: { patientId: string; appointmentId?: string; encounterId?: string; onSuccess: () => void }) {
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         chiefComplaint: "",
@@ -30,7 +30,9 @@ export default function ConsultationForm({ patientId, onSuccess }: { patientId: 
                     },
                     soapNotes: formData.soap,
                     diagnosis: formData.diagnosis.split(",").map(d => d.trim()),
-                    status: "closed"
+                    status: "closed",
+                    appointmentId,
+                    encounterId
                 })
             });
             if (res.ok) {

@@ -36,6 +36,18 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
+        // AUTO-CLEANUP: Mark past scheduled appointments as completed
+        // This ensures historical data reflects "Done" status as requested
+        const now = new Date();
+        await Appointment.updateMany(
+            {
+                ...query,
+                endTime: { $lt: now },
+                status: { $in: ["scheduled", "checked-in", "in-progress"] }
+            },
+            { $set: { status: "completed" } }
+        );
+
         // Date Filtering (YYYY-MM-DD)
         const dateParam = searchParams.get('date');
         if (dateParam) {
@@ -59,7 +71,7 @@ export async function GET(req: Request) {
 
         // Populate patient and provider details for display
         const appointments = await Appointment.find(query)
-            .populate('patientId', 'firstName lastName mrn contact')
+            .populate('patientId', 'firstName lastName mrn dob gender contact bloodType allergies chronicConditions emergencyContact insuranceInfo')
             .populate('providerId', 'firstName lastName department')
             .sort({ startTime: 1 });
 

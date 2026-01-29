@@ -27,8 +27,12 @@ export async function POST(req: Request) {
         const invoiceItems = [];
 
         for (const med of prescription.medications) {
+            // Attempt to find a matching inventory item
             const inventoryItem = await InventoryItem.findOne({
-                name: { $regex: new RegExp(med.drugName, 'i') }
+                $or: [
+                    { name: { $regex: new RegExp(`^${med.drugName}$`, 'i') } }, // Exact match
+                    { name: { $regex: new RegExp(med.drugName, 'i') } }         // Partial match
+                ]
             });
 
             if (inventoryItem) {
@@ -41,6 +45,9 @@ export async function POST(req: Request) {
                 // Deduct Stock
                 inventoryItem.quantityOnHand -= med.quantity;
                 await inventoryItem.save();
+                console.log(`Deducted ${med.quantity} of ${inventoryItem.name} from inventory.`);
+            } else {
+                console.warn(`Could not find inventory item for ${med.drugName}. Skipping auto-deduction.`);
             }
 
             const total = med.quantity * MEDICINE_PRICE_PER_UNIT;

@@ -25,9 +25,7 @@ export default function PatientQueueStatusPage() {
                     return diff > 0 && diff <= 30 && apt.status !== 'completed' && apt.status !== 'cancelled';
                 });
 
-                if (upcoming) {
-                    setAlert(upcoming);
-                }
+                setAlert(upcoming || null);
             } catch (err) {
                 console.error(err);
             } finally {

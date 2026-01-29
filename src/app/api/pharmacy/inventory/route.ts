@@ -23,7 +23,7 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || session.user?.role !== "pharmacist") {
+        if (!session || !["pharmacist", "pharmacy", "admin"].includes(session.user?.role as string)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -31,16 +31,25 @@ export async function POST(req: Request) {
         const body = await req.json();
 
         // Basic validation
-        if (!body.sku || !body.name) {
-            return NextResponse.json({ error: "SKU and Name required" }, { status: 400 });
+        if (!body.sku || !body.name || !body.unit || body.unitCost === undefined) {
+            return NextResponse.json({ error: "SKU, Name, Unit, and Unit Cost are required" }, { status: 400 });
         }
 
-        const newItem = await InventoryItem.create(body);
+        const newItem = await InventoryItem.create({
+            ...body,
+            quantityOnHand: body.quantityOnHand || 0,
+            reorderLevel: body.reorderLevel || 10,
+            isActive: true
+        });
+
         return NextResponse.json({ success: true, item: newItem });
 
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: "Error creating item" }, { status: 500 });
+    } catch (error: any) {
+        console.error("Inventory Item Creation Error:", error);
+        if (error.code === 11000) {
+            return NextResponse.json({ error: "SKU already exists" }, { status: 400 });
+        }
+        return NextResponse.json({ error: error.message || "Error creating item" }, { status: 500 });
     }
 }
 

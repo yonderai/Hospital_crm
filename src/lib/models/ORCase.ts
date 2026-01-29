@@ -9,14 +9,15 @@ export interface IORCase extends Document {
     procedureCode: string;
     procedureName: string;
     scheduledDate: Date;
-    startTime?: Date;
-    endTime?: Date;
+    startTime?: string;
+    endTime?: string;
     orRoomId: string;
     status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
     instruments: string[];
     implants: string[];
     complications?: string;
     postOpNotes?: string;
+    notes?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -30,8 +31,8 @@ const ORCaseSchema: Schema = new Schema({
     procedureCode: { type: String, required: true },
     procedureName: { type: String, required: true },
     scheduledDate: { type: Date, required: true },
-    startTime: { type: Date },
-    endTime: { type: Date },
+    startTime: { type: String },
+    endTime: { type: String },
     orRoomId: { type: String, required: true },
     status: {
         type: String,
@@ -42,6 +43,7 @@ const ORCaseSchema: Schema = new Schema({
     implants: [{ type: String }],
     complications: { type: String },
     postOpNotes: { type: String },
+    notes: { type: String },
 }, { timestamps: true });
 
 export default mongoose.models.ORCase || mongoose.model<IORCase>('ORCase', ORCaseSchema);
