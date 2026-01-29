@@ -4,7 +4,32 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import MaintenanceTicket from "@/lib/models/MaintenanceTicket";
 
-export async function GET() {
+import { SessionUser } from "@/lib/types";
+
+export async function POST(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const data = await req.json();
+        await dbConnect();
+
+        const ticket = await MaintenanceTicket.create({
+            ...data,
+            requestedBy: (session.user as unknown as SessionUser).id,
+            status: "Pending Approval" // Force status on create for finance review
+        });
+
+        return NextResponse.json(ticket, { status: 201 });
+    } catch (error) {
+        console.error("Error creating ticket:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
+export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session || !session.user) {
@@ -15,19 +40,20 @@ export async function GET() {
         // Maintenance staff can only view their own tickets
         // Other roles might view all, but for now we enforce restriction if maintenance
 
-        await dbConnect();
+        const { searchParams } = new URL(req.url);
+        const status = searchParams.get("status");
 
-        const query: any = {};
-
-        if (role === 'maintenance') {
-            query.requestedBy = (session.user as any).id;
-        } else if (role === 'admin' || role === 'finance') {
-            // Admins/Finance can see all (optional, but good for testing)
-            // query is empty
+        let query: any = {};
+        if (role === "maintenance" || role === "backoffice" || role === "finance") {
+            // Maintenance and Backoffice see all tickets
+            query = {};
         } else {
-            // Other roles should not access this endpoint or see only their own?
-            // Safest to restrict to own for general users if exposed, or strictly maintenance endpoint
-            query.requestedBy = (session.user as any).id;
+            // Others only see their own
+            query = { requestedBy: userId };
+        }
+
+        if (status) {
+            query.status = status;
         }
 
         const tickets = await MaintenanceTicket.find(query).populate("requestedBy", "firstName lastName").sort({ createdAt: -1 });
@@ -72,3 +98,5 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+
+

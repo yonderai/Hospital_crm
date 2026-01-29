@@ -30,9 +30,8 @@ import {
     Siren,
     Stethoscope,
     AlertTriangle,
-    ChevronLeft,
-    Building,
-    ClipboardList
+
+    Hammer
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -80,8 +79,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
         nurse: ["Overview", "Duty Roster", "Assigned Patients", "Ward Management", "ICU Monitor", "Clinical Updates"], // Nurse Portal
         billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
-        finance: ["Overview", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
-        patient: ["Overview", "Insurance", "Report Viewer", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
+
+        finance: ["Overview", "Ticket Approvals", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
+        patient: ["Overview", "Medical Wallet", "Report Viewer", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
         hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
         admin: ["Overview", "User Management", "Staff Overview", "Departments & Services", "Stock Summary", "Billing & Payments", "Expense Oversight", "Salary Overview", "Medical Claims", "Hospital Chain", "Reports", "Analytics", "Settings"], // Master Control
         emergency: ["Overview", "Triage", "Clinical Workspace", "Ambulance", "Alerts"], // Emergency
@@ -132,12 +132,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Split Billing", href: `/${urlRole}/split-billing`, icon: DollarSign },
         { name: "Invoices", href: `/${urlRole}/invoices`, icon: FileText },
         // Back Office / Finance
-        { name: "Procurement", href: `/${urlRole}/procurement`, icon: Package },
-        { name: "Expenses", href: `/${urlRole}/expenses`, icon: DollarSign },
-        { name: "Utilities", href: `/${urlRole}/utilities`, icon: Wind },
-        { name: "Maintenance", href: `/${urlRole}/maintenance`, icon: Wrench },
-        { name: "Assets", href: `/${urlRole}/assets`, icon: Activity },
-        { name: "Payroll", href: `/${urlRole}/payroll`, icon: Users },
+
+        { name: "Ticket Approvals", href: `/${role}/tickets`, icon: ShieldCheck },
+        { name: "Procurement", href: `/${role}/procurement`, icon: Package },
+        { name: "Expenses", href: `/${role}/expenses`, icon: DollarSign },
+        { name: "Utilities", href: `/${role}/utilities`, icon: Wind },
+        { name: "Maintenance", href: `/${role}/maintenance`, icon: Wrench },
+        { name: "Assets", href: `/${role}/assets`, icon: Activity },
+        { name: "Payroll", href: `/${role}/payroll`, icon: Users },
+
 
         // Patient Portal
         { name: "Insurance", href: `/${urlRole}/insurance`, icon: ShieldCheck },

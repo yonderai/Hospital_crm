@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "clean": "if exist .next (rd /s /q .next) && if exist node_modules\\.cache (rd /s /q node_modules\\.cache)",
     "seed": "node seed_fix.js",
     "build": "next build",
     "start": "next start",

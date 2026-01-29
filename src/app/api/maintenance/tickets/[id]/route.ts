@@ -91,15 +91,74 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         if (!ticket) {
             return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
         }
+=
+        const role = (session.user as unknown as SessionUser).role;
+        const userId = (session.user as unknown as SessionUser).id;
 
-        const role = (session.user as any).role;
-        if (role === 'maintenance' && ticket.requestedBy._id.toString() !== (session.user as any).id) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        // Access check
+        const isStaff = ["maintenance", "backoffice", "finance"].includes(role);
+
+        if (!isStaff) {
+            // Regular users can only see their own tickets
+            if (ticket.requestedBy._id.toString() !== userId) {
+                return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            }
+
         }
 
         return NextResponse.json(ticket);
     } catch (error) {
         console.error("Error fetching ticket:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await params;
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { status, action, feedback } = await req.json(); // action: "approve" | "reject"
+        await dbConnect();
+
+        const role = (session.user as unknown as SessionUser).role;
+        const userId = (session.user as unknown as SessionUser).id;
+
+        const ticket = await MaintenanceTicket.findById(id);
+        if (!ticket) {
+            return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
+        }
+
+        if (role === "backoffice" || role === "finance") {
+            if (action === "approve") {
+                ticket.status = "Approved";
+                ticket.approvedBy = userId;
+            } else if (action === "reject") {
+                ticket.status = "Rejected";
+            }
+            if (feedback) {
+                ticket.comments.push({
+                    user: userId,
+                    text: feedback,
+                    date: new Date()
+                })
+            }
+        } else if (role === "maintenance") {
+            // Maintenance can update status (e.g. In Progress, Completed)
+            if (status) ticket.status = status;
+        } else {
+            // Regular users cannot update tickets
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+
+        await ticket.save();
+        return NextResponse.json(ticket);
+
+    } catch (error) {
+        console.error("Error updating ticket:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
