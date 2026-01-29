@@ -3,11 +3,15 @@ import dbConnect from '@/lib/mongoose';
 import Appointment from '@/lib/models/Appointment';
 import Patient from '@/lib/models/Patient';
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
 export async function GET() {
     await dbConnect();
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // For demo: Use the first patient found
-    const patient = await Patient.findOne({});
+    const patient = await Patient.findOne({ "contact.email": session.user?.email });
     if (!patient) return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
 
     // Get start and end of TODAY
@@ -18,7 +22,8 @@ export async function GET() {
 
     const appointments = await Appointment.find({
         patientId: patient._id,
-        startTime: { $gte: startOfDay, $lte: endOfDay }
+        startTime: { $gte: startOfDay, $lte: endOfDay },
+        status: { $nin: ['completed', 'cancelled', 'no-show'] }
     })
         .populate('providerId', 'firstName lastName department')
         .sort({ startTime: 1 });
@@ -31,18 +36,6 @@ export async function GET() {
         status: apt.status,
         queuePosition: apt.status === 'checked-in' ? 3 : null // Mock queue position
     }));
-
-    // DEMO INJECTION: Ensure there's always an appointment 20 mins from NOW to show the alert functionality
-    const demoTime = new Date(Date.now() + 20 * 60000); // 20 mins from now
-    data.unshift({
-        id: 'DEMO-URGENT',
-        doctor: 'Dr. Emily Davis',
-        department: 'Cardiology',
-        startTime: demoTime.toISOString(),
-        status: 'scheduled',
-        queuePosition: null,
-        // isDemo Removed as it's not in the type definition
-    });
 
     return NextResponse.json({ data });
 }

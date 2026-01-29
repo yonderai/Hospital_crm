@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
     Users,
@@ -10,21 +11,44 @@ import {
     Clock,
     Thermometer,
     ClipboardList,
-    FileText
+    FileText,
+    RefreshCw
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function NurseDashboard() {
-    const stats = [
-        { title: "Patients Under Care", value: "28", icon: Users, color: "text-olive-600", bg: "bg-olive-50" },
-        { title: "Medications Due", value: "15", icon: Droplets, color: "text-olive-500", bg: "bg-olive-50" },
-        { title: "Vital Signs Pending", value: "09", icon: Activity, color: "text-olive-400", bg: "bg-olive-50/50" },
-        { title: "Tasks Completed", value: "67%", icon: CheckCircle2, color: "text-olive-600", bg: "bg-olive-50" },
-    ];
+    const { data: session } = useSession();
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-    const medicationSchedule = [
-        { name: "John Doe", room: "Ward 2-B", med: "Insulin Glargine", dose: "10 units", time: "10:00 AM" },
-        { name: "Jane Smith", room: "ICU-4", med: "Heparin", dose: "5000 units", time: "10:30 AM" },
-        { name: "Bob Marley", room: "Ward 1-A", med: "Metformin", dose: "500mg", time: "11:00 AM" },
+    const fetchDashboardData = async () => {
+        try {
+            const res = await fetch("/api/nurse/dashboard-data");
+            if (res.ok) {
+                const json = await res.json();
+                setData(json);
+            }
+        } catch (error) {
+            console.error("Error fetching nurse dashboard:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDashboardData();
+        const interval = setInterval(fetchDashboardData, 30000); // Poll every 30s
+        return () => clearInterval(interval);
+    }, []);
+
+    const nurseName = session?.user?.name || "Sarah Connor";
+    const sector = (session?.user as any)?.department || "Sector 7G";
+
+    const statsConfig = [
+        { title: "Patients Under Care", value: data?.stats?.patientsUnderCare || "0", icon: Users, color: "text-olive-600", bg: "bg-olive-50" },
+        { title: "Medications Due", value: data?.stats?.medicationsDue || "0", icon: Droplets, color: "text-olive-500", bg: "bg-olive-50" },
+        { title: "Vital Signs Pending", value: data?.stats?.vitalsPending || "0", icon: Activity, color: "text-olive-400", bg: "bg-olive-50/50" },
+        { title: "Tasks Completed", value: data?.stats?.tasksCompleted || "0%", icon: CheckCircle2, color: "text-olive-600", bg: "bg-olive-50" },
     ];
 
     return (
@@ -33,14 +57,16 @@ export default function NurseDashboard() {
                 {/* Header Section */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Nursing Station</h2>
-                        <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest">NURSE SARAH CONNOR • SECTOR 7G</p>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight italic uppercase">Nursing Station</h2>
+                        <p className="text-slate-500 text-[10px] font-black mt-1 uppercase tracking-[0.3em]">
+                            NURSE {nurseName} • {sector}
+                        </p>
                     </div>
                     <div className="flex gap-4">
-                        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all">
+                        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
                             Handover Notes
                         </button>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all">
+                        <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all active:scale-95">
                             <Plus size={16} /> New Record
                         </button>
                     </div>
@@ -48,13 +74,15 @@ export default function NurseDashboard() {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {stats.map((s, i) => (
-                        <div key={i} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-olive-400 transition-all">
+                    {statsConfig.map((s, i) => (
+                        <div key={i} className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-olive-400 transition-all">
                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{s.title}</p>
-                                <p className="text-3xl font-black text-slate-900 tracking-tighter">{s.value}</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{s.title}</p>
+                                <p className="text-4xl font-black text-slate-900 tracking-tighter">
+                                    {loading ? <span className="animate-pulse text-slate-200">...</span> : s.value}
+                                </p>
                             </div>
-                            <div className={`p-4 ${s.bg} ${s.color} rounded-2xl`}>
+                            <div className={`p-4 ${s.bg} ${s.color} rounded-2xl group-hover:scale-110 transition-transform`}>
                                 <s.icon size={24} />
                             </div>
                         </div>
@@ -64,36 +92,59 @@ export default function NurseDashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     {/* Med Schedule */}
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
-                            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Medication Schedule</h3>
-                                <Clock size={20} className="text-slate-400" />
+                        <div className="bg-white rounded-[48px] border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
+                            <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight italic uppercase">Medication Schedule</h3>
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Live Dispense Queue</p>
+                                </div>
+                                <div className="flex items-center gap-2 text-slate-400 animate-spin-slow">
+                                    <Clock size={20} />
+                                </div>
                             </div>
+
                             <div className="p-0">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
-                                            <th className="px-8 py-4">Patient / Room</th>
-                                            <th className="px-8 py-4">Medication / Dose</th>
-                                            <th className="px-8 py-4">Dispense Time</th>
-                                            <th className="px-8 py-4 text-right pr-12">Action</th>
+                                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-50">
+                                            <th className="px-10 py-6">Patient / Room</th>
+                                            <th className="px-10 py-6">Medication / Dose</th>
+                                            <th className="px-10 py-6">Dispense Time</th>
+                                            <th className="px-10 py-6 text-right pr-12">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
-                                        {medicationSchedule.map((m, idx) => (
-                                            <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-8 py-5">
-                                                    <p className="text-sm font-bold text-slate-900">{m.name}</p>
-                                                    <p className="text-[10px] text-slate-500 font-bold uppercase">{m.room}</p>
+                                        {loading ? (
+                                            <tr>
+                                                <td colSpan={4} className="px-10 py-20 text-center text-slate-300 font-bold uppercase tracking-widest text-xs">
+                                                    Fetching Patient Data...
                                                 </td>
-                                                <td className="px-8 py-5 text-xs font-bold text-olive-700">{m.med} ({m.dose})</td>
-                                                <td className="px-8 py-5">
-                                                    <span className="text-[10px] font-black bg-olive-50 text-olive-600 px-3 py-1 rounded-full uppercase tracking-widest border border-olive-100">
+                                            </tr>
+                                        ) : !data?.medicationSchedule?.length ? (
+                                            <tr>
+                                                <td colSpan={4} className="px-10 py-20 text-center text-slate-400 font-bold italic">
+                                                    No medications scheduled for the current round.
+                                                </td>
+                                            </tr>
+                                        ) : data.medicationSchedule.map((m: any, idx: number) => (
+                                            <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-10 py-6">
+                                                    <p className="text-sm font-black text-slate-900 uppercase tracking-tight group-hover:text-olive-700 transition-colors">{m.patientName}</p>
+                                                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{m.room}</p>
+                                                </td>
+                                                <td className="px-10 py-6">
+                                                    <span className="text-xs font-black text-olive-800 uppercase tracking-tighter">
+                                                        {m.medication}
+                                                    </span>
+                                                    <p className="text-[10px] text-slate-500 font-bold">Qty: {m.dose}</p>
+                                                </td>
+                                                <td className="px-10 py-6 text-xs text-slate-400">
+                                                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-slate-200">
                                                         {m.time}
                                                     </span>
                                                 </td>
-                                                <td className="px-8 py-5 text-right pr-8">
-                                                    <button className="px-4 py-2 bg-olive-100 text-olive-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-olive-200 transition-all">
+                                                <td className="px-10 py-6 text-right pr-8">
+                                                    <button className="px-5 py-2.5 bg-olive-700 text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-olive-600/10 hover:bg-olive-800 transition-all active:scale-95">
                                                         Finalize
                                                     </button>
                                                 </td>
@@ -104,34 +155,44 @@ export default function NurseDashboard() {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-[40px] border border-slate-100 p-8 shadow-sm">
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight mb-6">Patient Vitals Flow</h3>
-                            <div className="space-y-4">
-                                <VitalsControl label="SpO2 & HR Check" patient="Alice Cooper (W2-B)" status="Due Now" color="border-red-500" />
-                                <VitalsControl label="BP Monitoring" patient="Johnathan Doe (W3-A)" status="In 45m" color="border-slate-200" />
-                                <VitalsControl label="Temp Round" patient="Pediatric Unit" status="Completed" color="border-olive-500" />
+                        <div className="bg-white rounded-[48px] border border-slate-100 p-10 shadow-sm relative overflow-hidden">
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight italic uppercase mb-8">Patient Vitals Flow</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                                {(data?.vitalsFlow || []).length > 0 ? (
+                                    data.vitalsFlow.map((v: any, i: number) => (
+                                        <VitalsControl key={i} {...v} />
+                                    ))
+                                ) : (
+                                    <div className="col-span-2 text-slate-400 text-xs font-bold uppercase tracking-widest text-center py-10">
+                                        No pending vital checks.
+                                    </div>
+                                )}
                             </div>
+                            <Activity className="absolute bottom-[-10%] left-[-5%] text-slate-50/50 -rotate-12" size={240} />
                         </div>
                     </div>
 
                     {/* Sidebar: Tasks & Procedures */}
-                    <div className="space-y-8">
-                        <div className="bg-olive-900 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden">
+                    <div className="space-y-10">
+                        <div className="bg-slate-900 rounded-[48px] p-10 text-white shadow-2xl relative overflow-hidden group">
                             <div className="relative z-10 space-y-6">
-                                <h4 className="text-xl font-black tracking-tight">Wound Care Cycle</h4>
-                                <p className="text-[10px] text-olive-400 font-bold uppercase tracking-widest leading-none">Awaiting Intervention</p>
+                                <h4 className="text-2xl font-black tracking-tight italic uppercase">Nurse-X Terminal</h4>
+                                <div className="space-y-2">
+                                    <p className="text-[10px] text-olive-400 font-black uppercase tracking-[0.4em] leading-none">Status: Primary Care</p>
+                                    <div className="h-1 w-20 bg-olive-500 rounded-full" />
+                                </div>
                                 <div className="space-y-4">
-                                    <div className="flex gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
+                                    <div className="flex gap-4 p-5 bg-white/5 rounded-[24px] border border-white/10 hover:bg-white/10 transition-colors">
                                         <ClipboardList className="text-olive-400" size={20} />
-                                        <div className="text-sm font-bold">Dressings: Room 402, 404, 408</div>
+                                        <div className="text-sm font-bold uppercase tracking-tight">Active Handover Cycle</div>
                                     </div>
                                 </div>
                             </div>
-                            <Activity className="absolute bottom-[-10%] right-[-10%] text-white/5" size={200} />
+                            <Activity className="absolute bottom-[-10%] right-[-10%] text-white/5 group-hover:scale-110 transition-transform duration-700" size={200} />
                         </div>
 
-                        <div className="bg-white rounded-[40px] border border-slate-100 p-8 shadow-sm space-y-4">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Shortcuts</h4>
+                        <div className="bg-white rounded-[48px] border border-slate-100 p-10 shadow-sm space-y-4">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Protocol Shortcuts</h4>
                             <NurseAction icon={Activity} label="Record Vitals" />
                             <NurseAction icon={Droplets} label="Administer Med" />
                             <NurseAction icon={FileText} label="Clinical Note" />
@@ -146,28 +207,30 @@ export default function NurseDashboard() {
 
 function NurseAction({ icon: Icon, label }: any) {
     return (
-        <button className="w-full flex items-center gap-4 p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:border-olive-400 hover:bg-white transition-all group">
+        <button className="w-full flex items-center gap-4 p-5 bg-slate-50/50 rounded-3xl border border-slate-100 hover:border-olive-400 hover:bg-white transition-all group shadow-sm active:scale-98">
             <div className="p-3 bg-white rounded-xl text-olive-600 shadow-sm border border-slate-100 group-hover:bg-olive-600 group-hover:text-white transition-all">
                 <Icon size={18} />
             </div>
-            <span className="text-xs font-black uppercase tracking-widest text-slate-600 group-hover:text-slate-900">{label}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900">{label}</span>
         </button>
     );
 }
 
 function VitalsControl({ label, patient, status, color }: any) {
     return (
-        <div className={`p-5 rounded-3xl border bg-slate-50/30 flex items-center justify-between transition-all hover:bg-white ${color}`}>
+        <div className={`p-6 rounded-[32px] border bg-slate-50/30 flex items-center justify-between transition-all hover:bg-white shadow-sm hover:shadow-lg hover:shadow-slate-200/50 ${color}`}>
             <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400">
-                    <Activity size={18} />
+                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400">
+                    <Activity size={20} />
                 </div>
                 <div>
-                    <p className="text-sm font-bold text-slate-900">{label}</p>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{patient}</p>
+                    <p className="text-xs font-black text-slate-900 uppercase tracking-tight">{patient}</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
                 </div>
             </div>
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{status}</span>
+            <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${status === 'Due Now' ? 'bg-red-50 text-red-500' : 'bg-olive-50 text-olive-600'}`}>
+                {status}
+            </span>
         </div>
     );
 }

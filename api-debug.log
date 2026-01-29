@@ -55,3 +55,213 @@ STACK: MongoServerError: E11000 duplicate key error collection: yonder_medicare.
 [2026-01-27T14:11:44.707Z] RX API: Searching for patient with email: patient@medicore.com
 [2026-01-27T14:11:44.757Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
 [2026-01-27T14:11:44.909Z] RX API: RX API - Prescriptions found: 1
+[2026-01-28T07:53:31.377Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T07:53:31.379Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T07:53:31.426Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T07:53:31.527Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T07:53:31.529Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T07:53:31.603Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T07:53:43.802Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T07:53:43.806Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T07:53:43.851Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T07:53:43.927Z] RX API: RX API - Prescriptions found: 1
+[2026-01-28T07:53:43.995Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T07:53:43.999Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T07:53:44.036Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T07:53:44.105Z] RX API: RX API - Prescriptions found: 1
+[2026-01-28T07:53:49.925Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T07:53:49.927Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T07:53:50.309Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T07:53:50.675Z] RX API: RX API - Prescriptions found: 1
+[2026-01-28T07:53:50.887Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T07:53:50.888Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T07:53:50.949Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T07:53:51.029Z] RX API: RX API - Prescriptions found: 1
+[2026-01-28T08:09:16.165Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T08:09:16.191Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T08:09:16.232Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T08:09:16.390Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T08:09:16.391Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T08:09:16.428Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T08:09:46.685Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T08:09:46.690Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T08:09:46.736Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T08:09:46.852Z] RX API: RX API - Prescriptions found: 1
+[2026-01-28T08:09:46.960Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T08:09:46.963Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T08:09:47.000Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T08:09:47.073Z] RX API: RX API - Prescriptions found: 1
+[2026-01-28T08:31:54.111Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T08:31:54.113Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T08:31:54.145Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T08:31:54.225Z] RX API: RX API - Prescriptions found: 2
+[2026-01-28T08:31:54.298Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T08:31:54.302Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T08:31:54.342Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T08:31:54.413Z] RX API: RX API - Prescriptions found: 2
+[2026-01-28T08:32:02.132Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T08:32:02.135Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T08:32:02.175Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T08:32:02.296Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T08:32:02.298Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T08:32:02.340Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T14:35:42.713Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T14:35:42.716Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T14:35:42.820Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T14:35:43.026Z] RX API: RX API - Prescriptions found: 2
+[2026-01-28T14:35:43.080Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T14:35:43.082Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-28T14:35:43.229Z] RX API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T14:35:43.435Z] RX API: RX API - Prescriptions found: 2
+[2026-01-28T14:35:53.497Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T14:35:53.498Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T14:35:53.675Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T14:35:53.794Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T14:35:53.796Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T14:35:53.879Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T14:36:00.194Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T14:36:00.196Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T14:36:00.331Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-28T14:36:00.457Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"6978b0935d32bf9218f8c850"}
+[2026-01-28T14:36:00.459Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-28T14:36:00.504Z] REPORT API: Found patient: 6978b0935d32bf9218f8c852 (John)
+[2026-01-29T06:20:21.190Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:20:21.193Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:20:21.235Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:20:21.363Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:20:21.365Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:20:21.404Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:20:26.067Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:20:26.069Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:20:26.112Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:20:26.155Z] RX API: RX API - Prescriptions found: 0
+[2026-01-29T06:20:26.231Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:20:26.232Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:20:26.278Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:20:26.319Z] RX API: RX API - Prescriptions found: 0
+[2026-01-29T06:21:15.362Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:21:15.364Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:21:15.724Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:21:16.182Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:21:16.184Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:21:16.533Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:30:26.899Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:30:26.900Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:30:26.941Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:30:27.046Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:30:27.048Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:30:27.093Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:30:29.351Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:30:29.352Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:30:29.393Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:30:29.477Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T06:30:29.547Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:30:29.550Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:30:29.595Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:30:29.678Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T06:40:41.789Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:40:41.790Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:40:41.832Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:40:41.958Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:40:41.959Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:40:41.996Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:40:58.311Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:40:58.312Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:40:58.350Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:40:58.434Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T06:40:58.503Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:40:58.504Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:40:58.545Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:40:58.624Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T06:41:03.497Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:41:03.498Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:41:03.741Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:41:03.966Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T06:41:04.011Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:41:04.013Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:41:04.220Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:41:04.353Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T06:59:05.316Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:59:05.317Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:59:05.361Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:59:05.517Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:59:05.519Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:59:05.559Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:59:07.292Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:59:07.294Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:59:07.336Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:59:07.420Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T06:59:07.505Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:59:07.506Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:59:07.544Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:59:07.620Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T06:59:10.925Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:59:10.927Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:59:10.967Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:59:11.055Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T06:59:11.134Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T06:59:11.135Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T06:59:11.180Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T06:59:11.261Z] RX API: RX API - Prescriptions found: 1
+[2026-01-29T08:00:52.956Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:00:52.958Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:00:53.004Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:00:53.177Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:00:53.179Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:00:53.221Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:00:57.518Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:00:57.520Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:00:57.566Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:00:57.676Z] RX API: RX API - Prescriptions found: 2
+[2026-01-29T08:00:57.743Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:00:57.745Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:00:57.787Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:00:57.887Z] RX API: RX API - Prescriptions found: 2
+[2026-01-29T08:00:59.575Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:00:59.577Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:00:59.620Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:00:59.759Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:00:59.760Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:00:59.798Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:01:03.253Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:01:03.254Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:01:03.585Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:01:04.029Z] RX API: RX API - Prescriptions found: 2
+[2026-01-29T08:01:04.089Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:01:04.090Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:01:04.457Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:01:04.887Z] RX API: RX API - Prescriptions found: 2
+[2026-01-29T08:01:12.347Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:01:12.349Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:01:12.394Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:01:12.482Z] RX API: RX API - Prescriptions found: 2
+[2026-01-29T08:01:12.548Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:01:12.549Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:01:12.591Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:01:12.674Z] RX API: RX API - Prescriptions found: 2
+[2026-01-29T08:07:24.079Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:07:24.081Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:07:24.364Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:07:24.846Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:07:24.848Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:07:26.527Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:11:21.914Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:11:21.916Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:11:21.994Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:11:22.324Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:11:22.327Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:11:22.367Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:12:22.440Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:12:22.441Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:12:22.483Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:12:22.573Z] RX API: RX API - Prescriptions found: 2
+[2026-01-29T08:12:22.658Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:12:22.660Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:12:22.702Z] RX API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:12:22.784Z] RX API: RX API - Prescriptions found: 2
+[2026-01-29T08:12:25.753Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:12:25.756Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:12:25.799Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)
+[2026-01-29T08:12:25.953Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697afb329f667c22cb9d9ede"}
+[2026-01-29T08:12:25.954Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-29T08:12:25.992Z] REPORT API: Found patient: 697afb329f667c22cb9d9ee0 (John)

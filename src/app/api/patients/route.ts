@@ -58,6 +58,19 @@ export async function GET(req: Request) {
                     as: "activeEncounter"
                 }
             },
+            // Lookup if patient has any prescriptions
+            {
+                $lookup: {
+                    from: "prescriptions",
+                    localField: "_id",
+                    foreignField: "patientId",
+                    as: "prescriptions"
+                }
+            },
+            // Only show patients who have their prescription and medication done
+            {
+                $match: { "prescriptions.0": { $exists: true } }
+            },
             // Lookup recent Completed Surgery (last 7 days)
             {
                 $lookup: {

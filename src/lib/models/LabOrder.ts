@@ -24,6 +24,7 @@ export interface ILabOrder extends Document {
     }[];
     resultDate?: Date;
     reviewedBy?: mongoose.Types.ObjectId;
+    reportImages?: string[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -61,6 +62,7 @@ const LabOrderSchema = new Schema<ILabOrder>(
         ],
         resultDate: { type: Date },
         reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
+        reportImages: { type: [String], default: [] },
     },
     { timestamps: true }
 );

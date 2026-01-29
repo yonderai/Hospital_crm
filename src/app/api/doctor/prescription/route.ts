@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongoose";
 import Prescription from "@/lib/models/Prescription";
 import Invoice from "@/lib/models/Invoice";
+import Appointment from "@/lib/models/Appointment";
 
 export async function POST(req: Request) {
     try {
@@ -23,7 +24,15 @@ export async function POST(req: Request) {
             status: "active", // Maps to "Pending Dispense" logic
         });
 
-        // 2. Auto-Billing Trigger: Assessment of cost?
+        // 2. Auto-Close Appointment if applicable
+        if (data.appointmentId) {
+            await Appointment.findByIdAndUpdate(
+                data.appointmentId,
+                { status: "completed" }
+            );
+        }
+
+        // 3. Auto-Billing Trigger: Assessment of cost?
         // In a real system, cost comes from Pharmacy module after checks.
         // For this demo/requirement: "Billing system automatically... Adds pharmacy medicine cost".
         // We will add them as "Pending Charge" items to the invoice. Assumed cost for now or 0.

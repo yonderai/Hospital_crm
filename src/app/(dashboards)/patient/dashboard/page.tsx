@@ -20,14 +20,16 @@ export default function PatientDashboard() {
     const { data: session } = useSession();
     const [appointments, setAppointments] = useState<any[]>([]);
     const [billing, setBilling] = useState<any>(null);
+    const [todayAlert, setTodayAlert] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [apptRes, billRes] = await Promise.all([
+                const [apptRes, billRes, queueRes] = await Promise.all([
                     fetch('/api/appointments'),
-                    fetch('/api/patient/billing')
+                    fetch('/api/patient/billing'),
+                    fetch('/api/patient/queue')
                 ]);
 
                 if (apptRes.ok) {
@@ -38,6 +40,18 @@ export default function PatientDashboard() {
                 if (billRes.ok) {
                     const data = await billRes.json();
                     setBilling(data);
+                }
+
+                if (queueRes.ok) {
+                    const json = await queueRes.json();
+                    const queueData = json.data || [];
+                    // Find the most relevant today's appointment (upcoming)
+                    const now = new Date();
+                    const nextToday = queueData.find((a: any) => {
+                        const time = new Date(a.startTime);
+                        return time > now && a.status !== 'completed' && a.status !== 'cancelled';
+                    });
+                    setTodayAlert(nextToday || null);
                 }
             } catch (err) {
                 console.error(err);
@@ -55,6 +69,28 @@ export default function PatientDashboard() {
     return (
         <DashboardLayout>
             <div className="space-y-12 pb-20">
+                {/* ALERT SECTION */}
+                {todayAlert && (
+                    <div className="bg-red-50 border border-red-100 p-8 rounded-[40px] flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-1000">
+                        <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-[20px] flex items-center justify-center shadow-lg shadow-red-200/50">
+                                <Clock size={32} className="animate-pulse" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-red-900 uppercase italic tracking-tight">Today's Appointment Alert!</h3>
+                                <p className="text-sm font-bold text-red-600/80 mt-1 uppercase tracking-widest">
+                                    You have a {todayAlert.status} visit with <span className="font-black underline decoration-2">{todayAlert.doctor}</span> at {new Date(todayAlert.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.
+                                </p>
+                            </div>
+                        </div>
+                        <Link href="/patient/queue-status">
+                            <button className="px-8 py-4 bg-red-600 text-white rounded-[24px] font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-red-600/20 hover:scale-105 transition-all">
+                                Track Live Queue
+                            </button>
+                        </Link>
+                    </div>
+                )}
+
                 {/* Welcome Block */}
                 <div className="bg-[#0F172A] rounded-[48px] p-12 text-white relative overflow-hidden shadow-2xl">
                     <div className="relative z-10 max-w-2xl space-y-8">

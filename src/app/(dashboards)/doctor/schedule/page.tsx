@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
-    Calendar as CalendarIcon,
     Clock,
     User,
     ChevronLeft,
     ChevronRight,
     Plus,
-    Filter
+    Filter,
+    CheckCircle,
+    Pill,
+    Calendar as CalendarIcon
 } from "lucide-react";
 import Link from "next/link";
 
@@ -50,7 +52,7 @@ export default function DoctorSchedule() {
                     const durationMins = Math.round((end.getTime() - start.getTime()) / 60000);
 
                     return {
-                        id: apt.appointmentId,
+                        id: apt._id,
                         patientId: apt.patientId?._id,
                         time: start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                         period: start.getHours() < 12 ? 'AM' : 'PM',
@@ -133,6 +135,26 @@ export default function DoctorSchedule() {
                     </div>
                 </div>
 
+                {/* Stats Bar */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {[
+                        { label: 'Total Scheduled', value: appointments.length, icon: CalendarIcon, color: 'slate' },
+                        { label: 'Completed', value: appointments.filter(a => a.status === 'completed').length, icon: CheckCircle, color: 'green' },
+                        { label: 'Prescribed', value: appointments.filter(a => a.status === 'completed' && a.type === 'consultation').length, icon: Pill, color: 'olive' },
+                        { label: 'Remaining', value: appointments.filter(a => a.status !== 'completed' && a.status !== 'cancelled').length, icon: Clock, color: 'orange' },
+                    ].map((stat, i) => (
+                        <div key={i} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-4">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-${stat.color}-50 text-${stat.color}-600`}>
+                                <stat.icon size={20} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                                <p className="text-xl font-black text-slate-900">{stat.value}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
                 {/* Timeline View */}
                 <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden min-h-[600px]">
                     {loading ? (
@@ -172,7 +194,7 @@ export default function DoctorSchedule() {
                                                         <User size={24} />
                                                     </div>
                                                     <div>
-                                                        <Link href={`/doctor/patients/${item.patientId}`} className="group/name">
+                                                        <Link href={`/doctor/clinical?patientId=${item.patientId}&tab=prescription&aptId=${item.id}`} className="group/name">
                                                             <h4 className="text-sm font-black text-slate-900 tracking-tight group-hover/name:text-olive-700 transition-colors underline decoration-slate-200 underline-offset-4">{item.patientName}</h4>
                                                         </Link>
                                                         <div className="flex items-center gap-3 mt-1">
@@ -187,13 +209,18 @@ export default function DoctorSchedule() {
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${item.status === 'confirmed' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-yellow-50 text-yellow-600 border-yellow-100'
+                                                    <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${item.status === 'completed' ? 'bg-green-50 text-green-600 border-green-100' :
+                                                        item.status === 'confirmed' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                            'bg-yellow-50 text-yellow-600 border-yellow-100'
                                                         }`}>
                                                         {item.status}
                                                     </span>
-                                                    <button className="p-2 text-slate-400 hover:text-slate-900 transition-all">
+                                                    <Link
+                                                        href={`/doctor/clinical?patientId=${item.patientId}&tab=consultation&aptId=${item.id}`}
+                                                        className="p-2 text-slate-400 hover:text-slate-900 transition-all"
+                                                    >
                                                         <ChevronRight size={20} />
-                                                    </button>
+                                                    </Link>
                                                 </div>
                                             </div>
                                         </div>

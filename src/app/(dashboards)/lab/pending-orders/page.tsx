@@ -174,11 +174,11 @@ export default function PendingOrdersPage() {
                                             </div>
                                             <div>
                                                 <h3 className="text-2xl font-black text-slate-900">
-                                                    {order.patientId.firstName} {order.patientId.lastName}
+                                                    {order.patientId?.firstName} {order.patientId?.lastName}
                                                 </h3>
-                                                <p className="text-sm font-bold text-slate-500">MRN: {order.patientId.mrn}</p>
+                                                <p className="text-sm font-bold text-slate-500">MRN: {order.patientId?.mrn}</p>
                                                 <p className="text-xs font-medium text-slate-400 mt-1">
-                                                    {order.patientId.contact.phone} • {order.patientId.contact.email}
+                                                    {order.patientId?.contact?.phone} • {order.patientId?.contact?.email}
                                                 </p>
                                             </div>
                                         </div>
@@ -190,9 +190,9 @@ export default function PendingOrdersPage() {
                                                 {order.orderingProviderId ? (
                                                     <>
                                                         <p className="text-sm font-bold text-slate-900">
-                                                            Dr. {order.orderingProviderId.firstName} {order.orderingProviderId.lastName}
+                                                            Dr. {order.orderingProviderId?.firstName} {order.orderingProviderId?.lastName}
                                                         </p>
-                                                        <p className="text-xs text-slate-500">{order.orderingProviderId.department}</p>
+                                                        <p className="text-xs text-slate-500">{order.orderingProviderId?.department}</p>
                                                     </>
                                                 ) : (
                                                     <p className="text-sm font-bold text-olive-600 italic">Direct Walk-in</p>
@@ -261,7 +261,7 @@ export default function PendingOrdersPage() {
                                 <div>
                                     <h4 className="text-3xl font-black text-slate-900 tracking-tight">Submit Test Results</h4>
                                     <p className="text-olive-600 text-sm font-bold mt-2">
-                                        {selectedOrder.patientId.firstName} {selectedOrder.patientId.lastName} ({selectedOrder.patientId.mrn})
+                                        {selectedOrder.patientId?.firstName} {selectedOrder.patientId?.lastName} ({selectedOrder.patientId?.mrn})
                                     </p>
                                 </div>
                                 <button

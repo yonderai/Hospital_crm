@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Scan, Calendar, FileText, ChevronDown, ChevronUp, Clock, CheckCircle2, AlertCircle, Aperture } from "lucide-react";
+import { Scan, Calendar, FileText, ChevronDown, ChevronUp, Clock, CheckCircle2, AlertCircle, Aperture, User as UserIcon } from "lucide-react";
 
 interface RadiologyResult {
     _id: string;
@@ -99,8 +99,8 @@ export default function PatientRadiologyReportsPage() {
                                     key={result._id}
                                     onClick={() => result.report && setSelectedReport(result)}
                                     className={`bg-white rounded-[40px] p-8 border border-slate-100 transition-all ${result.report
-                                            ? 'cursor-pointer hover:shadow-2xl hover:border-blue-200 group'
-                                            : 'opacity-80'
+                                        ? 'cursor-pointer hover:shadow-2xl hover:border-blue-200 group'
+                                        : 'opacity-80'
                                         }`}
                                 >
                                     <div className="flex flex-col h-full space-y-6">
@@ -208,7 +208,7 @@ export default function PatientRadiologyReportsPage() {
                                         </div>
                                         <div className="flex items-center gap-4 px-6 py-4 bg-slate-50 rounded-2xl border border-slate-100">
                                             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-slate-200">
-                                                <User size={18} className="text-slate-400" />
+                                                <UserIcon size={18} className="text-slate-400" />
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Interpreted By</p>
