@@ -133,8 +133,8 @@ export default function SampleTrackingPage() {
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
                                 className={`px-6 py-2.5 rounded-[18px] text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterStatus === status
-                                        ? 'bg-white text-slate-900 shadow-sm'
-                                        : 'text-slate-400 hover:text-slate-600'
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-400 hover:text-slate-600'
                                     }`}
                             >
                                 {status.replace("-", " ")}
@@ -163,10 +163,10 @@ export default function SampleTrackingPage() {
                             {filteredOrders.map((order) => (
                                 <div
                                     key={order._id}
-                                    className="bg-white rounded-[32px] p-6 border border-slate-100 shadow-sm hover:border-olive-200 transition-all flex flex-col lg:flex-row lg:items-center gap-6 group"
+                                    className="bg-white rounded-[32px] p-6 border border-slate-100 shadow-sm hover:border-olive-200 transition-all flex flex-col 2xl:flex-row 2xl:items-center gap-6 group"
                                 >
                                     {/* Left: Status & ID */}
-                                    <div className="flex items-center gap-4 lg:w-48 xl:w-64">
+                                    <div className="flex items-center gap-4 2xl:w-64">
                                         <div className={`p-3 rounded-2xl ${statusColors[order.status].split(' ')[0]}`}>
                                             {order.status === 'completed' ? <CheckCircle2 size={24} className="text-emerald-500" /> :
                                                 order.status === 'cancelled' ? <AlertCircle size={24} className="text-red-500" /> :
@@ -181,14 +181,14 @@ export default function SampleTrackingPage() {
                                     </div>
 
                                     {/* Center: Patient & Provider */}
-                                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 border-l border-slate-50 lg:pl-6">
+                                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 2xl:border-l border-slate-50 2xl:pl-6 min-w-0">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
                                                 <User size={18} className="text-slate-400" />
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Accession Subject</p>
-                                                <h4 className="font-black text-slate-900">{order.patientId?.firstName} {order.patientId?.lastName}</h4>
+                                                <h4 className="font-black text-slate-900 truncate">{order.patientId?.firstName} {order.patientId?.lastName}</h4>
                                                 <p className="text-[9px] font-mono font-bold text-olive-600">{order.patientId?.mrn}</p>
                                             </div>
                                         </div>
@@ -198,7 +198,7 @@ export default function SampleTrackingPage() {
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Dispatcher</p>
-                                                <h4 className="font-black text-slate-900 italic">
+                                                <h4 className="font-black text-slate-900 italic truncate">
                                                     {order.orderSource === 'direct' ? 'Walk-in (Direct)' : `Dr. ${order.orderingProviderId?.lastName || 'Anonymous'}`}
                                                 </h4>
                                                 <p className="text-[9px] font-bold text-slate-400 uppercase">{order.orderingProviderId?.department || 'Outpatient Clinic'}</p>
@@ -207,7 +207,7 @@ export default function SampleTrackingPage() {
                                     </div>
 
                                     {/* Right: Tests & Meta */}
-                                    <div className="lg:w-72 border-l border-slate-50 lg:pl-6 flex flex-col justify-center">
+                                    <div className="2xl:w-72 2xl:border-l border-slate-50 2xl:pl-6 flex flex-col justify-center">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Requested Protocols</p>
                                         <div className="flex flex-wrap gap-2">
                                             {order.tests.map((test, i) => (
@@ -218,7 +218,7 @@ export default function SampleTrackingPage() {
                                         </div>
                                     </div>
 
-                                    <div className="lg:w-48 xl:w-56 border-l border-slate-50 lg:pl-6 flex flex-col justify-center">
+                                    <div className="2xl:w-56 2xl:border-l border-slate-50 2xl:pl-6 flex flex-col justify-center">
                                         <div className="flex items-center gap-2 mb-1">
                                             <Activity size={14} className={priorityColors[order.priority]} />
                                             <span className={`text-[10px] font-black uppercase tracking-widest ${priorityColors[order.priority]}`}>
