@@ -47,7 +47,7 @@ const pendingDispenses = [
 
 export default function PharmacyDashboard() {
     const stats = [
-        { title: "Inventory Value", value: "$84,200", change: "+4.2%", trendingUp: true, icon: Beaker, color: "text-olive-600", bg: "bg-olive-50" },
+        { title: "Inventory Value", value: "₹84,200", change: "+4.2%", trendingUp: true, icon: Beaker, color: "text-olive-600", bg: "bg-olive-50" },
         { title: "Low Stock Items", value: "14", change: "+2", trendingUp: true, icon: AlertCircle, color: "text-red-500", bg: "bg-red-50" },
         { title: "Pending Rx", value: "28", change: "-5", trendingUp: false, icon: FileText, color: "text-blue-500", bg: "bg-blue-50" },
         { title: "Active Suppliers", value: "12", change: "0", trendingUp: true, icon: Truck, color: "text-green-500", bg: "bg-green-50" },

@@ -54,9 +54,9 @@ export async function GET(req: Request) {
 
         return NextResponse.json({
             stats: [
+                { title: "Monthly Revenue", value: formatRevenue(monthlyRevenue), icon: "DollarSign", color: "text-green-500", bg: "bg-green-50" },
                 { title: "Total Staff", value: totalStaff.toString(), icon: "Users", color: "text-blue-500", bg: "bg-blue-50" },
                 { title: "Dept. Occupancy", value: `${occupancyRate}%`, icon: "TrendingUp", color: "text-olive-600", bg: "bg-olive-50" },
-                { title: "Monthly Revenue", value: formatRevenue(monthlyRevenue), icon: "DollarSign", color: "text-green-500", bg: "bg-green-50" },
                 { title: "Pending Approvals", value: totalPending.toString(), icon: "AlertCircle", color: "text-red-500", bg: "bg-red-50" },
             ]
         });

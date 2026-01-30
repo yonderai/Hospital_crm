@@ -50,8 +50,36 @@ export default function GenericModulePage({ title, subtitle, description, icon: 
         }
     }, [dataEndpoint]);
 
-    // Use fetched data or mock
-    const displayData = data;
+    // Search Filtering
+    const [searchTerm, setSearchTerm] = useState("");
+
+    // Normalize string: remove special chars, lowercase
+    const normalize = (text: any) => {
+        if (!text) return "";
+        return text.toString().toLowerCase().replace(/[^a-z0-9]/g, "");
+    };
+
+    // Filter Logic
+    const [showFilter, setShowFilter] = useState(false);
+    const [filterStatus, setFilterStatus] = useState("All");
+
+    const displayData = data.filter(item => {
+        const search = normalize(searchTerm);
+        const matchesSearch = !search || (
+            normalize(item.name).includes(search) ||
+            normalize(item.id).includes(search) ||
+            normalize(item.status).includes(search) ||
+            normalize(item.date).includes(search) ||
+            normalize(item.value).includes(search)
+        );
+
+        const matchesFilter = filterStatus === "All" || normalize(item.status) === normalize(filterStatus);
+
+        return matchesSearch && matchesFilter;
+    });
+
+    // Extract unique statuses for filter dropdown
+    const uniqueStatuses = ["All", ...Array.from(new Set(data.map(item => item.status || "Unknown")))];
 
     // Icon mapping request
     const getIcon = (iconName: string) => {
@@ -74,12 +102,6 @@ export default function GenericModulePage({ title, subtitle, description, icon: 
                     <div>
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">{title}</h2>
                         <p className="text-olive-600 text-[10px] font-black mt-1 uppercase tracking-[0.3em]">{subtitle}</p>
-                    </div>
-                    {/* ... (buttons remain same) ... */}
-                    <div className="flex gap-4">
-                        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all">
-                            Generate Report
-                        </button>
                     </div>
                 </div>
 
@@ -108,7 +130,6 @@ export default function GenericModulePage({ title, subtitle, description, icon: 
                 </div>
 
                 {/* Main Content Area */}
-                {/* Main Content Area */}
                 <div className="w-full bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
                     <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
                         <div>
@@ -121,13 +142,39 @@ export default function GenericModulePage({ title, subtitle, description, icon: 
                                 <input
                                     type="text"
                                     placeholder="Search records..."
-                                    className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-slate-500/10 w-64 transition-all"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/10 w-64 transition-all"
                                 />
                             </div>
-                            <button className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-xs flex items-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all">
-                                <Filter size={16} />
-                                <span>Filter</span>
-                            </button>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowFilter(!showFilter)}
+                                    className={`px-4 py-2.5 border rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${showFilter || filterStatus !== 'All' ? 'bg-olive-50 border-olive-200 text-olive-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                >
+                                    <Filter size={16} />
+                                    <span>{filterStatus === 'All' ? 'Filter' : filterStatus}</span>
+                                </button>
+
+                                {showFilter && (
+                                    <div className="absolute right-0 top-12 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+                                        <div className="p-2 space-y-1">
+                                            {uniqueStatuses.map(status => (
+                                                <button
+                                                    key={status}
+                                                    onClick={() => {
+                                                        setFilterStatus(status);
+                                                        setShowFilter(false);
+                                                    }}
+                                                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all ${filterStatus === status ? 'bg-olive-50 text-olive-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                                                >
+                                                    {status}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className="flex-1 overflow-x-auto">

@@ -208,9 +208,9 @@ export default function PatientInsurancePage() {
 
                             <form onSubmit={handleFileClaim} className="p-8 space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Claim Amount (USD)</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Claim Amount (INR)</label>
                                     <div className="relative">
-                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</div>
+                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</div>
                                         <input
                                             required
                                             type="number"

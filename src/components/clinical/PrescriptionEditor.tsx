@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
     Plus,
     Search,
@@ -12,11 +12,30 @@ import {
     Save,
     ChevronDown
 } from "lucide-react";
+import { medicines, Medicine } from "@/lib/data/medicines";
 
 export default function PrescriptionEditor() {
     const [meds, setMeds] = useState([
         { drugName: "Metformin", dosage: "500mg", frequency: "Twice daily", route: "Oral", duration: "30 days" }
     ]);
+
+    // Autocomplete State
+    const [suggestions, setSuggestions] = useState<{ [key: number]: Medicine[] }>({});
+    const [showSuggestions, setShowSuggestions] = useState<{ [key: number]: boolean }>({});
+    const wrapperRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+
+    useEffect(() => {
+        // Click outside listener to close suggestions
+        function handleClickOutside(event: MouseEvent) {
+            Object.keys(wrapperRefs.current).forEach((key: any) => {
+                if (wrapperRefs.current[key] && !wrapperRefs.current[key]?.contains(event.target as Node)) {
+                    setShowSuggestions(prev => ({ ...prev, [key]: false }));
+                }
+            });
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const addMed = () => {
         setMeds([...meds, { drugName: "", dosage: "", frequency: "", route: "Oral", duration: "" }]);
@@ -24,6 +43,45 @@ export default function PrescriptionEditor() {
 
     const removeMed = (index: number) => {
         setMeds(meds.filter((_, i) => i !== index));
+    };
+
+    const handleDrugChange = (index: number, value: string) => {
+        const newMeds = [...meds];
+        newMeds[index].drugName = value;
+        setMeds(newMeds);
+
+        if (value.length > 0) {
+            const filtered = medicines.filter(m =>
+                m.name.toLowerCase().includes(value.toLowerCase())
+            );
+            setSuggestions(prev => ({ ...prev, [index]: filtered }));
+            setShowSuggestions(prev => ({ ...prev, [index]: true }));
+        } else {
+            setShowSuggestions(prev => ({ ...prev, [index]: false }));
+        }
+    };
+
+    const selectMedicine = (index: number, med: Medicine) => {
+        const newMeds = [...meds];
+        newMeds[index].drugName = med.name;
+        newMeds[index].dosage = med.strength;
+
+        // Smart Route Selection
+        let route = "Oral";
+        if (med.form === "Injection") route = "Intravenous";
+        if (med.form === "Cream") route = "Topical";
+        if (med.form === "Inhaler") route = "Inhalation"; // Added support if added to select later
+
+        newMeds[index].route = route;
+
+        setMeds(newMeds);
+        setShowSuggestions(prev => ({ ...prev, [index]: false }));
+    };
+
+    const handleFieldChange = (index: number, field: string, value: string) => {
+        const newMeds: any = [...meds];
+        newMeds[index][field] = value;
+        setMeds(newMeds);
     };
 
     return (
@@ -73,38 +131,86 @@ export default function PrescriptionEditor() {
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {meds.map((med, i) => (
-                                <tr key={i} className="group">
+                                <tr key={i} className="group align-top">
                                     <td className="px-4 py-6">
                                         <div className="space-y-2">
-                                            <div className="relative">
-                                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                                <input
-                                                    value={med.drugName}
-                                                    placeholder="Search Drug Database..."
-                                                    className="w-full bg-slate-50/50 border border-slate-100 p-3 pl-10 rounded-xl text-sm font-bold outline-none focus:border-olive-600 focus:bg-white transition-all"
-                                                />
+                                            <div ref={el => { wrapperRefs.current[i] = el; }} className="relative">
+                                                <div className="relative">
+                                                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                                    <input
+                                                        value={med.drugName}
+                                                        onChange={(e) => handleDrugChange(i, e.target.value)}
+                                                        placeholder="Search Drug Database..."
+                                                        className="w-full bg-slate-50/50 border border-slate-100 p-3 pl-10 rounded-xl text-sm font-bold outline-none focus:border-olive-600 focus:bg-white transition-all"
+                                                        onFocus={() => { if (med.drugName) setShowSuggestions(prev => ({ ...prev, [i]: true })) }}
+                                                    />
+                                                </div>
+
+                                                {/* Autocomplete Dropdown */}
+                                                {showSuggestions[i] && suggestions[i] && suggestions[i].length > 0 && (
+                                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+                                                        {suggestions[i].map((suggestion) => (
+                                                            <div
+                                                                key={suggestion.id}
+                                                                onClick={() => selectMedicine(i, suggestion)}
+                                                                className="p-3 hover:bg-olive-50 cursor-pointer border-b border-slate-50 last:border-none"
+                                                            >
+                                                                <div className="font-bold text-slate-900 text-sm">{suggestion.name}</div>
+                                                                <div className="flex gap-2 text-xs text-slate-500 mt-0.5">
+                                                                    <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{suggestion.strength}</span>
+                                                                    <span>{suggestion.form}</span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                            <input value={med.dosage} placeholder="Strength (e.g. 500mg)" className="w-full bg-transparent p-1 text-[10px] font-bold text-slate-400 outline-none" />
+                                            <input
+                                                value={med.dosage}
+                                                onChange={(e) => handleFieldChange(i, "dosage", e.target.value)}
+                                                placeholder="Strength (e.g. 500mg)"
+                                                className="w-full bg-transparent p-1 text-[10px] font-bold text-slate-400 outline-none focus:text-slate-900 transition-colors"
+                                            />
                                         </div>
                                     </td>
                                     <td className="px-4 py-6">
-                                        <select className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl text-xs font-bold w-full outline-none">
-                                            <option>Twice Daily (BID)</option>
-                                            <option>Once Daily (QD)</option>
-                                            <option>Three Times (TID)</option>
-                                            <option>As Needed (PRN)</option>
+                                        <select
+                                            value={med.frequency}
+                                            onChange={(e) => handleFieldChange(i, "frequency", e.target.value)}
+                                            className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl text-xs font-bold w-full outline-none"
+                                        >
+                                            <option value="">Select Frequency</option>
+                                            <option value="Once Daily (QD)">Once Daily (QD)</option>
+                                            <option value="Twice Daily (BID)">Twice Daily (BID)</option>
+                                            <option value="Three Times (TID)">Three Times (TID)</option>
+                                            <option value="Four Times (QID)">Four Times (QID)</option>
+                                            <option value="Every 4 Hours">Every 4 Hours</option>
+                                            <option value="Every 6 Hours">Every 6 Hours</option>
+                                            <option value="As Needed (PRN)">As Needed (PRN)</option>
                                         </select>
                                     </td>
                                     <td className="px-4 py-6">
-                                        <select className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl text-xs font-bold w-full outline-none">
-                                            <option>Oral</option>
-                                            <option>Intravenous</option>
-                                            <option>Subcutaneous</option>
-                                            <option>Topical</option>
+                                        <select
+                                            value={med.route}
+                                            onChange={(e) => handleFieldChange(i, "route", e.target.value)}
+                                            className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl text-xs font-bold w-full outline-none"
+                                        >
+                                            <option value="Oral">Oral</option>
+                                            <option value="Intravenous">Intravenous</option>
+                                            <option value="Subcutaneous">Subcutaneous</option>
+                                            <option value="Intramuscular">Intramuscular</option>
+                                            <option value="Topical">Topical</option>
+                                            <option value="Inhalation">Inhalation</option>
+                                            <option value="Ophthalmic">Ophthalmic</option>
                                         </select>
                                     </td>
                                     <td className="px-4 py-6">
-                                        <input placeholder="30 days" className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl text-xs font-bold w-full outline-none" />
+                                        <input
+                                            value={med.duration}
+                                            onChange={(e) => handleFieldChange(i, "duration", e.target.value)}
+                                            placeholder="30 days"
+                                            className="bg-slate-50/50 border border-slate-100 p-3 rounded-xl text-xs font-bold w-full outline-none"
+                                        />
                                     </td>
                                     <td className="px-4 py-6 text-center">
                                         <button onClick={() => removeMed(i)} className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">

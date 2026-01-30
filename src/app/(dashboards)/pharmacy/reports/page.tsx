@@ -107,7 +107,7 @@ export default function ReportsPage() {
                             </div>
                             <div className="text-right">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue Today</p>
-                                <p className="text-3xl font-black text-slate-900 mt-1">${loading ? "..." : mockTotalRevenue.toLocaleString()}</p>
+                                <p className="text-3xl font-black text-slate-900 mt-1">₹{loading ? "..." : mockTotalRevenue.toLocaleString()}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-1 text-emerald-600 text-[10px] font-black uppercase">
@@ -128,14 +128,7 @@ export default function ReportsPage() {
                         <p className="text-[10px] font-black text-orange-500 uppercase">Immediate Action Required</p>
                     </div>
 
-                    <div className="bg-slate-900 p-8 rounded-[40px] text-white shadow-xl shadow-slate-900/20 relative overflow-hidden group">
-                        <BarChart3 className="absolute -bottom-4 -right-4 text-white/5 group-hover:scale-110 transition-transform duration-700" size={140} />
-                        <div className="relative z-10">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Uptime & Node</p>
-                            <h4 className="text-xl font-black tracking-tight uppercase italic mb-1">Sentinel-X</h4>
-                            <p className="text-[10px] font-bold text-teal-400 uppercase tracking-widest">Active & Secure</p>
-                        </div>
-                    </div>
+
                 </div>
 
                 {/* Today's Dispensed Medications */}
@@ -158,7 +151,7 @@ export default function ReportsPage() {
                                     <th className="px-10 py-6">Timestamp / Pharmacists</th>
                                     <th className="px-10 py-6">Patient Details</th>
                                     <th className="px-10 py-6">Medications Dispensed</th>
-                                    <th className="px-10 py-6 text-right">Value ($)</th>
+                                    <th className="px-10 py-6 text-right">Value (₹)</th>
                                     <th className="px-10 py-6 text-center">Status</th>
                                 </tr>
                             </thead>
@@ -209,7 +202,7 @@ export default function ReportsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-10 py-6 text-right font-mono text-sm font-black text-slate-900">
-                                                ${logTotal.toFixed(2)}
+                                                ₹{logTotal.toFixed(2)}
                                             </td>
                                             <td className="px-10 py-6 text-center">
                                                 <span className="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 uppercase tracking-widest">

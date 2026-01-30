@@ -25,10 +25,14 @@ export default function ClinicalUpdatesPage() {
     const fetchUpdates = async () => {
         try {
             // Fetch encounters from clinical API (or doctor API as it contains SOAP notes)
-            const res = await fetch("/api/doctor/consultations");
+            const res = await fetch("/api/nurse/clinical-updates");
             const data = await res.json();
 
             // Map encounters to a clinical update timeline
+            if (!Array.isArray(data)) {
+                console.error("Clinical updates data format error:", data);
+                return;
+            }
             const notes = data.map((e: any) => ({
                 id: e._id,
                 patient: `${e.patientId?.firstName} ${e.patientId?.lastName}`,

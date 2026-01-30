@@ -143,6 +143,8 @@ export default function FrontDeskDashboard() {
                     </div>
                 </div>
 
+
+
                 {/* RIGHT: QUICK ACTIONS & ALERTS (1/3) */}
                 <div className="space-y-6">
                     {/* Actions Card */}
@@ -154,6 +156,13 @@ export default function FrontDeskDashboard() {
                         <p className="text-olive-200 text-sm font-medium mb-6 relative z-10">Fast-track patient processing</p>
 
                         <div className="space-y-3 relative z-10">
+                            <Link href="/frontdesk/qr-stand" className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 p-3 rounded-xl flex items-center gap-3 transition-colors">
+                                <div className="w-8 h-8 rounded-lg bg-white text-olive-900 flex items-center justify-center shadow-lg">
+                                    <QrCode size={18} strokeWidth={3} />
+                                </div>
+                                <span className="font-bold text-sm">QR Code Stand</span>
+                            </Link>
+
                             <Link href="/frontdesk/registration" className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 p-3 rounded-xl flex items-center gap-3 transition-colors">
                                 <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
                                     <Plus size={18} strokeWidth={3} />
@@ -167,15 +176,11 @@ export default function FrontDeskDashboard() {
                                 </div>
                                 <span className="font-bold text-sm">Book Appointment</span>
                             </Link>
-
-                            <Link href="/frontdesk/check-in" className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 p-3 rounded-xl flex items-center gap-3 transition-colors">
-                                <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                                    <QrCode size={18} strokeWidth={2.5} />
-                                </div>
-                                <span className="font-bold text-sm">Detailed Check-in</span>
-                            </Link>
                         </div>
                     </div>
+
+                    {/* Recent Registrations Widget */}
+                    <RecentRegistrationsWidget />
 
                     {/* Pending Payments Widget */}
                     <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
@@ -195,16 +200,6 @@ export default function FrontDeskDashboard() {
                                     <p className="text-[10px] font-bold text-amber-600/60 uppercase">Collect</p>
                                 </div>
                             </div>
-                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center group cursor-pointer hover:border-amber-200 transition-colors">
-                                <div>
-                                    <p className="text-sm font-bold text-slate-800">Priya Sharma</p>
-                                    <p className="text-xs font-medium text-slate-400">Lab Test</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm font-black text-amber-600">₹1,200</p>
-                                    <p className="text-[10px] font-bold text-amber-600/60 uppercase">Collect</p>
-                                </div>
-                            </div>
                         </div>
                         <Link href="/frontdesk/billing" className="block w-full mt-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest border border-dashed border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-center">
                             View All Pending
@@ -212,6 +207,43 @@ export default function FrontDeskDashboard() {
                     </div>
 
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function RecentRegistrationsWidget() {
+    const [recent, setRecent] = useState<any[]>([]);
+
+    useEffect(() => {
+        fetch("/api/front-desk/recent-registrations")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) setRecent(data.recent);
+            });
+    }, []);
+
+    return (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <h3 className="font-black text-slate-900 flex items-center gap-2 mb-4">
+                <UserPlus size={20} className="text-blue-500" />
+                Latest New Patients
+            </h3>
+            <div className="space-y-3">
+                {recent.length === 0 ? <p className="text-xs text-slate-400 font-bold uppercase">No recent registrations</p> :
+                    recent.map((p: any) => (
+                        <div key={p._id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs">
+                                {p.firstName[0]}
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs font-black text-slate-900 uppercase">{p.firstName} {p.lastName}</p>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{p.mrn}</p>
+                            </div>
+                            {/* Highlight QR source */}
+                            {p.notes?.includes("QR") && <span className="text-[8px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded uppercase">QR SCAN</span>}
+                        </div>
+                    ))}
             </div>
         </div>
     );

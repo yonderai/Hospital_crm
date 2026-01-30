@@ -20,16 +20,42 @@ export default function FrontDeskBillingPage() {
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        setTimeout(() => {
-            setTransactions([
-                { id: "TX-9021", patient: "Emma Wilson", type: "Co-pay", amount: 45.00, status: "Paid", time: "10m ago" },
-                { id: "TX-9022", patient: "Marcus Thorne", type: "Service", amount: 125.00, status: "Pending", time: "25m ago" },
-                { id: "TX-9023", patient: "Sarah Miller", type: "Co-pay", amount: 45.00, status: "Paid", time: "1h ago" },
-            ]);
+    const fetchTransactions = async () => {
+        try {
+            const res = await fetch("/api/front-desk/transactions");
+            const data = await res.json();
+            if (data.transactions) {
+                setTransactions(data.transactions);
+            }
+        } catch (error) {
+            console.error("Failed to fetch transactions", error);
+        } finally {
             setLoading(false);
-        }, 600);
+        }
+    };
+
+    useEffect(() => {
+        fetchTransactions();
     }, []);
+
+    const handleCollectBalance = async (appointmentId: string) => {
+        try {
+            const res = await fetch("/api/appointments/collect-balance", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ appointmentId })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert("Balance collected successfully!");
+                fetchTransactions(); // Refresh list
+            } else {
+                alert(data.error || "Failed to collect balance");
+            }
+        } catch (error) {
+            alert("Error collecting balance");
+        }
+    };
 
     return (
         <div className="space-y-10">
@@ -50,7 +76,7 @@ export default function FrontDeskBillingPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <BillingStat label="Today's Collections" value="$4,820" detail="+12% from avg" icon={DollarSign} color="text-olive-600" bg="bg-olive-50" />
+                <BillingStat label="Today's Collections" value="₹4,820" detail="+12% from avg" icon={DollarSign} color="text-olive-600" bg="bg-olive-50" />
                 <BillingStat label="Pending Payments" value="12" detail="4 high value" icon={ClockIcon} color="text-blue-600" bg="bg-blue-50" />
                 <BillingStat label="Claims Verified" value="98%" detail="Eligibility Check" icon={ShieldCheck} color="text-teal-600" bg="bg-teal-50" />
             </div>
@@ -80,21 +106,38 @@ export default function FrontDeskBillingPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm font-black text-slate-900 tracking-tight">{tx.patient}</p>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">#{tx.id} • {tx.type}</p>
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{tx.id} • {tx.type}</p>
                                         </div>
                                     </div>
+
+                                    {/* Payment Details Column */}
+                                    <div className="text-right hidden md:block">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[10px] uppercase font-bold text-slate-400">Total: ₹{tx.totalAmount}</span>
+                                            <span className="text-[10px] uppercase font-bold text-olive-600">Pd: ₹{tx.paidAmount}</span>
+                                        </div>
+                                    </div>
+
                                     <div className="flex items-center gap-10 text-right">
                                         <div>
-                                            <p className="text-xl font-black text-slate-900 leading-none">${tx.amount.toFixed(2)}</p>
-                                            <p className="text-[9px] font-black text-slate-400 uppercase mt-1">{tx.time}</p>
+                                            <p className="text-xl font-black text-slate-900 leading-none">₹{tx.dueAmount}</p>
+                                            <p className="text-[9px] font-black text-red-500 uppercase mt-1">Pending</p>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                            <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${tx.status === 'Paid' ? 'bg-olive-50 text-olive-600 border-olive-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
+                                            <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${tx.rawStatus === 'paid' ? 'bg-olive-50 text-olive-600 border-olive-100' :
+                                                tx.rawStatus === 'partial' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                    'bg-slate-50 text-slate-400 border-slate-100'
+                                                }`}>
                                                 {tx.status}
                                             </span>
-                                            <button className="p-2.5 text-slate-300 hover:text-olive-700 transition-all">
-                                                <ChevronRight size={20} />
-                                            </button>
+                                            {tx.rawStatus === 'partial' && (
+                                                <button
+                                                    onClick={() => handleCollectBalance(tx.id)}
+                                                    className="px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold rounded-lg hover:bg-slate-800 transition-all uppercase tracking-wider"
+                                                >
+                                                    Collect Rem
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -149,7 +192,7 @@ export default function FrontDeskBillingPage() {
                 </div>
             </div>
         </div>
-        </div>
+
     );
 }
 

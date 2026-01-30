@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Calendar, Clock, CreditCard, User, ChevronRight, ChevronLeft, CheckCircle, Stethoscope } from "lucide-react";
 
 export default function AppointmentBookingWizard() {
@@ -17,11 +17,7 @@ export default function AppointmentBookingWizard() {
     const [successData, setSuccessData] = useState<any>(null);
 
     // Mock Data for UI
-    const doctors = [
-        { id: "65b2a0c8e4b0a1a1a1a1a1a1", name: "Dr. Amit Sharma", specialty: "Cardiology", fees: 800, exp: "15 years" },
-        { id: "65b2a0c8e4b0a1a1a1a1a1a2", name: "Dr. Priya Verma", specialty: "Dermatology", fees: 700, exp: "12 years" },
-        { id: "65b2a0c8e4b0a1a1a1a1a1a3", name: "Dr. Rajesh Koothrappali", specialty: "General Medicine", fees: 500, exp: "8 years" },
-    ];
+
 
     const slots = [
         "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -33,34 +29,78 @@ export default function AppointmentBookingWizard() {
     const [patientResults, setPatientResults] = useState<any[]>([]);
 
     const handleSearch = async () => {
-        // Mock Search - in real app, fetch from API
-        // For UI demo, simulate finding a patient if query is "Rajesh" or similar
-        if (!searchQuery) return;
+        if (!searchQuery || searchQuery.length < 2) return;
         setLoading(true);
         try {
-            // In production: const res = await fetch(\`/api/frontdesk/patients/search?q=\${searchQuery}\`);
-            // Simulating delay
-            setTimeout(() => {
-                setPatientResults([
-                    { _id: "pat_123", firstName: "Rajesh", lastName: "Kumar", mrn: "MRN-2025-000123", phone: "9876543210" },
-                    { _id: "pat_456", firstName: "Anita", lastName: "Sharma", mrn: "MRN-2025-000456", phone: "9123456780" }
-                ]);
-                setLoading(false);
-            }, 500);
-        } catch (e) { setLoading(false); }
+            const res = await fetch(`/api/front-desk/patients/search?q=${searchQuery}`);
+            const data = await res.json();
+            if (data.patients) setPatientResults(data.patients);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     };
+
+    // --- WALK IN LOGIC ---
+    const [isWalkIn, setIsWalkIn] = useState(false);
+    const [walkInDetails, setWalkInDetails] = useState({ firstName: "", lastName: "", age: "", gender: "male", phone: "" });
+
+    const handleQuickRegister = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/front-desk/patients/quick-register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(walkInDetails)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            setSelectedPatient(data.patient);
+            setIsWalkIn(false);
+            setStep(2); // Auto proceed
+        } catch (err: any) {
+            alert(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- FETCH DOCTORS ON LOAD ---
+    const [doctors, setDoctors] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const res = await fetch("/api/front-desk/doctors");
+                const data = await res.json();
+                if (data.doctors) setDoctors(data.doctors);
+            } catch (e) { console.error(e); }
+        };
+        fetchDoctors();
+    }, []);
 
     // --- STEP 5: FINAL SUBMISSION ---
     const handleBookAppointment = async () => {
         setLoading(true);
         try {
+            const totalAmount = selectedDoctor.fees + 100;
+            const paidAmount = totalAmount; // Full 100% payment
+            const dueAmount = 0;
+
             const payload = {
                 patientId: selectedPatient._id,
                 doctorId: selectedDoctor.id,
                 date: selectedDate,
                 timeSlot: selectedSlot,
                 ...details,
-                payment: { ...payment, amount: selectedDoctor.fees }
+                payment: {
+                    ...payment,
+                    totalAmount,
+                    paidAmount,
+                    dueAmount
+                }
             };
 
             const res = await fetch('/api/appointments/book', {
@@ -107,8 +147,12 @@ export default function AppointmentBookingWizard() {
                         <span className="font-bold text-slate-900">{successData.details.date} at {successData.details.time}</span>
                     </div>
                     <div className="flex justify-between pt-2">
+                        <span className="text-slate-500 text-sm">Payment Status</span>
+                        <span className="font-bold text-olive-600">Fully Paid</span>
+                    </div>
+                    <div className="flex justify-between">
                         <span className="text-slate-500 text-sm">Receipt</span>
-                        <span className="font-mono font-bold text-olive-600">{successData.details.receiptNo}</span>
+                        <span className="font-mono font-bold text-slate-900">{successData.details.receiptNo}</span>
                     </div>
                 </div>
 
@@ -142,38 +186,117 @@ export default function AppointmentBookingWizard() {
                 {/* STEP 1: PATIENT */}
                 {step === 1 && (
                     <div className="space-y-6">
-                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                            <User size={20} className="text-olive-500" /> Select Patient
-                        </h3>
-                        <div className="flex gap-2">
-                            <input
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                placeholder="Search by Name, MRN, or Phone..."
-                                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-olive-500"
-                            />
-                            <button onClick={handleSearch} className="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800">
-                                {loading ? "..." : <Search size={20} />}
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                <User size={20} className="text-olive-500" />
+                                {isWalkIn ? "New Walk-in Patient" : "Select Patient"}
+                            </h3>
+                            <button
+                                onClick={() => setIsWalkIn(!isWalkIn)}
+                                className="text-xs font-bold text-olive-600 uppercase tracking-widest hover:text-olive-700 underline"
+                            >
+                                {isWalkIn ? "Search Existing" : "+ New Walk-in"}
                             </button>
                         </div>
 
-                        <div className="space-y-2">
-                            {patientResults.map(p => (
-                                <div key={p._id}
-                                    onClick={() => setSelectedPatient(p)}
-                                    className={`p-4 rounded-xl border border-slate-100 cursor-pointer flex justify-between items-center hover:bg-slate-50 ${selectedPatient?._id === p._id ? 'bg-olive-50 border-olive-500 ring-1 ring-olive-500' : ''}`}
-                                >
+                        {isWalkIn ? (
+                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="font-bold text-slate-900">{p.firstName} {p.lastName}</p>
-                                        <p className="text-xs text-slate-500 font-mono">{p.mrn} • {p.phone}</p>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1">First Name</label>
+                                        <input
+                                            value={walkInDetails.firstName}
+                                            onChange={e => setWalkInDetails({ ...walkInDetails, firstName: e.target.value })}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                                            placeholder="John"
+                                        />
                                     </div>
-                                    {selectedPatient?._id === p._id && <CheckCircle size={20} className="text-olive-600" />}
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1">Last Name</label>
+                                        <input
+                                            value={walkInDetails.lastName}
+                                            onChange={e => setWalkInDetails({ ...walkInDetails, lastName: e.target.value })}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                                            placeholder="Doe"
+                                        />
+                                    </div>
                                 </div>
-                            ))}
-                            {patientResults.length === 0 && !loading && (
-                                <div className="text-center py-8 text-slate-400">Search results will appear here</div>
-                            )}
-                        </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1">Age</label>
+                                        <input
+                                            type="number"
+                                            value={walkInDetails.age}
+                                            onChange={e => setWalkInDetails({ ...walkInDetails, age: e.target.value })}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                                            placeholder="30"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1">Gender</label>
+                                        <select
+                                            value={walkInDetails.gender}
+                                            onChange={e => setWalkInDetails({ ...walkInDetails, gender: e.target.value })}
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                                        >
+                                            <option value="">Select</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 mb-1">Mobile Number</label>
+                                    <input
+                                        value={walkInDetails.phone}
+                                        onChange={e => setWalkInDetails({ ...walkInDetails, phone: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                                        placeholder="9876543210"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={handleQuickRegister}
+                                    disabled={loading || !walkInDetails.firstName || !walkInDetails.phone}
+                                    className="w-full py-3 bg-olive-600 text-white font-bold rounded-xl hover:bg-olive-700 disabled:opacity-50"
+                                >
+                                    {loading ? "Registering..." : "Register & Continue"}
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex gap-2">
+                                    <input
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        placeholder="Search by Name, MRN, or Phone..."
+                                        className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-olive-500"
+                                    />
+                                    <button onClick={handleSearch} className="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800">
+                                        {loading ? "..." : <Search size={20} />}
+                                    </button>
+                                </div>
+
+                                <div className="space-y-2">
+                                    {patientResults.map(p => (
+                                        <div key={p._id}
+                                            onClick={() => setSelectedPatient(p)}
+                                            className={`p-4 rounded-xl border border-slate-100 cursor-pointer flex justify-between items-center hover:bg-slate-50 ${selectedPatient?._id === p._id ? 'bg-olive-50 border-olive-500 ring-1 ring-olive-500' : ''}`}
+                                        >
+                                            <div>
+                                                <p className="font-bold text-slate-900">{p.firstName} {p.lastName}</p>
+                                                <p className="text-xs text-slate-500 font-mono">{p.mrn} • {p.phone}</p>
+                                            </div>
+                                            {selectedPatient?._id === p._id && <CheckCircle size={20} className="text-olive-600" />}
+                                        </div>
+                                    ))}
+                                    {patientResults.length === 0 && !loading && (
+                                        <div className="text-center py-8 text-slate-400">Search results will appear here</div>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 
@@ -286,9 +409,21 @@ export default function AppointmentBookingWizard() {
                                 <span className="text-slate-500">Registration Fee</span>
                                 <span className="font-bold text-slate-900">₹100</span>
                             </div>
-                            <div className="flex justify-between text-lg font-black border-t border-slate-200 pt-2 mt-2">
-                                <span className="text-slate-900">Total</span>
-                                <span className="text-olive-600">₹{selectedDoctor?.fees + 100}</span>
+                            <div className="flex justify-between text-sm border-t border-slate-200 pt-2 mt-2">
+                                <span className="text-slate-900 font-bold">Total Amount</span>
+                                <span className="text-slate-900 font-bold">₹{selectedDoctor?.fees + 100}</span>
+                            </div>
+
+                            {/* Full Payment Calculation */}
+                            <div className="bg-olive-50 p-3 rounded-lg border border-olive-100 mt-2">
+                                <div className="flex justify-between text-sm mb-1">
+                                    <span className="text-olive-700 font-bold">Amount Payable Now (100%)</span>
+                                    <span className="font-black text-olive-700">₹{selectedDoctor?.fees + 100}</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                    <span className="text-slate-500 font-medium">Balance Due</span>
+                                    <span className="font-bold text-slate-500">₹0</span>
+                                </div>
                             </div>
                         </div>
 

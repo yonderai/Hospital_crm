@@ -202,15 +202,15 @@ export default function ResearchDashboard() {
                         <div className="mt-8 space-y-4">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="font-bold text-slate-600">NIH Grant R01</span>
-                                <span className="font-black text-slate-900">$2.4M</span>
+                                <span className="font-black text-slate-900">₹2.4M</span>
                             </div>
                             <div className="flex justify-between items-center text-sm border-t border-slate-50 pt-4">
                                 <span className="font-bold text-slate-600">Pharma Sponsored</span>
-                                <span className="font-black text-slate-900">$1.8M</span>
+                                <span className="font-black text-slate-900">₹1.8M</span>
                             </div>
                             <div className="mt-8 pt-8 border-t border-slate-100 flex items-center justify-between">
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Active Grants</span>
-                                <span className="text-lg font-black text-slate-900">$4.2M</span>
+                                <span className="text-lg font-black text-slate-900">₹4.2M</span>
                             </div>
                         </div>
                     </div>

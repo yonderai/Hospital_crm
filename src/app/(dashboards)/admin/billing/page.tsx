@@ -46,9 +46,9 @@ const recentInvoices = [
 
 export default function BillingDashboard() {
     const stats = [
-        { title: "Total Revenue", value: "$124,500", change: "+12.5%", trendingUp: true, icon: DollarSign, color: "text-olive-600", bg: "bg-olive-50" },
+        { title: "Total Revenue", value: "₹124,500", change: "+12.5%", trendingUp: true, icon: DollarSign, color: "text-olive-600", bg: "bg-olive-50" },
         { title: "Pending Claims", value: "42", change: "-3", trendingUp: false, icon: FileText, color: "text-blue-500", bg: "bg-blue-50" },
-        { title: "Unpaid Invoices", value: "$18,200", change: "+5.2%", trendingUp: true, icon: AlertCircle, color: "text-red-500", bg: "bg-red-50" },
+        { title: "Unpaid Invoices", value: "₹18,200", change: "+5.2%", trendingUp: true, icon: AlertCircle, color: "text-red-500", bg: "bg-red-50" },
         { title: "Collection Rate", value: "94%", change: "+1.2%", trendingUp: true, icon: CheckCircle2, color: "text-green-500", bg: "bg-green-50" },
     ];
 
@@ -123,7 +123,7 @@ export default function BillingDashboard() {
                                         tickLine={false}
                                         axisLine={false}
                                         tick={{ fontWeight: 800 }}
-                                        tickFormatter={(value) => `$${value}`}
+                                        tickFormatter={(value) => `₹${value}`}
                                     />
                                     <Tooltip
                                         cursor={{ fill: '#f8fafc' }}
@@ -149,11 +149,11 @@ export default function BillingDashboard() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-white/5 p-4 rounded-3xl border border-white/10">
                                             <p className="text-[9px] text-slate-400 font-bold uppercase mb-1">Cleared</p>
-                                            <p className="text-xl font-black text-white">$45.2K</p>
+                                            <p className="text-xl font-black text-white">₹45.2K</p>
                                         </div>
                                         <div className="bg-white/5 p-4 rounded-3xl border border-white/10">
                                             <p className="text-[9px] text-slate-400 font-bold uppercase mb-1">Processing</p>
-                                            <p className="text-xl font-black text-white text-teal-400">$8.9K</p>
+                                            <p className="text-xl font-black text-white text-teal-400">₹8.9K</p>
                                         </div>
                                     </div>
 
@@ -217,7 +217,7 @@ export default function BillingDashboard() {
                                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{inv.date}</span>
                                         </td>
                                         <td className="px-10 py-6">
-                                            <span className="text-sm font-black text-slate-900">${inv.amount.toFixed(2)}</span>
+                                            <span className="text-sm font-black text-slate-900">₹{inv.amount.toFixed(2)}</span>
                                         </td>
                                         <td className="px-10 py-6">
                                             <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest border border-blue-100">

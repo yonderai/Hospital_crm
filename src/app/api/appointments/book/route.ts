@@ -50,7 +50,10 @@ export async function POST(req: Request) {
         let receiptNo = undefined;
         let paymentStatus = "pending";
         if (payment && payment.method) {
-            paymentStatus = "paid"; // Auto-confirm for simulation
+            if (payment && payment.method) {
+                paymentStatus = "paid"; // Flag to trigger receipt generation
+                receiptNo = `RCP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(5, '0')}`;
+            }
             receiptNo = `RCP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(5, '0')}`;
         }
 
@@ -67,9 +70,11 @@ export async function POST(req: Request) {
             chiefComplaint: chiefComplaint,
             notes: body.notes,
             payment: {
-                amount: payment?.amount || 0,
+                totalAmount: payment?.totalAmount || 0,
+                paidAmount: payment?.paidAmount || 0,
+                dueAmount: payment?.dueAmount || 0,
                 method: payment?.method || "cash",
-                status: paymentStatus,
+                status: "paid", // Always paid for this flow
                 receiptNo: receiptNo
             },
             createdBy: "staff"

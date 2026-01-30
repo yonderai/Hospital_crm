@@ -23,7 +23,7 @@ export default async function middleware(req: NextRequest) {
     }
 
     // Public Paths whitelist
-    const publicPaths = ["/register", "/api/public"];
+    const publicPaths = ["/register", "/api/public", "/check-in", "/api/patients/self-register"];
     if (publicPaths.some(path => pathname.startsWith(path))) {
         return NextResponse.next();
     }
@@ -96,7 +96,7 @@ function getDashboardUrl(role: string) {
         case 'finance': return '/finance/dashboard';
         case 'emergency': return '/emergency/dashboard';
         case 'maintenance': return '/maintenance/dashboard';
-        case 'backoffice': return '/backoffice/dashboard';
+
         default: return '/login';
     }
 }
@@ -117,7 +117,7 @@ function isAccessAllowed(role: string, path: string) {
     if (role === 'finance' && path.startsWith('/finance')) return true;
     if (role === 'emergency' && path.startsWith('/emergency')) return true;
     if (role === 'maintenance' && path.startsWith('/maintenance')) return true;
-    if (role === 'backoffice' && path.startsWith('/backoffice')) return true;
+
 
     return false;
 }

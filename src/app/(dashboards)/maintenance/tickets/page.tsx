@@ -15,14 +15,17 @@ function MaintenanceTicketsContent() {
 
     useEffect(() => {
         setLoading(true);
+        // Maintenance API now automatically filters for "Approved" tickets on the server side
         const url = statusFilter
-            ? `/api/maintenance/tickets?status=${encodeURIComponent(statusFilter)}`
-            : "/api/maintenance/tickets";
+            ? `/api/tickets?status=${encodeURIComponent(statusFilter)}`
+            : "/api/tickets";
 
         fetch(url)
             .then((res) => res.json())
             .then((data) => {
+                // Ensure we handle potential errors or empty states
                 if (Array.isArray(data)) setTickets(data);
+                else setTickets([]);
                 setLoading(false);
             })
             .catch((err) => {
@@ -33,12 +36,11 @@ function MaintenanceTicketsContent() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case "Open": return "bg-blue-100 text-blue-700";
-            case "Pending Approval": return "bg-yellow-100 text-yellow-700";
+            case "Pending": return "bg-yellow-100 text-yellow-700";
             case "Approved": return "bg-purple-100 text-purple-700";
             case "In Progress": return "bg-orange-100 text-orange-700";
-            case "Completed": return "bg-green-100 text-green-700";
-            case "Rejected": return "bg-red-100 text-red-700";
+            case "Resolved": return "bg-green-100 text-green-700";
+            case "Denied": return "bg-red-100 text-red-700";
             default: return "bg-slate-100 text-slate-700";
         }
     };
@@ -49,12 +51,13 @@ function MaintenanceTicketsContent() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900">
-                            {statusFilter ? `${statusFilter} Tickets` : "My Tickets"}
+                            Maintenance Work Orders
                         </h1>
                         <p className="text-sm text-slate-500">
-                            {statusFilter ? `Viewing filtered list` : "Track and manage your maintenance requests"}
+                            Viewing assigned jobs (Approved Tickets)
                         </p>
                     </div>
+                    {/* Note: Raise Ticket currently points to legacy page. Ideally should be updated too. */}
                     <Link href="/maintenance/raise-ticket" className="px-4 py-2 bg-olive-600 text-white rounded-xl hover:bg-olive-700 transition-colors flex items-center gap-2 font-medium">
                         <Plus size={18} /> Raise Ticket
                     </Link>
@@ -70,9 +73,6 @@ function MaintenanceTicketsContent() {
                             className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-500/20 focus:border-olive-500"
                         />
                     </div>
-                    <button className="px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 flex items-center gap-2">
-                        <Filter size={18} /> Filter
-                    </button>
                 </div>
 
                 {/* List */}
@@ -80,25 +80,23 @@ function MaintenanceTicketsContent() {
                     <table className="w-full">
                         <thead className="bg-slate-50 border-b border-slate-100">
                             <tr>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Ticket ID</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Issue</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Ticket</th>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Category</th>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Priority</th>
                                 <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Created</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Requested By</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {loading ? (
-                                <tr><td colSpan={6} className="text-center py-8 text-slate-500">Loading tickets...</td></tr>
+                                <tr><td colSpan={6} className="text-center py-8 text-slate-500">Loading work orders...</td></tr>
                             ) : tickets.length === 0 ? (
-                                <tr><td colSpan={6} className="text-center py-8 text-slate-500">No tickets found. Raise a new one to get started.</td></tr>
+                                <tr><td colSpan={6} className="text-center py-8 text-slate-500">No approved work orders found.</td></tr>
                             ) : (
                                 tickets.map((ticket) => (
                                     <tr key={ticket._id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 text-sm font-medium text-slate-900">#{ticket._id.slice(-6).toUpperCase()}</td>
                                         <td className="px-6 py-4 text-sm text-slate-600">
-                                            <div className="font-medium text-slate-900">{ticket.title}</div>
+                                            <div className="font-bold text-slate-900">{ticket.title}</div>
                                             <div className="text-xs text-slate-400 truncate max-w-[200px]">{ticket.description}</div>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-slate-600">{ticket.category}</td>
@@ -115,7 +113,7 @@ function MaintenanceTicketsContent() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-slate-500">
-                                            {new Date(ticket.createdAt).toLocaleDateString()}
+                                            {ticket.requestedBy?.firstName} {ticket.requestedBy?.lastName}
                                         </td>
                                     </tr>
                                 ))

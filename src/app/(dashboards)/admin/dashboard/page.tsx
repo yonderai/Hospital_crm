@@ -36,9 +36,9 @@ const revenueData = [
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState([
+        { title: "Monthly Revenue", value: "---", icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
         { title: "Total Staff", value: "---", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
         { title: "Dept. Occupancy", value: "---", icon: TrendingUp, color: "text-olive-600", bg: "bg-olive-50" },
-        { title: "Monthly Revenue", value: "---", icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
         { title: "Pending Approvals", value: "---", icon: AlertCircle, color: "text-red-500", bg: "bg-red-50" },
     ]);
 
@@ -153,9 +153,10 @@ export default function AdminDashboard() {
                                 <div className="space-y-3">
                                     <p className="text-sm font-bold">Network Nodes Secure</p>
                                     <div className="flex gap-2">
-                                        {Array.from({ length: 12 }).map((_, i) => (
+                                        {/* Fixed heights for hydration stability */}
+                                        {[40, 70, 30, 85, 55, 90, 25, 60, 45, 80, 50, 75].map((h, i) => (
                                             <div key={i} className="w-1.5 h-6 bg-teal-500/20 rounded-full flex items-end">
-                                                <div className="w-full bg-teal-400 rounded-full" style={{ height: `${Math.random() * 100}%` }}></div>
+                                                <div className="w-full bg-teal-400 rounded-full" style={{ height: `${h}%` }}></div>
                                             </div>
                                         ))}
                                     </div>

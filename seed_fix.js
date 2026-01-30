@@ -1,11 +1,14 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const MONGODB_URI = "mongodb+srv://yuvrajsingh02608_db_user:yuvrajsingh@yondermedicareai.b6dwyv5.mongodb.net/yonder_medicare?retryWrites=true&w=majority";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 async function seed() {
     try {
-        console.log('Connecting to:', MONGODB_URI);
+        if (!MONGODB_URI) {
+            throw new Error("MONGODB_URI is not defined in environment variables.");
+        }
+        console.log('Connecting to MongoDB...');
         await mongoose.connect(MONGODB_URI);
         console.log('Connected.');
         console.log('DB Name:', mongoose.connection.db.databaseName);
@@ -56,13 +59,12 @@ async function seed() {
             { email: 'nurse@medicore.com', role: 'nurse', first: 'Jackie', last: 'Peyton', password: 'a' },
             { email: 'lab@medicore.com', role: 'labtech', first: 'Dexter', last: 'Morgan', password: 'a' },
             { email: 'frontdesk@medicore.com', role: 'frontdesk', first: 'Pam', last: 'Beesly', password: 'a' },
-            { email: 'pharmacy@medicore.com', role: 'pharmacist', first: 'Walter', last: 'White', password: 'a' }, // 'pharmacy_inventory' -> 'pharmacist' or keeping enum compatible? User.ts enum says 'pharmacist'.
+            { email: 'pharmacy@medicore.com', role: 'pharmacist', first: 'Walter', last: 'White', password: 'a' },
             { email: 'billing@medicore.com', role: 'billing', first: 'Skyler', last: 'White', password: 'a' },
             { email: 'hr@medicore.com', role: 'hr', first: 'Toby', last: 'Flenderson', password: 'a' },
-            { email: 'finance@hospital.com', role: 'finance', first: 'Gordon', last: 'Gekko', password: 'password123', employeeId: 'FIN-001' },
+            { email: 'finance@medicore.com', role: 'finance', first: 'Gordon', last: 'Gekko', password: 'a', employeeId: 'FIN-001' },
             { email: 'emergency@medicore.com', role: 'emergency', first: 'John', last: 'Carter', password: 'a', employeeId: 'EMG-001' },
-            { email: 'maintenance@hospital.com', role: 'maintenance', first: 'Fix-It', last: 'Felix', password: 'a', employeeId: 'maintenance' },
-            { email: 'backoffice@medicore.com', role: 'backoffice', first: 'Milton', last: 'Waddams', password: 'a' },
+            { email: 'maintenance@medicore.com', role: 'maintenance', first: 'Fix-It', last: 'Felix', password: 'a', employeeId: 'MNT-001' },
             { email: 'patient@medicore.com', role: 'patient', first: 'John', last: 'Doe', password: 'a' }
         ];
 

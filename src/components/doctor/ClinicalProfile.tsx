@@ -8,7 +8,7 @@ import SurgeryOrderForm from "./SurgeryOrderForm";
 import {
     User, Activity, FileText, FlaskConical, Pill,
     History, Clock, CheckCircle2, AlertCircle, Calendar, Stethoscope,
-    ChevronRight, ExternalLink, ZoomIn
+    ChevronRight, ExternalLink, ZoomIn, Scissors, Scan
 } from "lucide-react";
 import ReportModal from "./ReportModal";
 
@@ -105,14 +105,14 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
             )}
 
             {/* Tabs */}
-            <div className="flex border-b border-slate-200 bg-white px-8">
+            <div className="flex border-b border-slate-200 bg-white px-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
                 {[
                     { id: 'overview', label: 'Overview', icon: History },
                     { id: 'consultation', label: 'Consultation', icon: FileText },
                     { id: 'prescription', label: 'Prescription', icon: Pill },
                     { id: 'labs', label: 'Lab Orders', icon: FlaskConical },
-                    { id: 'radiology', label: 'Radiology', icon: Activity },
-                    { id: 'surgery', label: 'Surgery', icon: Activity },
+                    { id: 'radiology', label: 'Radiology', icon: Scan },
+                    { id: 'surgery', label: 'Surgery', icon: Scissors },
                 ].map(tab => (
                     <button
                         key={tab.id}

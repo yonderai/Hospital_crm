@@ -148,6 +148,6 @@ export default function FrontDeskSchedulePage() {
                 </div>
             </div>
         </div>
-        </div>
+
     );
 }

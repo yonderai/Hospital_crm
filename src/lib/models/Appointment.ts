@@ -13,9 +13,11 @@ export interface IAppointment extends Document {
     chiefComplaint?: string; // New field
     notes?: string;
     payment?: {
-        amount: number;
+        totalAmount: number;
+        paidAmount: number;
+        dueAmount: number;
         method: "cash" | "card" | "upi" | "insurance";
-        status: "pending" | "paid" | "failed";
+        status: "pending" | "partial" | "paid" | "failed";
         transactionId?: string;
         receiptNo?: string;
     };
@@ -46,9 +48,11 @@ const AppointmentSchema = new Schema<IAppointment>(
         chiefComplaint: { type: String },
         notes: { type: String },
         payment: {
-            amount: { type: Number },
+            totalAmount: { type: Number },
+            paidAmount: { type: Number },
+            dueAmount: { type: Number },
             method: { type: String, enum: ["cash", "card", "upi", "insurance"] },
-            status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
+            status: { type: String, enum: ["pending", "partial", "paid", "failed"], default: "pending" },
             transactionId: { type: String },
             receiptNo: { type: String }
         },

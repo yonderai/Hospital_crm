@@ -89,7 +89,7 @@ export default function ProcurementPage() {
                                         {po.items.length} items ({po.items[0]?.itemId?.name}...)
                                     </td>
                                     <td className="p-6 text-right font-bold text-slate-900">
-                                        ${po.totalAmount.toLocaleString()}
+                                        ₹{po.totalAmount.toLocaleString()}
                                     </td>
                                     <td className="p-6 text-center">
                                         <div className="flex flex-col items-center gap-2">

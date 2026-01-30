@@ -97,7 +97,7 @@ export default function PharmacyOverview() {
 
                 <div className="grid grid-cols-4 gap-6 mb-12">
                     {cards.map((card, idx) => (
-                        <div key={idx} className={`p-6 rounded-3xl border ${card.border} ${card.bg} flex flex-col justify-between h-48 transition-all hover:scale-[1.02] hover:shadow-xl`}>
+                        <Link href={card.link} key={idx} className={`block p-6 rounded-3xl border ${card.border} ${card.bg} flex flex-col justify-between h-48 transition-all hover:scale-[1.02] hover:shadow-xl group`}>
                             <div className="flex justify-between items-start">
                                 <div className={`p-3 rounded-2xl bg-white shadow-sm ${card.color}`}>
                                     <card.icon size={24} />
@@ -106,11 +106,11 @@ export default function PharmacyOverview() {
                             </div>
                             <div>
                                 <h3 className="font-bold text-slate-700 mb-1">{card.title}</h3>
-                                <Link href={card.link} className={`text-xs font-bold uppercase tracking-widest flex items-center gap-1 opacity-60 hover:opacity-100 ${card.color}`}>
-                                    {card.label} <ArrowRight size={12} />
-                                </Link>
+                                <div className={`text-xs font-bold uppercase tracking-widest flex items-center gap-1 opacity-60 group-hover:opacity-100 ${card.color}`}>
+                                    {card.label} <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                                </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
 

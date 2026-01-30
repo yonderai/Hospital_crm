@@ -1,33 +1,29 @@
-import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongoose';
-import Appointment from '@/lib/models/Appointment';
-import User from '@/lib/models/User';
-import Patient from '@/lib/models/Patient';
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import dbConnect from "@/lib/mongoose";
+import Encounter from "@/lib/models/Encounter";
 
-export async function GET() {
-    await dbConnect();
+export async function GET(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session || !["nurse", "admin", "doctor"].includes(session.user?.role)) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
-    // Fetch recent completed appointments as "Clinical Updates"
-    const appointments = await Appointment.find({ status: { $in: ['completed', 'checked-in'] } })
-        .limit(20)
-        .sort({ updatedAt: -1 })
-        .populate('patientId', 'firstName lastName')
-        .populate('providerId', 'firstName lastName');
+        await dbConnect();
 
-    const data = appointments.map((apt: any) => ({
-        id: apt.appointmentId || 'N/A',
-        name: apt.reason || 'Consultation',
-        status: apt.status.charAt(0).toUpperCase() + apt.status.slice(1),
-        date: new Date(apt.updatedAt || apt.startTime).toLocaleDateString(),
-        value: apt.patientId ? `${apt.patientId.firstName} ${apt.patientId.lastName}` : 'Unknown' // Showing Patient Name in 'Value' col
-    }));
+        // Fetch recent encounters for the clinical feed
+        // Populate patient details and provider details
+        const encounters = await Encounter.find({})
+            .populate('patientId', 'firstName lastName')
+            .populate('providerId', 'firstName lastName')
+            .sort({ createdAt: -1 })
+            .limit(50);
 
-    return NextResponse.json({
-        data,
-        stats: [
-            { label: "New Updates", value: appointments.length.toString(), change: "+12%", icon: "Activity", color: "text-olive-600", bg: "bg-olive-50" },
-            { label: "Pending Review", value: "5", change: "-2", icon: "FileText", color: "text-orange-600", bg: "bg-orange-50" },
-            { label: "Protocols Updated", value: "3", change: "0%", icon: "LayoutGrid", color: "text-blue-600", bg: "bg-blue-50" },
-        ]
-    });
+        return NextResponse.json(encounters);
+    } catch (error) {
+        console.error("Fetch nurse clinical updates error:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
 }

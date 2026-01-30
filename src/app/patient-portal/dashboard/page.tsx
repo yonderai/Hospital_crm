@@ -53,7 +53,7 @@ export default function PatientPortal() {
                     <div className="relative z-10 grid grid-cols-2 gap-4 w-96">
                         <PortalStat title="Next Vitals" value="Today" sub="Jan 22" />
                         <PortalStat title="Messages" value="03" sub="Unread" />
-                        <PortalStat title="Bills Due" value="$42" sub="Pay now" />
+                        <PortalStat title="Bills Due" value="₹42" sub="Pay now" />
                         <PortalStat title="Labs" value="Ready" sub="View results" />
                     </div>
                     {/* Background Decor */}
@@ -121,11 +121,11 @@ export default function PatientPortal() {
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-olive-500">Current Balance</span>
-                                    <span className="font-bold text-olive-900">$425.00</span>
+                                    <span className="font-bold text-olive-900">₹425.00</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-olive-500">Upcoming Deductible</span>
-                                    <span className="font-bold text-olive-900">$1,200.00</span>
+                                    <span className="font-bold text-olive-900">₹1,200.00</span>
                                 </div>
                             </div>
                             <button className="w-full bg-olive-900 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-olive-950 transition-all">Make a Payment</button>

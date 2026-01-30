@@ -74,7 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Role-based navigation mapping - Strictly separated as per requirements
     const navConfig: Record<string, string[]> = {
-        doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking"],
+        doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking", "Support"],
         pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Purchase Orders"], // Unified Pharmacy & Inventory
         labtech: ["Overview", "Pending Lab Orders", "Radiology", "Test Scheduling", "Sample Tracking", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
@@ -99,6 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "ICU Tracking", href: `/${urlRole}/icu-tracking`, icon: Activity },
         { name: "Laboratory", href: `/${urlRole}/laboratory`, icon: Microscope },
         { name: "Pharmacy", href: `/${urlRole}/pharmacy`, icon: Pill },
+        { name: "Support", href: `/${urlRole}/support`, icon: Hammer }, // New Support Link
         // Pharmacy & Inventory
         { name: "Dispensing", href: `/${urlRole}/dispensing`, icon: Package },
         { name: "Inventory", href: `/${urlRole}/inventory`, icon: Package },
@@ -299,11 +300,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Internal Footer Statistics */}
                 <footer className="h-10 bg-white border-t border-slate-100 px-8 flex items-center justify-between">
+
                     <div className="flex gap-8">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-olive-500"></div>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Sentinel-X ACTIVE</span>
-                        </div>
                         <div className="flex items-center gap-2">
                             <Activity size={12} className="text-slate-400" />
                             <span className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Network Latency: 42ms</span>
@@ -314,7 +312,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <span className="text-[9px] font-bold text-olive-700 uppercase tracking-widest">Encrypted Clinical Hub</span>
                     </div>
                 </footer>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

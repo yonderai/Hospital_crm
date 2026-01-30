@@ -33,19 +33,28 @@ export default function BillingDashboard() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        fetch("/api/billing/invoices")
+        setLoading(true);
+        // Add timestamp to prevent browser caching
+        fetch(`/api/billing/invoices?t=${Date.now()}`)
             .then(res => res.json())
             .then(data => {
-                if (Array.isArray(data)) {
-                    setInvoices(data);
+                // Determine if payload is the new structured format or old array
+                const invoices = Array.isArray(data) ? data : (data.data || []);
+
+                if (Array.isArray(invoices)) {
+                    setInvoices(invoices);
+                    // Force refresh selected if invalid
+                    setSelectedInvoice(null);
                 } else {
                     console.error("Failed to fetch invoices:", data);
                     setInvoices([]);
                 }
+                setLoading(false);
             })
             .catch(err => {
-                console.error(err);
+                console.error("Fetch Error:", err);
                 setInvoices([]);
+                setLoading(false);
             });
     }, []);
 

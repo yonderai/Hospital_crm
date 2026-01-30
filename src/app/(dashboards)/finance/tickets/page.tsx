@@ -35,10 +35,11 @@ export default function FinanceTicketsPage() {
 
     const fetchTickets = async () => {
         try {
-            const res = await fetch("/api/maintenance/tickets?status=Pending Approval");
+            const res = await fetch("/api/tickets");
             if (res.ok) {
                 const data = await res.json();
-                setTickets(data);
+                // Filter for pending tickets on client side since API returns all for finance
+                setTickets(data.filter((t: Ticket) => t.status === "Pending"));
             }
         } catch (error) {
             console.error("Failed to load tickets", error);
@@ -49,10 +50,10 @@ export default function FinanceTicketsPage() {
 
     const handleAction = async (id: string, action: "approve" | "reject") => {
         try {
-            const res = await fetch(`/api/maintenance/tickets/${id}`, {
+            const res = await fetch(`/api/tickets`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action }),
+                body: JSON.stringify({ id, action }),
             });
             if (res.ok) {
                 // Determine if we should clear selection or keep it (if it disappears from list)
@@ -121,7 +122,7 @@ export default function FinanceTicketsPage() {
                                         <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                                             <span>{ticket.category}</span>
                                             <span>•</span>
-                                            <span>Est: ${ticket.estimatedCost || 0}</span>
+                                            <span>Est: ₹{ticket.estimatedCost || 0}</span>
                                             {ticket.images && ticket.images.length > 0 && (
                                                 <span className="ml-auto flex items-center gap-1 text-olive-600">
                                                     <ImageIcon size={12} /> Photo
@@ -148,7 +149,7 @@ export default function FinanceTicketsPage() {
                                             </p>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-3xl font-black text-slate-900">${selectedTicket.estimatedCost || 0}</div>
+                                            <div className="text-3xl font-black text-slate-900">₹{selectedTicket.estimatedCost || 0}</div>
                                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Est. Cost</div>
                                         </div>
                                     </div>

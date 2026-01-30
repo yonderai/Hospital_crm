@@ -192,10 +192,10 @@ export default function InventoryPage() {
                                         )}
                                     </td>
                                     <td className="p-6 text-right font-mono text-sm text-slate-500">
-                                        ${item.unitCost?.toFixed(2)}
+                                        ₹{item.unitCost?.toFixed(2)}
                                     </td>
                                     <td className="p-6 text-right font-mono text-sm font-bold text-slate-900">
-                                        ${item.sellingPrice?.toFixed(2)}
+                                        ₹{item.sellingPrice?.toFixed(2)}
                                     </td>
                                     <td className="p-6 text-center">
                                         <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
@@ -289,7 +289,7 @@ export default function InventoryPage() {
 
                             <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-50">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Unit Cost ($) *</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Unit Cost (₹) *</label>
                                     <input
                                         required
                                         type="number"
@@ -300,7 +300,7 @@ export default function InventoryPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Selling Price ($)</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Selling Price (₹)</label>
                                     <input
                                         type="number"
                                         step="0.01"

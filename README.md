@@ -88,5 +88,5 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 | **Pharmacist** | `pharmacy@medicore.com` | Inventory |
 | **HR** | `hr@medicore.com` | Staffing |
 | **Billing** | `billing@medicore.com` | Invoices |
-| **Back Office** | `backoffice@medicore.com` | Admin Support |
+
 | **Patient** | `patient@medicore.com` | Medical Records |
