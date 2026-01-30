@@ -21,10 +21,31 @@ export interface IPatient extends Document {
         provider: string;
         policyNumber: string;
         groupNumber?: string;
+        coverageType?: string;
+        validUntil?: Date;
+        hasInsurance: boolean;
     };
     allergies: string[];
     chronicConditions: string[];
+    pastSurgeries: {
+        name: string;
+        date?: Date;
+        hospital?: string;
+    }[];
+    currentMedications: {
+        name: string;
+        dosage: string;
+        frequency: string;
+    }[];
+    familyMedicalHistory: {
+        diabetes: boolean;
+        heartDisease: boolean;
+        cancer: boolean;
+        other?: string;
+    };
     bloodType: string;
+    notes?: string;
+    qrCodeUrl?: string; // New field
     facilityId?: mongoose.Types.ObjectId;
     assignedDoctorId?: mongoose.Types.ObjectId;
     createdAt: Date;
@@ -50,13 +71,34 @@ const PatientSchema = new Schema<IPatient>(
             relation: { type: String },
         },
         insuranceInfo: {
+            hasInsurance: { type: Boolean, default: false },
             provider: { type: String },
             policyNumber: { type: String },
             groupNumber: { type: String },
+            coverageType: { type: String },
+            validUntil: { type: Date },
         },
         allergies: { type: [String], default: [] },
         chronicConditions: { type: [String], default: [] },
+        pastSurgeries: [{
+            name: { type: String, required: true },
+            date: { type: Date },
+            hospital: { type: String }
+        }],
+        currentMedications: [{
+            name: { type: String, required: true },
+            dosage: { type: String },
+            frequency: { type: String }
+        }],
+        familyMedicalHistory: {
+            diabetes: { type: Boolean, default: false },
+            heartDisease: { type: Boolean, default: false },
+            cancer: { type: Boolean, default: false },
+            other: { type: String }
+        },
         bloodType: { type: String },
+        notes: { type: String },
+        qrCodeUrl: { type: String },
         facilityId: { type: Schema.Types.ObjectId, ref: "Facility" },
         assignedDoctorId: { type: Schema.Types.ObjectId, ref: "User" },
     },

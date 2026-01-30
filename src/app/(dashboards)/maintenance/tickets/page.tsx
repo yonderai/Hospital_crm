@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Plus, Search, Filter, Wrench } from "lucide-react";
 import Link from "next/link";
 import DashboardLayout from "@/components/DashboardLayout";
 
 import { useSearchParams } from "next/navigation";
 
-export default function MaintenanceTicketsPage() {
+function MaintenanceTicketsContent() {
     const [tickets, setTickets] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const searchParams = useSearchParams();
@@ -125,5 +125,13 @@ export default function MaintenanceTicketsPage() {
                 </div>
             </div>
         </DashboardLayout>
+    );
+}
+
+export default function MaintenanceTicketsPage() {
+    return (
+        <Suspense fallback={<div>Loading tickets...</div>}>
+            <MaintenanceTicketsContent />
+        </Suspense>
     );
 }

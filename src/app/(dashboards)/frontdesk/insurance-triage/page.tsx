@@ -5,11 +5,12 @@ import { Activity } from "lucide-react";
 
 export default function frontdeskinsurancetriagePage() {
     return (
-        <GenericModulePage 
+        <GenericModulePage
             title="INSURANCE TRIAGE"
             subtitle=" PORTAL"
             description="Access your insurance-triage management system. Real-time tracking and automated reporting active."
             icon={Activity}
+            disableLayout={true}
         />
     );
 }

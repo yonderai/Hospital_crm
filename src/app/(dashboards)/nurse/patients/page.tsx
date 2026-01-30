@@ -11,7 +11,8 @@ import {
     Droplets,
     ChevronRight,
     MapPin,
-    AlertCircle
+    AlertCircle,
+    Clock
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -131,8 +132,8 @@ export default function NursePatients() {
                                         </td>
                                         <td className="px-10 py-8 text-center">
                                             <span className={`text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest border shadow-sm ${p.vitalsStatus === 'Due Now'
-                                                    ? 'bg-red-50 text-red-600 border-red-100 animate-pulse'
-                                                    : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                                ? 'bg-red-50 text-red-600 border-red-100 animate-pulse'
+                                                : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                                                 }`}>
                                                 {p.vitalsStatus}
                                             </span>

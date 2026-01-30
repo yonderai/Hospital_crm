@@ -315,3 +315,29 @@ STACK: MongoServerError: E11000 duplicate key error collection: yonder_medicare.
 [2026-01-29T11:08:14.666Z] RX API: Found patient: 697b38d0c4e807b3170f0904 (John)
 [2026-01-29T11:08:14.697Z] RX API: RX API - Prescriptions found: 0
 [2026-01-29T11:08:14.704Z] RX API: RX API - Prescriptions found: 0
+[2026-01-30T05:22:49.694Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697b38d0c4e807b3170f0902"}
+[2026-01-30T05:22:49.694Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-30T05:22:49.697Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697b38d0c4e807b3170f0902"}
+[2026-01-30T05:22:49.697Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-30T05:22:49.733Z] REPORT API: Found patient: 697b38d0c4e807b3170f0904 (John)
+[2026-01-30T05:22:49.735Z] REPORT API: Found patient: 697b38d0c4e807b3170f0904 (John)
+[2026-01-30T05:48:35.507Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697b38d0c4e807b3170f0902"}
+[2026-01-30T05:48:35.508Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-30T05:48:35.509Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697b38d0c4e807b3170f0902"}
+[2026-01-30T05:48:35.509Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-30T05:48:35.621Z] REPORT API: Found patient: 697b38d0c4e807b3170f0904 (John)
+[2026-01-30T05:48:35.627Z] REPORT API: Found patient: 697b38d0c4e807b3170f0904 (John)
+[2026-01-30T05:48:39.729Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697b38d0c4e807b3170f0902"}
+[2026-01-30T05:48:39.729Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-30T05:48:39.730Z] RX API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697b38d0c4e807b3170f0902"}
+[2026-01-30T05:48:39.730Z] RX API: Searching for patient with email: patient@medicore.com
+[2026-01-30T05:48:39.880Z] RX API: Found patient: 697b38d0c4e807b3170f0904 (John)
+[2026-01-30T05:48:39.883Z] RX API: Found patient: 697b38d0c4e807b3170f0904 (John)
+[2026-01-30T05:48:39.922Z] RX API: RX API - Prescriptions found: 0
+[2026-01-30T05:48:39.929Z] RX API: RX API - Prescriptions found: 0
+[2026-01-30T06:01:44.138Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697b38d0c4e807b3170f0902"}
+[2026-01-30T06:01:44.138Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-30T06:01:44.139Z] REPORT API: Session: {"name":"John Doe","email":"patient@medicore.com","role":"patient","id":"697b38d0c4e807b3170f0902"}
+[2026-01-30T06:01:44.139Z] REPORT API: Searching for patient with email: patient@medicore.com
+[2026-01-30T06:01:44.180Z] REPORT API: Found patient: 697b38d0c4e807b3170f0904 (John)
+[2026-01-30T06:01:44.182Z] REPORT API: Found patient: 697b38d0c4e807b3170f0904 (John)

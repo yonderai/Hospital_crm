@@ -10,7 +10,15 @@ export interface IAppointment extends Document {
     status: "scheduled" | "checked-in" | "in-progress" | "completed" | "cancelled" | "no-show";
     type: "consultation" | "follow-up" | "procedure" | "emergency";
     reason: string;
+    chiefComplaint?: string; // New field
     notes?: string;
+    payment?: {
+        amount: number;
+        method: "cash" | "card" | "upi" | "insurance";
+        status: "pending" | "paid" | "failed";
+        transactionId?: string;
+        receiptNo?: string;
+    };
     createdBy: "patient" | "staff";
     createdAt: Date;
     updatedAt: Date;
@@ -35,7 +43,15 @@ const AppointmentSchema = new Schema<IAppointment>(
             enum: ["consultation", "follow-up", "procedure", "emergency"]
         },
         reason: { type: String, required: true },
+        chiefComplaint: { type: String },
         notes: { type: String },
+        payment: {
+            amount: { type: Number },
+            method: { type: String, enum: ["cash", "card", "upi", "insurance"] },
+            status: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
+            transactionId: { type: String },
+            receiptNo: { type: String }
+        },
         createdBy: {
             type: String,
             required: true,

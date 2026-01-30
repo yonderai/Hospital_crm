@@ -3,13 +3,29 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export default async function middleware(req: NextRequest) {
+    const { pathname } = req.nextUrl;
+
+    // DEBUG: Explicit bypass for queue debugging
+    if (pathname === "/api/frontdesk/queue") {
+        console.log("Middleware: Debug Bypass for /api/frontdesk/queue");
+        // Add debug header to confirm this middleware version is active
+        const res = NextResponse.next();
+        res.headers.set('X-Middleware-Debug-Bypass', 'true');
+        return res;
+    }
+
     const token = await getToken({ req });
     const isAuth = !!token;
-    const { pathname } = req.nextUrl;
 
     // Public Paths
     if (pathname.startsWith("/api")) {
         console.log(`Middleware: API request to ${pathname}, method: ${req.method}`);
+    }
+
+    // Public Paths whitelist
+    const publicPaths = ["/register", "/api/public"];
+    if (publicPaths.some(path => pathname.startsWith(path))) {
+        return NextResponse.next();
     }
 
     if (
@@ -21,7 +37,6 @@ export default async function middleware(req: NextRequest) {
     ) {
         if (isAuth && pathname === "/login") {
             const dashboardUrl = getDashboardUrl(token.role as string);
-            // Only redirect if the dashboard URL is NOT /login (to avoid loops for invalid roles)
             if (dashboardUrl !== "/login") {
                 return NextResponse.redirect(new URL(dashboardUrl, req.url));
             }
@@ -41,6 +56,13 @@ export default async function middleware(req: NextRequest) {
 
     // Authentication Check
     if (!isAuth) {
+        if (pathname.startsWith("/api")) {
+            return NextResponse.json({
+                error: "Unauthorized",
+                debug_reason: "Middleware blocked request",
+                path: pathname
+            }, { status: 401 });
+        }
         console.log(`[Middleware] No token found for ${pathname}. Redirecting to /login`);
         return NextResponse.redirect(new URL("/login", req.url));
     }
@@ -80,8 +102,6 @@ function getDashboardUrl(role: string) {
 }
 
 function isAccessAllowed(role: string, path: string) {
-    // API Access - refined strategy needed? For now allow API actions if authenticated, 
-    // real backend should check RBAC too.
     if (path.startsWith("/api")) return true;
 
     if (role === 'doctor' && path.startsWith('/doctor')) return true;

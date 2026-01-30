@@ -99,8 +99,8 @@ async function seed() {
             if (u.role === 'doctor') doctorId = user._id;
 
             if (u.role === 'patient') {
-                await Patient.create({
-                    mrn: `MRN-${Math.floor(100000 + Math.random() * 900000)}`,
+                const savedPatient = await Patient.create({
+                    mrn: `MRN-2026-0001`, // Fixed MRN for testing
                     firstName: u.first,
                     lastName: u.last,
                     dob: new Date('1985-05-15'),
@@ -116,6 +116,39 @@ async function seed() {
                     assignedDoctorId: doctorId
                 });
                 console.log(`Patient profile created for: ${u.email}`);
+
+                // Create an appointment for today
+                const Appointment = mongoose.models.Appointment || mongoose.model('Appointment', new mongoose.Schema({
+                    appointmentId: String,
+                    patientId: mongoose.Schema.Types.ObjectId,
+                    providerId: mongoose.Schema.Types.ObjectId,
+                    startTime: Date,
+                    endTime: Date,
+                    status: String,
+                    type: String,
+                    reason: String,
+                    createdBy: String
+                }));
+
+                const today = new Date();
+                today.setHours(10, 0, 0, 0); // 10:00 AM today
+                const endTime = new Date(today);
+                endTime.setHours(10, 30, 0, 0);
+
+                await Appointment.deleteMany({}); // Clean old appointments
+
+                await Appointment.create({
+                    appointmentId: "APT-TEST-001",
+                    patientId: savedPatient._id,
+                    providerId: doctorId,
+                    startTime: today,
+                    endTime: endTime,
+                    status: "scheduled",
+                    type: "consultation",
+                    reason: "Regular Checkup",
+                    createdBy: "staff"
+                });
+                console.log("Seeded test appointment for today.");
             }
         }
 

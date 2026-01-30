@@ -5,11 +5,12 @@ import { Activity } from "lucide-react";
 
 export default function frontdeskqueuePage() {
     return (
-        <GenericModulePage 
+        <GenericModulePage
             title="QUEUE"
             subtitle=" PORTAL"
             description="Access your queue management system. Real-time tracking and automated reporting active."
             icon={Activity}
+            disableLayout={true}
         />
     );
 }
