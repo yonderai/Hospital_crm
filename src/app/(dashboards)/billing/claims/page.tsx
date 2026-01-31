@@ -1,15 +1,16 @@
 "use client";
 
 import GenericModulePage from "@/components/ModulePage";
-import { Activity } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 
-export default function billingclaimsPage() {
+export default function BillingClaimsPage() {
     return (
-        <GenericModulePage 
+        <GenericModulePage
             title="CLAIMS"
-            subtitle=" PORTAL"
-            description="Access your claims management system. Real-time tracking and automated reporting active."
-            icon={Activity}
+            subtitle=" BILLING PORTAL"
+            description="Track insurance claims, status updates, and adjudications."
+            icon={ShieldAlert}
+            dataEndpoint="/api/billing/claims"
         />
     );
 }

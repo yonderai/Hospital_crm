@@ -47,7 +47,25 @@ export async function GET(req: NextRequest) {
             .populate("payerId", "name")
             .sort({ createdAt: -1 });
 
-        return NextResponse.json(claims);
+        const formattedClaims = claims.map((clm: any) => ({
+            id: clm.claimNumber || "N/A",
+            name: clm.patientId ? `${clm.patientId.firstName} ${clm.patientId.lastName}` : "Unknown Patient",
+            status: clm.status.charAt(0).toUpperCase() + clm.status.slice(1),
+            date: new Date(clm.createdAt).toLocaleDateString(),
+            value: `₹${(clm.amountBilled || 0).toLocaleString()}`,
+            _raw: clm
+        }));
+
+        return NextResponse.json({
+            success: true,
+            data: formattedClaims,
+            stats: [
+                { label: "Active Claims", value: formattedClaims.length.toString(), change: "Live", icon: "Ticket", color: "text-blue-600", bg: "bg-blue-50" },
+                { label: "Pending Adjudication", value: claims.filter((c: any) => c.status === 'pending').length.toString(), change: "Review", icon: "FileText", color: "text-orange-600", bg: "bg-orange-50" },
+                { label: "Total Billed", value: `₹${claims.reduce((acc: number, curr: any) => acc + (curr.amountBilled || 0), 0).toLocaleString()}`, change: "Updated", icon: "DollarSign", color: "text-emerald-600", bg: "bg-emerald-50" },
+                { label: "Denial Rate", value: claims.length > 0 ? `${(claims.filter((c: any) => c.status === 'denied').length / claims.length * 100).toFixed(1)}%` : "0%", change: "Health", icon: "AlertCircle", color: "text-red-600", bg: "bg-red-50" }
+            ]
+        });
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

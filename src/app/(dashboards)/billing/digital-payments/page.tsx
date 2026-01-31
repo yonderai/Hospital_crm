@@ -1,15 +1,16 @@
 "use client";
 
 import GenericModulePage from "@/components/ModulePage";
-import { Activity } from "lucide-react";
+import { CreditCard } from "lucide-react";
 
-export default function billingdigitalpaymentsPage() {
+export default function BillingDigitalPaymentsPage() {
     return (
-        <GenericModulePage 
+        <GenericModulePage
             title="DIGITAL PAYMENTS"
-            subtitle=" PORTAL"
-            description="Access your digital-payments management system. Real-time tracking and automated reporting active."
-            icon={Activity}
+            subtitle=" BILLING PORTAL"
+            description="Track credit cards, debit cards, and EFT transactions."
+            icon={CreditCard}
+            dataEndpoint="/api/billing/payments?method=digital"
         />
     );
 }

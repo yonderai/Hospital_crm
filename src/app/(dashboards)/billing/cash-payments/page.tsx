@@ -1,15 +1,16 @@
 "use client";
 
 import GenericModulePage from "@/components/ModulePage";
-import { Activity } from "lucide-react";
+import { Banknote } from "lucide-react";
 
-export default function billingcashpaymentsPage() {
+export default function BillingCashPaymentsPage() {
     return (
-        <GenericModulePage 
+        <GenericModulePage
             title="CASH PAYMENTS"
-            subtitle=" PORTAL"
-            description="Access your cash-payments management system. Real-time tracking and automated reporting active."
-            icon={Activity}
+            subtitle=" BILLING PORTAL"
+            description="View all cash payments collected at front desk and billing counters."
+            icon={Banknote}
+            dataEndpoint="/api/billing/payments?method=cash"
         />
     );
 }

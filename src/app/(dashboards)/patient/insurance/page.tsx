@@ -14,32 +14,78 @@ export default function PatientInsurancePage() {
     const [loading, setLoading] = useState(true);
     const [insuranceData, setInsuranceData] = useState<any>(null);
     const [claims, setClaims] = useState<any[]>([]);
+    const [claiming, setClaiming] = useState(false);
+    const [claimAmount, setClaimAmount] = useState("");
+    const [policyDetails, setPolicyDetails] = useState("");
 
-    useEffect(() => {
-        // Fetch logic would go here
-        // Mocking data for now as per requirements
-        setTimeout(() => {
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const billingRes = await fetch("/api/patient/billing");
+            const billingData = await billingRes.json();
+
             setInsuranceData({
                 provider: "Bajaj Allianz",
                 policyNumber: "POL123456789",
                 groupNumber: "GRP987654",
                 coverageType: "Family Floater",
                 sumInsured: 500000,
-                balance: 350000,
+                balance: 500000 - (billingData.stats?.insuranceCovered || 0),
                 validUntil: "2025-12-31",
                 hasInsurance: true,
-                utilization: 30 // percentage
+                utilization: Math.min(100, Math.round(((billingData.stats?.insuranceCovered || 0) / 500000) * 100))
             });
 
-            setClaims([
-                { date: "15/01/2025", service: "Cardiology Consultation", amount: 50000, status: "Approved" },
-                { date: "10/12/2024", service: "Lab Tests - Blood Panel", amount: 5000, status: "Approved" },
-                { date: "05/11/2024", service: "MRI Scan - Knee", amount: 15000, status: "Approved" },
-                { date: "15/09/2024", service: "Pharmacy - Inpatient", amount: 8000, status: "Pending" }
-            ]);
+            const insuranceClaims = billingData.invoices
+                .filter((inv: any) => inv.insuranceCoverage > 0)
+                .map((inv: any) => ({
+                    date: inv.date,
+                    service: inv.description,
+                    amount: inv.insuranceCoverage,
+                    status: inv.status === 'paid' ? 'Approved' : 'Pending'
+                }));
+
+            setClaims(insuranceClaims);
+        } catch (error) {
+            console.error("Failed to fetch data:", error);
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
     }, []);
+
+    const handleClaim = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setClaiming(true);
+        try {
+            const res = await fetch("/api/patient/insurance/claim", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    amount: Number(claimAmount),
+                    policyNumber: insuranceData.policyNumber,
+                    reason: policyDetails
+                })
+            });
+
+            if (res.ok) {
+                alert("Claim submitted successfully!");
+                setClaimAmount("");
+                setPolicyDetails("");
+                fetchData(); // Refresh data
+            } else {
+                const err = await res.json();
+                alert(err.error || "Claim submission failed");
+            }
+        } catch (error) {
+            alert("An error occurred");
+        } finally {
+            setClaiming(false);
+        }
+    };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
@@ -51,215 +97,149 @@ export default function PatientInsurancePage() {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">My Insurance</h2>
-                        <p className="text-olive-600 text-[10px] font-black mt-1 uppercase tracking-[0.3em]">Coverage & Claims</p>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Direct Claims Portal</h2>
+                        <p className="text-olive-600 text-[10px] font-black mt-1 uppercase tracking-[0.3em]">Patient Insurance Dashboard</p>
                     </div>
-                    <div className="flex gap-4">
-                        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
-                            <Upload size={16} /> Update Policy
-                        </button>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-olive-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-olive-700 transition-all shadow-lg shadow-olive-600/20">
-                            <Plus size={16} /> Add New Policy
-                        </button>
-                    </div>
+                    {insuranceData && (
+                        <div className="bg-olive-50 px-6 py-4 rounded-2xl border border-olive-100 flex items-center gap-4">
+                            <div>
+                                <p className="text-[10px] font-black text-olive-600 uppercase tracking-widest mb-0.5">Available Limit</p>
+                                <p className="text-xl font-black text-olive-900">{formatCurrency(insuranceData.balance)}</p>
+                            </div>
+                            <div className="w-10 h-10 bg-olive-100 rounded-xl flex items-center justify-center text-olive-600">
+                                <ShieldCheck size={20} />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {loading ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-pulse">
-                        <div className="h-64 bg-slate-100 rounded-3xl col-span-2"></div>
-                        <div className="h-64 bg-slate-100 rounded-3xl"></div>
+                    <div className="h-96 flex items-center justify-center">
+                        <Activity className="animate-spin text-olive-600" size={48} />
                     </div>
                 ) : (
-                    <>
-                        {/* Status Section */}
+                    <div className="space-y-12">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* Main Coverage Card */}
-                            <div className="lg:col-span-2 bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-8 opacity-5">
-                                    <ShieldCheck size={200} />
-                                </div>
+                            {/* Claim Form - Always Visible */}
+                            <div className="lg:col-span-1 bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm animate-in fade-in slide-in-from-left-4 duration-500">
+                                <h3 className="text-xl font-black text-slate-900 mb-2">New Claim Application</h3>
+                                <p className="text-sm font-medium text-slate-500 mb-8 italic">Apply for a claim to reduce your unpaid hospital balance.</p>
 
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="w-12 h-12 bg-olive-50 rounded-2xl flex items-center justify-center text-olive-600">
-                                            <ShieldCheck size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-black text-slate-900">{insuranceData.provider}</h3>
-                                            <p className="text-sm font-bold text-slate-500">Policy #{insuranceData.policyNumber}</p>
-                                        </div>
-                                        <div className="ml-auto px-4 py-2 bg-green-50 text-green-700 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 border border-green-100">
-                                            <CheckCircle2 size={14} /> Active
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-12 mb-8">
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sum Insured</p>
-                                            <p className="text-2xl font-black text-slate-900">{formatCurrency(insuranceData.sumInsured)}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Available Balance</p>
-                                            <p className="text-2xl font-black text-olive-600">{formatCurrency(insuranceData.balance)}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Valid Until</p>
-                                            <p className="text-2xl font-black text-slate-900">{new Date(insuranceData.validUntil).toLocaleDateString()}</p>
-                                        </div>
+                                <form onSubmit={handleClaim} className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Claim Amount (₹)</label>
+                                        <input
+                                            required
+                                            type="number"
+                                            value={claimAmount}
+                                            onChange={(e) => setClaimAmount(e.target.value)}
+                                            placeholder="Enter amount"
+                                            className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-4 focus:ring-olive-600/5 focus:border-olive-600 transition-all font-black text-lg text-slate-900"
+                                        />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <div className="flex justify-between text-xs font-bold text-slate-500">
-                                            <span>Utilization ({insuranceData.utilization}%)</span>
-                                            <span>{formatCurrency(insuranceData.sumInsured - insuranceData.balance)} Used</span>
-                                        </div>
-                                        <div className="h-4 bg-slate-100 rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-olive-500 rounded-full transition-all duration-1000 ease-out"
-                                                style={{ width: `${insuranceData.utilization}%` }}
-                                            />
-                                        </div>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Reason for Claim</label>
+                                        <textarea
+                                            required
+                                            value={policyDetails}
+                                            onChange={(e) => setPolicyDetails(e.target.value)}
+                                            placeholder="e.g. Consultation, Labs, Surgery..."
+                                            className="w-full bg-slate-50 border border-slate-200 p-4 rounded-2xl outline-none focus:ring-4 focus:ring-olive-600/5 focus:border-olive-600 transition-all font-bold text-sm min-h-[120px]"
+                                        />
                                     </div>
 
-                                    <div className="mt-8 flex gap-4">
-                                        <button className="text-xs font-bold text-slate-500 hover:text-olive-700 flex items-center gap-2">
-                                            <FileText size={14} /> View Policy Document
-                                        </button>
-                                        <button className="text-xs font-bold text-slate-500 hover:text-olive-700 flex items-center gap-2">
-                                            <Download size={14} /> Download E-Card
-                                        </button>
-                                    </div>
-                                </div>
+                                    <button
+                                        disabled={claiming}
+                                        className="w-full bg-olive-600 hover:bg-olive-700 text-white p-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-olive-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-70"
+                                    >
+                                        {claiming ? "Processing..." : <>Process Claim <ChevronRight size={18} /></>}
+                                    </button>
+                                </form>
                             </div>
 
-                            {/* Insurance Card Visual */}
-                            <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-[40px] shadow-xl text-white flex flex-col justify-between relative overflow-hidden group">
-                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                                <div className="relative z-10">
-                                    <div className="flex justify-between items-start mb-8">
-                                        <ShieldCheck className="text-olive-400" size={32} />
-                                        <span className="text-xs font-bold uppercase tracking-widest opacity-60">Health Card</span>
+                            {/* Summary Card */}
+                            <div className="lg:col-span-2 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                                <div className="bg-slate-900 text-white p-10 rounded-[40px] shadow-xl relative overflow-hidden h-full">
+                                    <div className="absolute top-0 right-0 p-10 opacity-10">
+                                        <ShieldCheck size={200} />
                                     </div>
-                                    <div className="space-y-6">
+                                    <div className="relative z-10 flex flex-col h-full justify-between">
                                         <div>
-                                            <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Insured Name</p>
-                                            <p className="text-xl font-bold tracking-wide">{session?.user?.name || "Rajesh Kumar"}</p>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <div>
-                                                <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Member ID</p>
-                                                <p className="font-mono text-sm tracking-wider">MEM-8829-22</p>
+                                            <div className="flex justify-between items-start mb-8">
+                                                <div>
+                                                    <h3 className="text-3xl font-black text-white">{insuranceData.provider}</h3>
+                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Policy ID: {insuranceData.policyNumber}</p>
+                                                </div>
+                                                <div className="px-5 py-2 bg-olive-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-olive-500/20">Active Coverage</div>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Group ID</p>
-                                                <p className="font-mono text-sm tracking-wider">{insuranceData.groupNumber}</p>
+
+                                            <div className="grid grid-cols-2 gap-12 mb-10">
+                                                <div>
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Sum Insured</p>
+                                                    <p className="text-4xl font-black">{formatCurrency(insuranceData.sumInsured)}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Used Limit</p>
+                                                    <p className="text-4xl font-black text-olive-400">{formatCurrency(insuranceData.sumInsured - insuranceData.balance)}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+                                                <span>Utilization Percentage</span>
+                                                <span>{insuranceData.utilization}%</span>
+                                            </div>
+                                            <div className="h-4 bg-white/10 rounded-full overflow-hidden p-0.5 border border-white/5">
+                                                <div
+                                                    className="h-full bg-olive-500 rounded-full transition-all duration-1500"
+                                                    style={{ width: `${insuranceData.utilization}%` }}
+                                                />
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="mt-8 pt-8 border-t border-white/10 flex justify-between items-center relative z-10">
-                                    <span className="text-[10px] font-bold opacity-60">Medicore Network</span>
-                                    <CreditCard size={20} className="text-olive-400" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Claims History */}
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Recent Claims</h3>
-                                <button className="text-xs font-bold text-olive-600 hover:underline uppercase tracking-wider">View All History</button>
-                            </div>
-
-                            <div className="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm">
+                        {/* Recent History */}
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <h3 className="text-xl font-black text-slate-900 tracking-tight ml-2">Claim History</h3>
+                            <div className="bg-white rounded-[40px] border border-slate-100 overflow-hidden shadow-sm">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="bg-slate-50/50 border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        <tr className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                             <th className="px-8 py-6">Date</th>
-                                            <th className="px-8 py-6">Service / Description</th>
-                                            <th className="px-8 py-6">Amount Claimed</th>
+                                            <th className="px-8 py-6">Service Type</th>
+                                            <th className="px-8 py-6">Amount</th>
                                             <th className="px-8 py-6">Status</th>
-                                            <th className="px-8 py-6 text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
-                                        {claims.map((claim, idx) => (
-                                            <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                                <td className="px-8 py-6 text-sm font-bold text-slate-500">{claim.date}</td>
-                                                <td className="px-8 py-6 text-sm font-bold text-slate-900">{claim.service}</td>
-                                                <td className="px-8 py-6 text-sm font-black text-slate-900">{formatCurrency(claim.amount)}</td>
-                                                <td className="px-8 py-6">
-                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${claim.status === 'Approved' ? 'bg-green-50 text-green-600 border-green-100' :
-                                                            claim.status === 'Pending' ? 'bg-orange-50 text-orange-600 border-orange-100' :
-                                                                'bg-red-50 text-red-600 border-red-100'
-                                                        }`}>
-                                                        {claim.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-6 text-right">
-                                                    <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-olive-600 transition-colors">
-                                                        <ChevronRight size={18} />
-                                                    </button>
-                                                </td>
+                                        {claims.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={4} className="px-8 py-12 text-center text-slate-400 font-bold italic text-sm">No claims found.</td>
                                             </tr>
-                                        ))}
+                                        ) : (
+                                            claims.map((claim, idx) => (
+                                                <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                                    <td className="px-8 py-6 text-sm font-bold text-slate-500">{claim.date}</td>
+                                                    <td className="px-8 py-6 text-sm font-black text-slate-900">{claim.service}</td>
+                                                    <td className="px-8 py-6 text-sm font-black text-emerald-600">{formatCurrency(claim.amount)}</td>
+                                                    <td className="px-8 py-6">
+                                                        <span className="px-4 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black uppercase tracking-widest">
+                                                            {claim.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-
-                        {/* Covered Services & Helpers */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
-                                <h3 className="text-lg font-black text-slate-900 mb-6">What's Covered?</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {[
-                                        "Hospitalization", "Consultations", "Laboratory Tests",
-                                        "Imaging (X-Ray/MRI)", "Surgeries", "ICU Charges"
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                                            <CheckCircle2 size={16} className="text-green-500 shrink-0" /> {item}
-                                        </div>
-                                    ))}
-                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-400 line-through decoration-slate-300">
-                                        <XCircle size={16} className="text-slate-300 shrink-0" /> Cosmetic Surgery
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-400 line-through decoration-slate-300">
-                                        <XCircle size={16} className="text-slate-300 shrink-0" /> Dental Care
-                                    </div>
-                                </div>
-                                <div className="mt-8 pt-6 border-t border-slate-50">
-                                    <button className="text-xs font-bold text-olive-600 hover:underline uppercase tracking-wider">View Complete Policy Terms</button>
-                                </div>
-                            </div>
-
-                            <div className="bg-gradient-to-br from-olive-50 to-white p-8 rounded-[32px] border border-olive-100">
-                                <h3 className="text-lg font-black text-olive-900 mb-2">Need Assistance?</h3>
-                                <p className="text-sm font-medium text-olive-700/70 mb-6">Contact your insurance provider directly or reach out to our billing desk.</p>
-
-                                <div className="space-y-4">
-                                    <div className="bg-white p-4 rounded-xl border border-olive-100 flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-olive-100 text-olive-600 rounded-full flex items-center justify-center">
-                                            <Activity size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Bajaj Allianz Support</p>
-                                            <p className="text-sm font-black text-slate-900">1800-209-5858</p>
-                                        </div>
-                                    </div>
-                                    <div className="bg-white p-4 rounded-xl border border-olive-100 flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-olive-100 text-olive-600 rounded-full flex items-center justify-center">
-                                            <ShieldCheck size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Medicore Billing Desk</p>
-                                            <p className="text-sm font-black text-slate-900">1800-MEDICORE</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </>
+                    </div>
                 )}
             </div>
         </DashboardLayout>

@@ -29,7 +29,8 @@ export default function PatientRegistrationForm({ onSuccess }: { onSuccess?: () 
         familyMedicalHistory: { diabetes: false, heartDisease: false, cancer: false, other: "" },
         // Notes
         notes: "",
-        preferredDoctor: ""
+        preferredDoctor: "",
+        registrationFee: "500" // Default fee
     });
 
     // Inputs for dynamic fields
@@ -425,11 +426,33 @@ export default function PatientRegistrationForm({ onSuccess }: { onSuccess?: () 
                 </div>
             </section>
 
+            {/* 6. Administrative / Billing */}
+            <section className="space-y-4 pt-4 border-t border-slate-50">
+                <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-[10px]">6</span>
+                    Administrative & Billing
+                </h4>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">Registration Fee (₹) *</label>
+                        <input
+                            type="number"
+                            name="registrationFee"
+                            required
+                            value={formData.registrationFee}
+                            className="w-full h-12 px-4 bg-olive-50 border border-olive-200 rounded-xl focus:border-olive-500 outline-none transition-all font-black text-slate-900"
+                            placeholder="500"
+                            onChange={handleChange}
+                        />
+                    </div>
+                </div>
+            </section>
+
             {/* Actions */}
             <div className="pt-8 border-t border-slate-100 flex justify-end gap-4">
                 <button type="button" className="px-6 py-3 rounded-xl border border-slate-200 font-bold text-slate-500 hover:bg-slate-50">Cancel</button>
                 <button type="submit" disabled={loading} className="px-8 py-3 rounded-xl bg-olive-600 text-white font-bold hover:bg-olive-700 shadow-lg shadow-olive-200 transition-all flex items-center gap-2">
-                    {loading ? "Processing..." : <><Save size={18} /> Register Patient</>}
+                    {loading ? "Processing..." : <><Save size={18} /> Register Patient & Collect Fee</>}
                 </button>
             </div>
         </form>

@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import Patient from "@/lib/models/Patient";
 import User, { UserRole } from "@/lib/models/User";
+import Invoice from "@/lib/models/Invoice";
 import bcrypt from "bcryptjs";
 import QRCode from "qrcode";
 
@@ -60,6 +61,31 @@ export async function POST(req: Request) {
 
         // 4. Create Patient Record
         const newPatient = await Patient.create(patientData);
+
+        // 4a. Create Registration Invoice if fee > 0
+        const regFee = Number(body.registrationFee);
+        if (regFee > 0) {
+            const invoiceNumber = `INV-REG-${mrn}-${Date.now().toString().slice(-4)}`;
+            await Invoice.create({
+                patientId: newPatient._id,
+                invoiceNumber,
+                items: [{
+                    description: "Patient Registration Fee",
+                    quantity: 1,
+                    unitPrice: regFee,
+                    total: regFee,
+                    isInsuranceCovered: false
+                }],
+                totalAmount: regFee,
+                amountPaid: 0,
+                balanceDue: regFee,
+                status: "pending", // Initially pending for collection at desk
+                dueDate: new Date(),
+                insuranceCalculation: {
+                    claimStatus: "not_initiated",
+                }
+            });
+        }
 
         // 5. Generate QR Code
         const qrCodeData = JSON.stringify({

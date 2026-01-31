@@ -1,19 +1,16 @@
 "use client";
 
-import GenericModulePage from "@/components/ModulePage";
-import { Activity } from "lucide-react";
 import QueueList from "@/components/frontdesk/queue/QueueList";
 
 export default function frontdeskqueuePage() {
     return (
-        <GenericModulePage
-            title="QUEUE"
-            subtitle=" PORTAL"
-            description="Access your queue management system. Real-time tracking and automated reporting active."
-            icon={Activity}
-            disableLayout={true}
-        >
+        <div className="space-y-10">
+            <div>
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight">QUEUE</h2>
+                <p className="text-olive-600 text-[10px] font-black mt-1 uppercase tracking-[0.3em]">PORTAL</p>
+            </div>
+
             <QueueList />
-        </GenericModulePage>
+        </div>
     );
 }

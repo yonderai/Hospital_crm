@@ -27,25 +27,26 @@ export async function GET() {
             .sort({ updatedAt: -1 })
             .lean();
 
-        // Manual serialization to ensure 100% clean JSON
         const invoices = rawInvoices.map((inv: any) => ({
-            _id: inv._id.toString(),
-            invoiceNumber: inv.invoiceNumber || "N/A",
-            totalAmount: inv.totalAmount || 0,
-            amountPaid: inv.amountPaid || 0,
-            balanceDue: inv.balanceDue || 0,
-            status: inv.status,
-            updatedAt: inv.updatedAt,
-            items: inv.items || [],
-            patientId: inv.patientId ? {
-                firstName: inv.patientId.firstName,
-                lastName: inv.patientId.lastName,
-                mrn: inv.patientId.mrn
-            } : { firstName: "Unknown", lastName: "Patient", mrn: "N/A" }
+            id: inv.invoiceNumber || "N/A",
+            name: inv.patientId ? `${inv.patientId.firstName} ${inv.patientId.lastName}` : "Unknown Patient",
+            status: inv.status.charAt(0).toUpperCase() + inv.status.slice(1),
+            date: new Date(inv.updatedAt).toLocaleDateString(),
+            value: `₹${(inv.balanceDue || 0).toLocaleString()}`,
+            _raw: inv
         }));
 
         console.log(`[API] Returning ${invoices.length} invoices`);
-        return NextResponse.json(invoices);
+        return NextResponse.json({
+            success: true,
+            data: invoices,
+            stats: [
+                { label: "Pending Invoices", value: invoices.length.toString(), change: "Live", icon: "FileText", color: "text-orange-600", bg: "bg-orange-50" },
+                { label: "Total Outstanding", value: `₹${rawInvoices.reduce((acc: number, curr: any) => acc + (curr.balanceDue || 0), 0).toLocaleString()}`, change: "Updated", icon: "DollarSign", color: "text-emerald-600", bg: "bg-emerald-50" },
+                { label: "DUE TODAY", value: rawInvoices.filter((i: any) => i.status === 'overdue').length.toString(), change: "Critical", icon: "AlertCircle", color: "text-red-600", bg: "bg-red-50" },
+                { label: "SYSTEM STATUS", value: "Locked", change: "SECURE", icon: "CheckCircle", color: "text-blue-600", bg: "bg-blue-50" }
+            ]
+        });
 
     } catch (error: any) {
         console.error("Error fetching invoices:", error);
