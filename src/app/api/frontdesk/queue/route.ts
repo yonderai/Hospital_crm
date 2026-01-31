@@ -66,6 +66,7 @@ export async function GET(request: Request) {
             status: { $ne: "cancelled" }
         })
             .populate("patientId", "firstName lastName mrn")
+            .populate("providerId", "firstName lastName department")
             .sort({ startTime: 1 })
             .lean().catch(err => {
                 log(`[API] DB Query Failed: ${err.message}`);

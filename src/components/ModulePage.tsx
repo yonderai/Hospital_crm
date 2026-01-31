@@ -11,9 +11,10 @@ interface ModulePageProps {
     icon: any;
     dataEndpoint?: string; // URL to fetch data from
     disableLayout?: boolean; // Optional: Disable DashboardLayout wrapper
+    children?: React.ReactNode;
 }
 
-export default function GenericModulePage({ title, subtitle, description, icon: Icon, dataEndpoint, disableLayout }: ModulePageProps) {
+export default function GenericModulePage({ title, subtitle, description, icon: Icon, dataEndpoint, disableLayout, children }: ModulePageProps) {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<any[]>([]);
     const [stats, setStats] = useState<any[]>([
@@ -130,101 +131,107 @@ export default function GenericModulePage({ title, subtitle, description, icon: 
                 </div>
 
                 {/* Main Content Area */}
-                <div className="w-full bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-                    <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-                        <div>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">{title} Directory</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Records</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="relative">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                                <input
-                                    type="text"
-                                    placeholder="Search records..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/10 w-64 transition-all"
-                                />
+                {children ? (
+                    <div className="w-full">
+                        {children}
+                    </div>
+                ) : (
+                    <div className="w-full bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                        <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight">{title} Directory</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Records</p>
                             </div>
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowFilter(!showFilter)}
-                                    className={`px-4 py-2.5 border rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${showFilter || filterStatus !== 'All' ? 'bg-olive-50 border-olive-200 text-olive-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                                >
-                                    <Filter size={16} />
-                                    <span>{filterStatus === 'All' ? 'Filter' : filterStatus}</span>
-                                </button>
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search records..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/10 w-64 transition-all"
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowFilter(!showFilter)}
+                                        className={`px-4 py-2.5 border rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${showFilter || filterStatus !== 'All' ? 'bg-olive-50 border-olive-200 text-olive-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                    >
+                                        <Filter size={16} />
+                                        <span>{filterStatus === 'All' ? 'Filter' : filterStatus}</span>
+                                    </button>
 
-                                {showFilter && (
-                                    <div className="absolute right-0 top-12 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
-                                        <div className="p-2 space-y-1">
-                                            {uniqueStatuses.map(status => (
-                                                <button
-                                                    key={status}
-                                                    onClick={() => {
-                                                        setFilterStatus(status);
-                                                        setShowFilter(false);
-                                                    }}
-                                                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all ${filterStatus === status ? 'bg-olive-50 text-olive-700' : 'text-slate-600 hover:bg-slate-50'}`}
-                                                >
-                                                    {status}
-                                                </button>
-                                            ))}
+                                    {showFilter && (
+                                        <div className="absolute right-0 top-12 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+                                            <div className="p-2 space-y-1">
+                                                {uniqueStatuses.map(status => (
+                                                    <button
+                                                        key={status}
+                                                        onClick={() => {
+                                                            setFilterStatus(status);
+                                                            setShowFilter(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all ${filterStatus === status ? 'bg-olive-50 text-olive-700' : 'text-slate-600 hover:bg-slate-50'}`}
+                                                    >
+                                                        {status}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="flex-1 overflow-x-auto">
-                        {loading ? (
-                            <div className="p-8 space-y-4">
-                                {[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-slate-50 rounded-xl animate-pulse"></div>)}
-                            </div>
-                        ) : (
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
-                                        <th className="px-8 py-6">ID / MRN</th>
-                                        <th className="px-8 py-6">Name / Description</th>
-                                        <th className="px-8 py-6">Status</th>
-                                        <th className="px-8 py-6">Date</th>
-                                        <th className="px-8 py-6 text-right pr-12">Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {displayData.map((item, idx) => (
-                                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
-                                            <td className="px-8 py-6">
-                                                <span className="text-sm font-black text-slate-900">{item.id}</span>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-slate-700">{item.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${item.status === 'Active' || item.status === 'Admitted' || item.status === 'Completed' ? 'bg-olive-50 text-olive-600 border-olive-100' :
-                                                    'bg-slate-50 text-slate-400 border-slate-100'
-                                                    }`}>
-                                                    {item.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6 text-xs font-bold text-slate-500">{item.date}</td>
-                                            <td className="px-8 py-6 text-right pr-12">
-                                                <span className="text-sm font-black text-slate-900">{item.value}</span>
-                                            </td>
+                        <div className="flex-1 overflow-x-auto">
+                            {loading ? (
+                                <div className="p-8 space-y-4">
+                                    {[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-slate-50 rounded-xl animate-pulse"></div>)}
+                                </div>
+                            ) : (
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                                            <th className="px-8 py-6">ID / MRN</th>
+                                            <th className="px-8 py-6">Name / Description</th>
+                                            <th className="px-8 py-6">Status</th>
+                                            <th className="px-8 py-6">Date</th>
+                                            <th className="px-8 py-6 text-right pr-12">Details</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {displayData.map((item, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                                                <td className="px-8 py-6">
+                                                    <span className="text-sm font-black text-slate-900">{item.id}</span>
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-slate-700">{item.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${item.status === 'Active' || item.status === 'Admitted' || item.status === 'Completed' ? 'bg-olive-50 text-olive-600 border-olive-100' :
+                                                        'bg-slate-50 text-slate-400 border-slate-100'
+                                                        }`}>
+                                                        {item.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-6 text-xs font-bold text-slate-500">{item.date}</td>
+                                                <td className="px-8 py-6 text-right pr-12">
+                                                    <span className="text-sm font-black text-slate-900">{item.value}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                        <div className="p-6 bg-slate-50/30 border-t border-slate-50 text-center">
+                            <button className="text-xs font-black text-olive-700 uppercase tracking-widest hover:underline">Load More Records</button>
+                        </div>
                     </div>
-                    <div className="p-6 bg-slate-50/30 border-t border-slate-50 text-center">
-                        <button className="text-xs font-black text-olive-700 uppercase tracking-widest hover:underline">Load More Records</button>
-                    </div>
-                </div>
+                )}
             </div>
         );
     }
@@ -272,75 +279,81 @@ export default function GenericModulePage({ title, subtitle, description, icon: 
 
                 {/* Main Content Area */}
                 {/* Main Content Area */}
-                <div className="w-full bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-                    <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-                        <div>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">{title} Directory</h3>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Records</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="relative">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                                <input
-                                    type="text"
-                                    placeholder="Search records..."
-                                    className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-slate-500/10 w-64 transition-all"
-                                />
-                            </div>
-                            <button className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-xs flex items-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all">
-                                <Filter size={16} />
-                                <span>Filter</span>
-                            </button>
-                        </div>
+                {children ? (
+                    <div className="w-full">
+                        {children}
                     </div>
-                    <div className="flex-1 overflow-x-auto">
-                        {loading ? (
-                            <div className="p-8 space-y-4">
-                                {[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-slate-50 rounded-xl animate-pulse"></div>)}
+                ) : (
+                    <div className="w-full bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                        <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight">{title} Directory</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Records</p>
                             </div>
-                        ) : (
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
-                                        <th className="px-8 py-6">ID / MRN</th>
-                                        <th className="px-8 py-6">Name / Description</th>
-                                        <th className="px-8 py-6">Status</th>
-                                        <th className="px-8 py-6">Date</th>
-                                        <th className="px-8 py-6 text-right pr-12">Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {displayData.map((item, idx) => (
-                                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
-                                            <td className="px-8 py-6">
-                                                <span className="text-sm font-black text-slate-900">{item.id}</span>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-slate-700">{item.name}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${item.status === 'Active' || item.status === 'Admitted' || item.status === 'Completed' ? 'bg-olive-50 text-olive-600 border-olive-100' :
-                                                    'bg-slate-50 text-slate-400 border-slate-100'
-                                                    }`}>
-                                                    {item.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6 text-xs font-bold text-slate-500">{item.date}</td>
-                                            <td className="px-8 py-6 text-right pr-12">
-                                                <span className="text-sm font-black text-slate-900">{item.value}</span>
-                                            </td>
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search records..."
+                                        className="pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-slate-500/10 w-64 transition-all"
+                                    />
+                                </div>
+                                <button className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-xs flex items-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all">
+                                    <Filter size={16} />
+                                    <span>Filter</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex-1 overflow-x-auto">
+                            {loading ? (
+                                <div className="p-8 space-y-4">
+                                    {[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-slate-50 rounded-xl animate-pulse"></div>)}
+                                </div>
+                            ) : (
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                                            <th className="px-8 py-6">ID / MRN</th>
+                                            <th className="px-8 py-6">Name / Description</th>
+                                            <th className="px-8 py-6">Status</th>
+                                            <th className="px-8 py-6">Date</th>
+                                            <th className="px-8 py-6 text-right pr-12">Details</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {displayData.map((item, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                                                <td className="px-8 py-6">
+                                                    <span className="text-sm font-black text-slate-900">{item.id}</span>
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-slate-700">{item.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-8 py-6">
+                                                    <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${item.status === 'Active' || item.status === 'Admitted' || item.status === 'Completed' ? 'bg-olive-50 text-olive-600 border-olive-100' :
+                                                        'bg-slate-50 text-slate-400 border-slate-100'
+                                                        }`}>
+                                                        {item.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-6 text-xs font-bold text-slate-500">{item.date}</td>
+                                                <td className="px-8 py-6 text-right pr-12">
+                                                    <span className="text-sm font-black text-slate-900">{item.value}</span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                        <div className="p-6 bg-slate-50/30 border-t border-slate-50 text-center">
+                            <button className="text-xs font-black text-olive-700 uppercase tracking-widest hover:underline">Load More Records</button>
+                        </div>
                     </div>
-                    <div className="p-6 bg-slate-50/30 border-t border-slate-50 text-center">
-                        <button className="text-xs font-black text-olive-700 uppercase tracking-widest hover:underline">Load More Records</button>
-                    </div>
-                </div>
+                )}
             </div>
         </DashboardLayout>
     );

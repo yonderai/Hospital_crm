@@ -19,6 +19,7 @@ export default function PatientRegistrationForm({ onSuccess }: { onSuccess?: () 
         // Insurance
         hasInsurance: false,
         insuranceProvider: "", policyNumber: "", groupNumber: "", coverageType: "Individual", insuranceValidUntil: "",
+        sumInsured: "", coPayment: "", deductible: "", coInsurancePercentage: "",
         // Medical Arrays
         allergies: [] as string[],
         chronicConditions: [] as string[],
@@ -332,6 +333,22 @@ export default function PatientRegistrationForm({ onSuccess }: { onSuccess?: () 
                                 <option value="Family Floater">Family Floater</option>
                                 <option value="Corporate">Corporate</option>
                             </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Sum Insured</label>
+                            <input name="sumInsured" type="number" className="w-full h-12 px-4 bg-white border border-slate-200 rounded-xl outline-none" onChange={handleChange} placeholder="500000" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Deductible</label>
+                            <input name="deductible" type="number" className="w-full h-12 px-4 bg-white border border-slate-200 rounded-xl outline-none" onChange={handleChange} placeholder="0" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Co-Pay (Flat)</label>
+                            <input name="coPayment" type="number" className="w-full h-12 px-4 bg-white border border-slate-200 rounded-xl outline-none" onChange={handleChange} placeholder="0" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Co-Insurance %</label>
+                            <input name="coInsurancePercentage" type="number" className="w-full h-12 px-4 bg-white border border-slate-200 rounded-xl outline-none" onChange={handleChange} placeholder="10" />
                         </div>
                     </div>
                 )}

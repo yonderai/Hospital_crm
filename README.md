@@ -1,92 +1,64 @@
-# 🏥 Hospital Management System - Emergency & Finance Portals
+# Hospital CRM / Medicare System
 
-A comprehensive Hospital Management System featuring specialized portals for **Emergency Room Operations**, **Finance Management**, and **Administrator Controls**. Built with Next.js, MongoDB, and TailwindCSS.
+A comprehensive Full-Stack Hospital Customer Relationship Management (CRM) system built for the final year project. This application manages patient registrations, appointments, billing, insurance, and role-based access for hospital staff (Doctors, Front Desk, Admin, etc.).
 
-## 🚀 Features
+## 🚀 Tech Stack
 
-### 🚑 Emergency Portal
-*   **Real-time Dashboard:** Track active cases, incoming ambulances, and waiting triage patients.
-*   **Quick Registration:** "Trauma-X" rapid entry for unidentified critical patients.
-*   **Triage System:** P1-P5 priority levels with vital sign tracking.
-*   **Ambulance View:** Monitor ambulance fleet status (Available/Busy/Maintenance).
+- **Frontend**: Next.js 14 (App Router), React, Tailwind CSS
+- **Backend**: Next.js API Routes (Serverless) / Node.js
+- **Database**: MongoDB (Mongoose ORM)
+- **Authentication**: NextAuth.js
+- **Styling**: Tailwind CSS, Lucide React Icons
 
-### 💰 Finance Portal
-*   **Expense Management:** Track operating costs (Utilities, Maintenance, Payroll).
-*   **Asset Management:** Registry of high-value medical equipment.
-*   **Vendor & Procurement:** Manage suppliers and purchase orders.
-*   **Audit Logs:** Full financial transparency and compliance tracking.
+## 🛠 Prerequisites
 
-### 🛠 Maintenance Support (New)
-*   **Work Order Management:** Report, Prioritize, and Resolve facility issues.
-*   **Approval Workflow:** Finance team approves/rejects high-cost maintenance requests.
-*   **Overview Dashboard:** Real-time stats on facility health and pending repairs.
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [MongoDB](https://www.mongodb.com/) (Atlas URI or Local instance)
 
-### 🔐 Multi-Role Access
-*   **RBAC System:** Secure login for Doctors, Nurses, Admin, Finance Managers, and ER Staff.
-*   **Middleware Protection:** Route guards ensure users only access authorized areas.
+## 📦 Setup & Installation
 
----
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/yourusername/Hospital_crm.git
+   cd Hospital_crm
+   ```
 
-## 🛠️ Tech Stack
-*   **Frontend:** Next.js 15 (App Router), TailwindCSS, Lucide Icons
-*   **Backend:** Next.js server actions / API Routes
-*   **Database:** MongoDB (with Mongoose ODM)
-*   **Auth:** NextAuth.js (Credentials Provider)
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
----
+3. **Environment Setup**
+   - Create a `.env` file in the root directory.
+   - Copy the contents from `.env.example` and fill in your secrets.
+   ```env
+   MONGODB_URI="your-mongodb-connection-string"
+   NEXTAUTH_SECRET="your-secret-key"
+   NEXTAUTH_URL="http://localhost:3000"
+   ```
 
-## ⚙️ Getting Started
+4. **Run the Development Server**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-Follow these steps to set up the project locally:
+## 🔑 Key Features
 
-### 1. Clone the Repository
-```bash
-git clone <your-repo-url>
-cd hospital
-```
+- **Patient Portal**: Self-registration, Insurance dashboard, Appointment booking.
+- **Role-Based Access**: Specialized dashboards for Admin, Doctor, Nurse, Front Desk, and Finance.
+- **Appointment Management**: Booking, rescheduling, and queue management.
+- **Billing & Insurance**: Split billing (Insurance vs Patient), Invoice generation.
+- **Medical Records**: EMR integration for patient history.
 
-### 2. Install Dependencies
-```bash
-npm install
-```
+## 📂 Project Structure
 
-### 3. Environment Setup
-Copy the example environment file:
-```bash
-cp .env.example .env
-```
-*(Note: You will need to provide your own MongoDB connection string in the `.env` file)*
+- `src/app`: App Router pages and API routes.
+- `src/components`: Reusable UI components.
+- `src/lib`: Database models (`models/`), utilities (`utils/`), and auth configuration.
+- `public`: Static assets.
 
-### 4. Seed the Database
-Populate the database with test users, roles, and demo data:
-```bash
-npm run seed
-```
-This will create users for all roles (Admin, Doctor, Finance, Maintenance, etc.) and generate sample data including Patients and Maintenance Tickets.
+## 🤝 Contribution
 
-### 5. Run the Server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) to view the application.
-
----
-
-## 🧪 Test Accounts
-
-**Password for ALL accounts:** `a`
-
-| Role | Email | Portal Feature |
-|------|-------|----------------|
-| **Admin** | `admin@medicore.com` | Master Control |
-| **Doctor** | `doctor@medicore.com` | Clinical Dashboard |
-| **Nurse** | `nurse@medicore.com` | Patient Care |
-| **Emergency** | `emergency@medicore.com` | ER & Ambulance |
-| **Finance** | `finance@medicore.com` | Approvals & Assets |
-| **Maintenance** | `maintenance@medicore.com` | Work Orders & Repairs |
-| **Front Desk** | `frontdesk@medicore.com` | Registration |
-| **Pharmacist** | `pharmacy@medicore.com` | Inventory |
-| **HR** | `hr@medicore.com` | Staffing |
-| **Billing** | `billing@medicore.com` | Invoices |
-
-| **Patient** | `patient@medicore.com` | Medical Records |
+This is a final year academic project.

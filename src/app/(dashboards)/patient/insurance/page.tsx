@@ -1,255 +1,265 @@
 "use client";
 
 import DashboardLayout from "@/components/DashboardLayout";
+import {
+    ShieldCheck, Activity, FileText, Calendar,
+    CreditCard, Download, Upload, AlertCircle,
+    CheckCircle2, XCircle, ChevronRight, Plus
+} from "lucide-react";
 import { useState, useEffect } from "react";
-import { ShieldCheck, CreditCard, Calendar, CheckCircle2, Info, ArrowRight, X } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function PatientInsurancePage() {
+    const { data: session } = useSession();
     const [loading, setLoading] = useState(true);
-    const [insurance, setInsurance] = useState<any>(null);
-    const [showClaimModal, setShowClaimModal] = useState(false);
-    const [claimAmount, setClaimAmount] = useState("");
-    const [claimNotes, setClaimNotes] = useState("");
-    const [submitting, setSubmitting] = useState(false);
-    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [insuranceData, setInsuranceData] = useState<any>(null);
+    const [claims, setClaims] = useState<any[]>([]);
 
     useEffect(() => {
-        fetchInsurance();
-    }, []);
-
-    const fetchInsurance = () => {
-        fetch('/api/patient/insurance')
-            .then(res => res.json())
-            .then(json => {
-                setInsurance(json.data);
-                setLoading(false);
-            })
-            .catch(err => console.error(err));
-    };
-
-    const handleFileClaim = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitting(true);
-        setMessage(null);
-
-        try {
-            const res = await fetch('/api/patient/insurance/claim', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    claimAmount: parseFloat(claimAmount),
-                    notes: claimNotes
-                })
+        // Fetch logic would go here
+        // Mocking data for now as per requirements
+        setTimeout(() => {
+            setInsuranceData({
+                provider: "Bajaj Allianz",
+                policyNumber: "POL123456789",
+                groupNumber: "GRP987654",
+                coverageType: "Family Floater",
+                sumInsured: 500000,
+                balance: 350000,
+                validUntil: "2025-12-31",
+                hasInsurance: true,
+                utilization: 30 // percentage
             });
 
-            const data = await res.json();
+            setClaims([
+                { date: "15/01/2025", service: "Cardiology Consultation", amount: 50000, status: "Approved" },
+                { date: "10/12/2024", service: "Lab Tests - Blood Panel", amount: 5000, status: "Approved" },
+                { date: "05/11/2024", service: "MRI Scan - Knee", amount: 15000, status: "Approved" },
+                { date: "15/09/2024", service: "Pharmacy - Inpatient", amount: 8000, status: "Pending" }
+            ]);
+            setLoading(false);
+        }, 1000);
+    }, []);
 
-            if (res.ok) {
-                setMessage({ type: 'success', text: 'Claim filed and applied to your billing successfully!' });
-                setShowClaimModal(false);
-                setClaimAmount("");
-                setClaimNotes("");
-                // Refresh data could go here if needed
-                setTimeout(() => setMessage(null), 5000);
-            } else {
-                setMessage({ type: 'error', text: data.error || 'Failed to file claim' });
-            }
-        } catch (err) {
-            setMessage({ type: 'error', text: 'An error occurred while submitting' });
-        } finally {
-            setSubmitting(false);
-        }
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
     };
 
     return (
         <DashboardLayout>
-            <div className="max-w-5xl mx-auto space-y-12 pb-20">
-                {/* Status Message */}
-                {message && (
-                    <div className={`fixed top-24 right-8 z-50 p-4 rounded-2xl shadow-xl border animate-in fade-in slide-in-from-top-4 duration-300 ${message.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-red-50 border-red-100 text-red-700'
-                        }`}>
-                        <div className="flex items-center gap-3">
-                            {message.type === 'success' ? <CheckCircle2 size={20} /> : <Info size={20} />}
-                            <p className="text-sm font-bold">{message.text}</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Header Section */}
-                <div className="flex justify-between items-end">
+            <div className="space-y-8 max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-4xl font-black text-slate-900 tracking-tight">INSURANCE</h2>
-                        <p className="text-olive-600 text-[10px] font-black mt-2 uppercase tracking-[0.4em]">POLICY & COVERAGE DETAILS</p>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">My Insurance</h2>
+                        <p className="text-olive-600 text-[10px] font-black mt-1 uppercase tracking-[0.3em]">Coverage & Claims</p>
                     </div>
-                    <button
-                        onClick={() => setShowClaimModal(true)}
-                        className="flex items-center gap-3 px-6 py-3 bg-olive-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-olive-700 hover:shadow-lg transition-all"
-                    >
-                        <ShieldCheck size={16} />
-                        File New Claim
-                    </button>
+                    <div className="flex gap-4">
+                        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
+                            <Upload size={16} /> Update Policy
+                        </button>
+                        <button className="flex items-center gap-2 px-6 py-3 bg-olive-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-olive-700 transition-all shadow-lg shadow-olive-600/20">
+                            <Plus size={16} /> Add New Policy
+                        </button>
+                    </div>
                 </div>
 
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-pulse">
-                        <div className="h-64 bg-slate-50 rounded-[40px]"></div>
-                        <div className="h-64 bg-slate-50 rounded-[40px]"></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-pulse">
+                        <div className="h-64 bg-slate-100 rounded-3xl col-span-2"></div>
+                        <div className="h-64 bg-slate-100 rounded-3xl"></div>
                     </div>
                 ) : (
-                    <div className="space-y-8">
-                        {/* Main Insurance Card */}
-                        <div className="bg-gradient-to-br from-olive-600 to-olive-800 rounded-[40px] p-10 text-white shadow-2xl relative overflow-hidden group">
-                            {/* Decorative background element */}
-                            <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-700"></div>
+                    <>
+                        {/* Status Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Main Coverage Card */}
+                            <div className="lg:col-span-2 bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-8 opacity-5">
+                                    <ShieldCheck size={200} />
+                                </div>
 
-                            <div className="relative z-10 flex flex-col h-full justify-between">
-                                <div className="flex justify-between items-start mb-16">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
-                                            <ShieldCheck size={32} strokeWidth={2.5} />
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-12 h-12 bg-olive-50 rounded-2xl flex items-center justify-center text-olive-600">
+                                            <ShieldCheck size={24} />
                                         </div>
                                         <div>
-                                            <h3 className="text-2xl font-black tracking-tight">{insurance.provider}</h3>
-                                            <p className="text-white/60 text-xs font-bold uppercase tracking-widest">{insurance.coverageType}</p>
+                                            <h3 className="text-xl font-black text-slate-900">{insuranceData.provider}</h3>
+                                            <p className="text-sm font-bold text-slate-500">Policy #{insuranceData.policyNumber}</p>
+                                        </div>
+                                        <div className="ml-auto px-4 py-2 bg-green-50 text-green-700 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 border border-green-100">
+                                            <CheckCircle2 size={14} /> Active
                                         </div>
                                     </div>
-                                    <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-white/80">Valid Until</p>
-                                        <p className="text-sm font-black">{insurance.expiryDate}</p>
+
+                                    <div className="flex gap-12 mb-8">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sum Insured</p>
+                                            <p className="text-2xl font-black text-slate-900">{formatCurrency(insuranceData.sumInsured)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Available Balance</p>
+                                            <p className="text-2xl font-black text-olive-600">{formatCurrency(insuranceData.balance)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Valid Until</p>
+                                            <p className="text-2xl font-black text-slate-900">{new Date(insuranceData.validUntil).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-xs font-bold text-slate-500">
+                                            <span>Utilization ({insuranceData.utilization}%)</span>
+                                            <span>{formatCurrency(insuranceData.sumInsured - insuranceData.balance)} Used</span>
+                                        </div>
+                                        <div className="h-4 bg-slate-100 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-olive-500 rounded-full transition-all duration-1000 ease-out"
+                                                style={{ width: `${insuranceData.utilization}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8 flex gap-4">
+                                        <button className="text-xs font-bold text-slate-500 hover:text-olive-700 flex items-center gap-2">
+                                            <FileText size={14} /> View Policy Document
+                                        </button>
+                                        <button className="text-xs font-bold text-slate-500 hover:text-olive-700 flex items-center gap-2">
+                                            <Download size={14} /> Download E-Card
+                                        </button>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                                    <div>
-                                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">Policy Number</p>
-                                        <p className="text-xl font-bold font-mono tracking-wider">{insurance.policyNumber}</p>
+                            {/* Insurance Card Visual */}
+                            <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-[40px] shadow-xl text-white flex flex-col justify-between relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                                <div className="relative z-10">
+                                    <div className="flex justify-between items-start mb-8">
+                                        <ShieldCheck className="text-olive-400" size={32} />
+                                        <span className="text-xs font-bold uppercase tracking-widest opacity-60">Health Card</span>
                                     </div>
-                                    <div>
-                                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">Group ID</p>
-                                        <p className="text-xl font-bold font-mono tracking-wider">{insurance.groupNumber}</p>
+                                    <div className="space-y-6">
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Insured Name</p>
+                                            <p className="text-xl font-bold tracking-wide">{session?.user?.name || "Rajesh Kumar"}</p>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <div>
+                                                <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Member ID</p>
+                                                <p className="font-mono text-sm tracking-wider">MEM-8829-22</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[10px] uppercase tracking-widest opacity-50 mb-1">Group ID</p>
+                                                <p className="font-mono text-sm tracking-wider">{insuranceData.groupNumber}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">Benefit Tier</p>
-                                        <p className="text-xl font-bold tracking-tight">Platinum Plus</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">Status</p>
-                                        <p className="text-xl font-bold tracking-tight">{insurance.status}</p>
-                                    </div>
+                                </div>
+                                <div className="mt-8 pt-8 border-t border-white/10 flex justify-between items-center relative z-10">
+                                    <span className="text-[10px] font-bold opacity-60">Medicore Network</span>
+                                    <CreditCard size={20} className="text-olive-400" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Secondary Details Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Coverage Summary */}
-                            <div className="md:col-span-2 bg-white rounded-[32px] border border-slate-100 p-8 shadow-sm">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
-                                        <CreditCard size={20} />
-                                    </div>
-                                    <h4 className="font-black text-slate-800 tracking-tight">Coverage Breakdown</h4>
-                                </div>
+                        {/* Claims History */}
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Recent Claims</h3>
+                                <button className="text-xs font-bold text-olive-600 hover:underline uppercase tracking-wider">View All History</button>
+                            </div>
+
+                            <div className="bg-white rounded-[32px] border border-slate-100 overflow-hidden shadow-sm">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-slate-50/50 border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                            <th className="px-8 py-6">Date</th>
+                                            <th className="px-8 py-6">Service / Description</th>
+                                            <th className="px-8 py-6">Amount Claimed</th>
+                                            <th className="px-8 py-6">Status</th>
+                                            <th className="px-8 py-6 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {claims.map((claim, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-8 py-6 text-sm font-bold text-slate-500">{claim.date}</td>
+                                                <td className="px-8 py-6 text-sm font-bold text-slate-900">{claim.service}</td>
+                                                <td className="px-8 py-6 text-sm font-black text-slate-900">{formatCurrency(claim.amount)}</td>
+                                                <td className="px-8 py-6">
+                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${claim.status === 'Approved' ? 'bg-green-50 text-green-600 border-green-100' :
+                                                            claim.status === 'Pending' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                                                                'bg-red-50 text-red-600 border-red-100'
+                                                        }`}>
+                                                        {claim.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-8 py-6 text-right">
+                                                    <button className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-olive-600 transition-colors">
+                                                        <ChevronRight size={18} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Covered Services & Helpers */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm">
+                                <h3 className="text-lg font-black text-slate-900 mb-6">What's Covered?</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     {[
-                                        { label: "OPD Consultation", value: "100% Covered" },
-                                        { label: "Lab Investigations", value: "90% Covered" },
-                                        { label: "Radiology / Scans", value: "90% Covered" },
-                                        { label: "IPD / Inpatient", value: "80% Covered" },
-                                        { label: "Pharmacy / Meds", value: "50% Covered" },
-                                        { label: "Emergency Services", value: "100% Covered" }
+                                        "Hospitalization", "Consultations", "Laboratory Tests",
+                                        "Imaging (X-Ray/MRI)", "Surgeries", "ICU Charges"
                                     ].map((item, i) => (
-                                        <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
-                                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{item.label}</span>
-                                            <span className="text-xs font-black text-olive-700">{item.value}</span>
+                                        <div key={i} className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                                            <CheckCircle2 size={16} className="text-green-500 shrink-0" /> {item}
                                         </div>
                                     ))}
+                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-400 line-through decoration-slate-300">
+                                        <XCircle size={16} className="text-slate-300 shrink-0" /> Cosmetic Surgery
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-400 line-through decoration-slate-300">
+                                        <XCircle size={16} className="text-slate-300 shrink-0" /> Dental Care
+                                    </div>
+                                </div>
+                                <div className="mt-8 pt-6 border-t border-slate-50">
+                                    <button className="text-xs font-bold text-olive-600 hover:underline uppercase tracking-wider">View Complete Policy Terms</button>
                                 </div>
                             </div>
 
-                            {/* TPA Support */}
-                            <div className="bg-white rounded-[32px] border border-slate-100 p-8 shadow-sm flex flex-col justify-between">
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-olive-50 rounded-xl flex items-center justify-center text-olive-600">
-                                            <Info size={20} />
+                            <div className="bg-gradient-to-br from-olive-50 to-white p-8 rounded-[32px] border border-olive-100">
+                                <h3 className="text-lg font-black text-olive-900 mb-2">Need Assistance?</h3>
+                                <p className="text-sm font-medium text-olive-700/70 mb-6">Contact your insurance provider directly or reach out to our billing desk.</p>
+
+                                <div className="space-y-4">
+                                    <div className="bg-white p-4 rounded-xl border border-olive-100 flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-olive-100 text-olive-600 rounded-full flex items-center justify-center">
+                                            <Activity size={20} />
                                         </div>
-                                        <h4 className="font-black text-slate-800 tracking-tight">Need Help?</h4>
+                                        <div>
+                                            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Bajaj Allianz Support</p>
+                                            <p className="text-sm font-black text-slate-900">1800-209-5858</p>
+                                        </div>
                                     </div>
-                                    <p className="text-xs font-medium text-slate-500 leading-relaxed">
-                                        Contact your dedicated insurance desk for pre-authorization or claim queries.
-                                    </p>
-                                </div>
-                                <button className="mt-8 group flex items-center justify-between w-full px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-olive-700 transition-all">
-                                    Insurance Desk
-                                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Claim Modal */}
-                {showClaimModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-                        <div className="bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-300">
-                            <div className="p-8 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">File Insurance Claim</h3>
-                                    <p className="text-olive-600 text-[10px] font-black uppercase tracking-widest mt-1">Submit Clinical Expenses</p>
-                                </div>
-                                <button
-                                    onClick={() => setShowClaimModal(false)}
-                                    className="p-3 hover:bg-slate-200 rounded-2xl text-slate-400 hover:text-slate-900 transition-all"
-                                >
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            <form onSubmit={handleFileClaim} className="p-8 space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Claim Amount (INR)</label>
-                                    <div className="relative">
-                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</div>
-                                        <input
-                                            required
-                                            type="number"
-                                            value={claimAmount}
-                                            onChange={(e) => setClaimAmount(e.target.value)}
-                                            placeholder="0.00"
-                                            className="w-full pl-10 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-olive-500 focus:bg-white transition-all font-bold text-slate-900"
-                                        />
+                                    <div className="bg-white p-4 rounded-xl border border-olive-100 flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-olive-100 text-olive-600 rounded-full flex items-center justify-center">
+                                            <ShieldCheck size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Medicore Billing Desk</p>
+                                            <p className="text-sm font-black text-slate-900">1800-MEDICORE</p>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Claim Reason / Notes</label>
-                                    <textarea
-                                        value={claimNotes}
-                                        onChange={(e) => setClaimNotes(e.target.value)}
-                                        placeholder="Briefly describe the clinical service or reason for this claim..."
-                                        rows={4}
-                                        className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-olive-500 focus:bg-white transition-all font-medium text-slate-700 resize-none"
-                                    ></textarea>
-                                </div>
-
-                                <div className="pt-4">
-                                    <button
-                                        disabled={submitting}
-                                        type="submit"
-                                        className="w-full py-5 bg-olive-600 text-white rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-olive-600/20 hover:bg-olive-700 disabled:opacity-50 transition-all flex items-center justify-center gap-3"
-                                    >
-                                        {submitting ? "Processing..." : (
-                                            <>
-                                                <ShieldCheck size={20} />
-                                                Submit Claim to Billing
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
+                            </div>
                         </div>
-                    </div>
+                    </>
                 )}
             </div>
         </DashboardLayout>

@@ -100,18 +100,41 @@ export default function AppointmentForm({ userRole = 'patient' }: { userRole?: '
                 {/* Patient ID Field - Visible for Front Desk, technically hidden/auto for Patient */}
                 <div className="space-y-2">
                     <label className="text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Patient ID / Reference</label>
-                    <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100 focus-within:border-olive-400 focus-within:bg-white transition-all">
-                        <UserIcon size={18} className="text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Enter Patient MongoDB ID (e.g. from seed)"
-                            className="bg-transparent outline-none w-full text-sm font-bold text-slate-700 placeholder:font-medium placeholder:text-slate-400"
-                            value={formData.patientId}
-                            onChange={e => setFormData({ ...formData, patientId: e.target.value })}
-                            required
-                        />
+                    <div className="flex gap-2">
+                        <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100 focus-within:border-olive-400 focus-within:bg-white transition-all">
+                            <UserIcon size={18} className="text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Enter Patient MongoDB ID / MRN"
+                                className="bg-transparent outline-none w-full text-sm font-bold text-slate-700 placeholder:font-medium placeholder:text-slate-400"
+                                value={formData.patientId}
+                                onChange={e => setFormData({ ...formData, patientId: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <button type="button" className="px-4 bg-olive-50 text-olive-600 rounded-2xl font-bold text-xs uppercase tracking-wider border border-olive-100 hover:bg-olive-100 transition-colors">
+                            Check Coverage
+                        </button>
                     </div>
-                    <p className="text-[10px] text-slate-400 pl-1">For demo: copy an ID from the 'Patients' list or database.</p>
+                    {/* Mock Insurance Check Result */}
+                    {formData.patientId.length > 5 && (
+                        <div className="mt-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-2">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-bold text-slate-500 uppercase">Coverage Status</span>
+                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-[10px] font-black uppercase flex items-center gap-1">
+                                    <CheckCircle size={10} /> Active Policy
+                                </span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="font-bold text-slate-700">Est. Consultation Fee</span>
+                                <span className="font-black text-slate-900">₹1,500</span>
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-slate-200 flex justify-between items-center text-xs">
+                                <span className="font-bold text-olive-600">Patient Pay: ₹500</span>
+                                <span className="font-bold text-slate-400">Insurance: ₹1,000</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

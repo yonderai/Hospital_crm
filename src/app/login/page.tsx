@@ -165,6 +165,28 @@ export default function LoginPage() {
                         </button>
                     </form>
 
+                    <div className="text-center pt-2">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-slate-200" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-[#fcfcfc] px-2 text-slate-400 font-bold tracking-widest">or</span>
+                            </div>
+                        </div>
+
+                        <div className="mt-6">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">New Patient?</h4>
+                            <a
+                                href="/register"
+                                className="block w-full py-4 border-2 border-olive-600/30 hover:border-olive-600 text-olive-700 hover:text-olive-800 rounded-xl font-bold uppercase tracking-wider transition-all bg-olive-50/50 hover:bg-olive-50 flex items-center justify-center gap-2 group"
+                            >
+                                Register as New Patient
+                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                            </a>
+                        </div>
+                    </div>
+
                     <div className="pt-10 flex flex-col items-center gap-6">
                         <div className="flex items-center gap-1.5 opacity-40">
                             <ShieldCheck size={14} className="text-slate-900" />
@@ -173,6 +195,6 @@ export default function LoginPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

@@ -6,6 +6,7 @@ export interface IInvoiceItem {
     unitPrice: number;
     total: number;
     code?: string; // CPT/HCPCS code
+    isInsuranceCovered: boolean;
 }
 
 export interface IInvoice extends Document {
@@ -15,9 +16,27 @@ export interface IInvoice extends Document {
     items: IInvoiceItem[];
     totalAmount: number;
     amountPaid: number;
+    insuranceCalculation: {
+        totalBillAmount: number;
+        insuranceCoveredAmount: number;
+        totalPatientPayable: number;
+        deductibleApplied: number;
+        coPayApplied: number;
+        coInsuranceApplied: number;
+        claimStatus: "pending" | "approved" | "rejected" | "partial" | "not_initiated";
+        claimId?: string;
+    };
+    paymentSplit: {
+        payer: "patient" | "insurance" | "third_party";
+        amount: number;
+        status: "paid" | "pending" | "failed";
+        method?: string;
+        transactionId?: string;
+        date?: Date;
+    }[];
     insuranceCoverage: number;
     balanceDue: number;
-    status: "draft" | "sent" | "partial" | "paid" | "void" | "overdue";
+    status: "draft" | "sent" | "partial" | "paid" | "void" | "overdue" | "claim_processing";
     dueDate: Date;
     notes?: string;
     createdAt: Date;
@@ -30,6 +49,7 @@ const InvoiceItemSchema = new Schema<IInvoiceItem>({
     unitPrice: { type: Number, required: true },
     total: { type: Number, required: true },
     code: { type: String },
+    isInsuranceCovered: { type: Boolean, default: false },
 });
 
 const InvoiceSchema = new Schema<IInvoice>(
@@ -40,12 +60,34 @@ const InvoiceSchema = new Schema<IInvoice>(
         items: [InvoiceItemSchema],
         totalAmount: { type: Number, required: true },
         amountPaid: { type: Number, default: 0 },
+        insuranceCalculation: {
+            totalBillAmount: { type: Number },
+            insuranceCoveredAmount: { type: Number },
+            totalPatientPayable: { type: Number },
+            deductibleApplied: { type: Number, default: 0 },
+            coPayApplied: { type: Number, default: 0 },
+            coInsuranceApplied: { type: Number, default: 0 },
+            claimStatus: {
+                type: String,
+                enum: ["pending", "approved", "rejected", "partial", "not_initiated"],
+                default: "not_initiated"
+            },
+            claimId: { type: String }
+        },
+        paymentSplit: [{
+            payer: { type: String, enum: ["patient", "insurance", "third_party"], required: true },
+            amount: { type: Number, required: true },
+            status: { type: String, enum: ["paid", "pending", "failed"], default: "pending" },
+            method: { type: String },
+            transactionId: { type: String },
+            date: { type: Date }
+        }],
         insuranceCoverage: { type: Number, default: 0 },
         balanceDue: { type: Number, required: true },
         status: {
             type: String,
             required: true,
-            enum: ["draft", "sent", "partial", "paid", "void", "overdue"],
+            enum: ["draft", "sent", "partial", "paid", "void", "overdue", "claim_processing"],
             default: "draft"
         },
         dueDate: { type: Date, required: true },
