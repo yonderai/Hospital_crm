@@ -140,7 +140,7 @@ export default function TicketManagement({ mode }: TicketManagementProps) {
                                     {ticket.approvalDetails?.remarks && (
                                         <div className="bg-slate-50 p-4 rounded-xl text-xs text-slate-600 italic border border-slate-100">
                                             <span className="font-bold not-italic text-[9px] uppercase tracking-widest block text-slate-400 mb-1">Finace Remarks</span>
-                                            "{ticket.approvalDetails.remarks}"
+                                            &quot;{ticket.approvalDetails.remarks}&quot;
                                         </div>
                                     )}
                                 </div>
@@ -208,7 +208,7 @@ export default function TicketManagement({ mode }: TicketManagementProps) {
                         </div>
                         <form onSubmit={handleReview} className="p-8 space-y-6">
                             <div className="bg-slate-50 p-6 rounded-2xl text-xs text-slate-600 italic mb-6">
-                                "{selectedTicket.description}"
+                                &quot;{selectedTicket.description}&quot;
                             </div>
                             <div className="space-y-4">
                                 <div className="space-y-2">

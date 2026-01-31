@@ -68,7 +68,7 @@ export default function QueueList() {
     return (
         <Card className="w-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xl font-bold">Today's Appointments</CardTitle>
+                <CardTitle className="text-xl font-bold">Today&apos;s Appointments</CardTitle>
                 <Button variant="ghost" size="sm" onClick={fetchQueue} disabled={loading}>
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                 </Button>

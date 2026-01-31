@@ -1,6 +1,6 @@
 "use client";
 import { X, Download, Printer, ZoomIn, ZoomOut } from "lucide-react";
-import Image from "next/image";
+
 
 interface ReportModalProps {
     imageUrl?: string;

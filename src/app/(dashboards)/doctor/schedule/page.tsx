@@ -18,6 +18,7 @@ import Link from "next/link";
 export default function DoctorSchedule() {
     const [appointments, setAppointments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
 
     // Helper to format date for API (YYYY-MM-DD)
@@ -38,13 +39,24 @@ export default function DoctorSchedule() {
     useEffect(() => {
         const fetchSchedule = async () => {
             setLoading(true);
+            setError(null);
             try {
                 // Fetch filtered by date
                 const dateStr = formatDateForApi(selectedDate);
-                const res = await fetch(`/api/appointments?date=${dateStr}`);
-                if (!res.ok) throw new Error("Failed to fetch");
+                const url = `/api/appointments?date=${dateStr}`;
+                console.log("Fetching schedule from:", url);
+
+                const res = await fetch(url);
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(`Failed to fetch: ${res.status} ${res.statusText} - ${text}`);
+                }
 
                 const data = await res.json();
+
+                if (!Array.isArray(data)) {
+                    throw new Error("Invalid response format: expected array");
+                }
 
                 const mapped = data.map((apt: any) => {
                     const start = new Date(apt.startTime);
@@ -65,8 +77,9 @@ export default function DoctorSchedule() {
                 });
 
                 setAppointments(mapped);
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Failed to fetch schedule:", error);
+                setError(error.message || "An unknown error occurred");
                 setAppointments([]);
             } finally {
                 setLoading(false);
@@ -111,6 +124,13 @@ export default function DoctorSchedule() {
                         </button> */}
                     </div>
                 </div>
+
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        <p className="text-sm font-medium">{error}</p>
+                    </div>
+                )}
 
                 {/* Calendar Navigation */}
                 <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center justify-between">

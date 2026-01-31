@@ -7,10 +7,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Search,
-    Clock,
-    User,
-    CheckCircle2,
-    XCircle
+
 } from "lucide-react";
 import { format, addDays, subDays, startOfWeek, endOfWeek, addWeeks, subWeeks, parseISO } from "date-fns";
 

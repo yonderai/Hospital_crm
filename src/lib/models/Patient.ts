@@ -52,6 +52,12 @@ export interface IPatient extends Document {
             frequency: string;
         }[];
     };
+    patientUpdates?: {
+        category: 'allergy' | 'condition' | 'surgery' | 'medication' | 'family' | 'other';
+        description: string;
+        timestamp: Date;
+        status: 'pending' | 'reviewed' | 'rejected';
+    }[];
     // Root level fields for backward compatibility
     allergies: string[];
     chronicConditions: string[];
@@ -136,6 +142,12 @@ const PatientSchema = new Schema<IPatient>(
                 frequency: { type: String }
             }]
         },
+        patientUpdates: [{
+            category: { type: String, enum: ['allergy', 'condition', 'surgery', 'medication', 'family', 'other'], required: true },
+            description: { type: String, required: true },
+            timestamp: { type: Date, default: Date.now },
+            status: { type: String, enum: ['pending', 'reviewed', 'rejected'], default: 'pending' }
+        }],
         // Valid for simple string arrays if needed for backward compat, but preferring object structure above
         allergies: { type: [String], default: [] },
         chronicConditions: { type: [String], default: [] },

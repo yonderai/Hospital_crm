@@ -8,9 +8,10 @@ import SurgeryOrderForm from "./SurgeryOrderForm";
 import {
     User, Activity, FileText, FlaskConical, Pill,
     History, Clock, CheckCircle2, AlertCircle, Calendar, Stethoscope,
-    ChevronRight, ExternalLink, ZoomIn, Scissors, Scan
+    ChevronRight, ExternalLink, ZoomIn, Scissors, Scan, Download, X
 } from "lucide-react";
 import ReportModal from "./ReportModal";
+import { format } from "date-fns";
 
 export default function ClinicalProfile(props: { patient: any; onBack: () => void; initialTab?: string; appointmentId?: string; encounterId?: string }) {
     const { onBack, appointmentId, encounterId, patient, initialTab = "overview" } = props;
@@ -21,26 +22,30 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
         radiology: [],
         surgeries: [],
         consultations: [],
+        documents: [],
         loading: true
     });
     const [selectedReport, setSelectedReport] = useState<any | null>(null);
+    const [previewDoc, setPreviewDoc] = useState<any | null>(null);
 
     const fetchHistory = async () => {
         try {
             setHistory((prev: any) => ({ ...prev, loading: true }));
-            const [rxRes, labsRes, radRes, consultRes] = await Promise.all([
+            const [rxRes, labsRes, radRes, surgeryRes, consultRes, docRes] = await Promise.all([
                 fetch(`/api/patients/${patient._id}/prescriptions`),
                 fetch(`/api/patients/${patient._id}/labs`),
                 fetch(`/api/patients/${patient._id}/radiology`),
                 fetch(`/api/patients/${patient._id}/surgery`),
-                fetch(`/api/patients/${patient._id}/consultations`)
+                fetch(`/api/patients/${patient._id}/consultations`),
+                fetch(`/api/patient/documents?patientId=${patient._id}`)
             ]);
 
-            const [rxData, labsData, radData, consultData] = await Promise.all([
+            const [rxData, labsData, radData, consultData, docData] = await Promise.all([
                 rxRes.ok ? rxRes.json() : [],
                 labsRes.ok ? labsRes.json() : [],
                 radRes.ok ? radRes.json() : [],
-                consultRes.ok ? consultRes.json() : []
+                consultRes.ok ? consultRes.json() : [],
+                docRes.ok ? docRes.json() : { documents: [] }
             ]);
 
             const surgeriesData = await fetch(`/api/patients/${patient._id}/surgery`).then(r => r.ok ? r.json() : []);
@@ -51,6 +56,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                 radiology: radData,
                 surgeries: surgeriesData,
                 consultations: consultData,
+                documents: docData.documents || [],
                 loading: false
             });
         } catch (error) {
@@ -113,6 +119,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                     { id: 'labs', label: 'Lab Orders', icon: FlaskConical },
                     { id: 'radiology', label: 'Radiology', icon: Scan },
                     { id: 'surgery', label: 'Surgery', icon: Scissors },
+                    { id: 'archive', label: 'Records Archive', icon: Activity }
                 ].map(tab => (
                     <button
                         key={tab.id}
@@ -200,7 +207,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                             url: "/brain/7e558bad-ff5f-46ac-afb7-d36c8d2b6454/mock_lab_report_john_doe_1769605788071.png",
                                             title: `Lab Report: ${history.prescriptions[0].prescriptionId.slice(-8)}`
                                         })} className="space-y-4 cursor-pointer hover:opacity-80 transition-opacity">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Order Ref: {history.prescriptions[0].prescriptionId.slice(-8)} • {new Date(history.prescriptions[0].prescribedDate).toLocaleDateString()}</p>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Order Ref: {history.prescriptions[0].prescriptionId.slice(-8)} • {format(new Date(history.prescriptions[0].prescribedDate), "MMM dd, yyyy HH:mm")}</p>
                                             <div className="space-y-2">
                                                 {history.prescriptions[0].medications.slice(0, 2).map((m: any, i: number) => (
                                                     <div key={i} className="flex justify-between text-xs p-3 bg-slate-50 rounded-xl">
@@ -234,7 +241,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                                 type: 'lab',
                                                 patientName: `${patient.firstName} ${patient.lastName}`,
                                                 mrn: patient.mrn,
-                                                date: new Date(history.labs[0].createdAt).toLocaleDateString(),
+                                                date: format(new Date(history.labs[0].createdAt), "MMM dd, yyyy HH:mm"),
                                                 results: history.labs[0].results?.map((r: any) => ({
                                                     testName: r.testName,
                                                     value: r.value,
@@ -246,7 +253,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                         })} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100 transition-colors">
                                             <div>
                                                 <h5 className="text-xs font-black text-slate-900 uppercase">{(history.labs[0].tests || [history.labs[0].testType]).join(', ')}</h5>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{new Date(history.labs[0].createdAt).toLocaleDateString()}</p>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{format(new Date(history.labs[0].createdAt), "MMM dd, yyyy HH:mm")}</p>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-lg font-black text-slate-900 italic tracking-tighter">{history.labs[0].results?.[0]?.value || history.labs[0].status}</p>
@@ -277,7 +284,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                                 type: 'radiology',
                                                 patientName: `${patient.firstName} ${patient.lastName}`,
                                                 mrn: patient.mrn,
-                                                date: new Date(history.radiology[0].createdAt).toLocaleDateString(),
+                                                date: format(new Date(history.radiology[0].createdAt), "MMM dd, yyyy HH:mm"),
                                                 radiology: {
                                                     findings: history.radiology[0].report?.findings || "Findings pending interpretation.",
                                                     impression: history.radiology[0].report?.impression || "Impression pending.",
@@ -290,7 +297,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                             </div>
                                             <div className="flex-1">
                                                 <h5 className="text-xs font-black text-slate-900 uppercase">{history.radiology[0].imagingType} • {history.radiology[0].bodyPart}</h5>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{new Date(history.radiology[0].createdAt).toLocaleDateString()}</p>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{format(new Date(history.radiology[0].createdAt), "MMM dd, yyyy HH:mm")}</p>
                                             </div>
                                             <div className="max-w-md hidden lg:block">
                                                 <p className="text-[10px] text-slate-500 italic line-clamp-1">"{history.radiology[0].report?.interpretation || "Report Pending"}"</p>
@@ -324,7 +331,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                         </div>
                                         <div className="flex-1">
                                             <h5 className="text-xs font-black text-slate-900 uppercase">{history.consultations[0].chiefComplaint}</h5>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{new Date(history.consultations[0].createdAt).toLocaleDateString()} • {history.consultations[0].status.toUpperCase()}</p>
+                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{format(new Date(history.consultations[0].createdAt), "MMM dd, yyyy HH:mm")} • {history.consultations[0].status.toUpperCase()}</p>
                                         </div>
                                         <div className="max-w-md hidden lg:block">
                                             <p className="text-[10px] text-slate-500 italic line-clamp-1">"{history.consultations[0].soapNotes?.assessment || "No assessment recorded"}"</p>
@@ -332,6 +339,42 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                     </div>
                                 ) : (
                                     <p className="text-xs text-slate-400 italic">No consultation history found.</p>
+                                )}
+                            </div>
+
+                            {/* Recent Patient Uploads */}
+                            <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm md:col-span-2">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <History size={14} /> Patient Uploaded Records
+                                    </h4>
+                                    <button onClick={() => setActiveTab('archive')} className="text-[9px] font-black text-olive-600 uppercase tracking-widest flex items-center gap-1 hover:underline">
+                                        Open Vault <ChevronRight size={10} />
+                                    </button>
+                                </div>
+                                {history.loading ? (
+                                    <div className="h-20 bg-slate-50 animate-pulse rounded-2xl" />
+                                ) : history.documents?.length > 0 ? (
+                                    <div className="flex flex-wrap gap-4">
+                                        {history.documents.slice(0, 3).map((doc: any, i: number) => (
+                                            <div key={i} onClick={() => setPreviewDoc(doc)} className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100 transition-all border border-transparent hover:border-olive-200">
+                                                <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-olive-600">
+                                                    <FileText size={20} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-black text-slate-900 uppercase tracking-tight line-clamp-1">{doc.fileName}</p>
+                                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">{doc.documentType}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {history.documents.length > 3 && (
+                                            <button onClick={() => setActiveTab('archive')} className="p-4 rounded-2xl border-2 border-dashed border-slate-100 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:border-olive-200 hover:text-olive-600 transition-all">
+                                                +{history.documents.length - 3} more
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-slate-400 italic">No patient-uploaded documents available.</p>
                                 )}
                             </div>
                         </div>
@@ -356,7 +399,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                                     </div>
                                                     <div>
                                                         <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight italic">{c.chiefComplaint}</h4>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{new Date(c.createdAt).toLocaleDateString()} • {c.providerId?.firstName} {c.providerId?.lastName}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{format(new Date(c.createdAt), "MMM dd, yyyy HH:mm")} • {c.providerId?.firstName} {c.providerId?.lastName}</p>
                                                     </div>
                                                 </div>
                                                 <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${c.status === 'closed' ? 'bg-olive-50 text-olive-600 border border-olive-100' : 'bg-slate-50 text-slate-400'
@@ -404,7 +447,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                         <div key={rx._id} className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm hover:border-olive-400 transition-all group">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div>
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(rx.prescribedDate).toLocaleDateString()}</p>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{format(new Date(rx.prescribedDate), "MMM dd, yyyy HH:mm")}</p>
                                                     <h4 className="text-sm font-bold text-slate-900 mt-1 uppercase">Order Ref: {rx.prescriptionId.slice(-8)}</h4>
                                                 </div>
                                                 <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${rx.status === 'active' ? 'bg-olive-50 text-olive-600 border border-olive-100' : 'bg-slate-50 text-slate-400 border border-slate-100'
@@ -441,7 +484,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                                     type: 'lab',
                                                     patientName: `${patient.firstName} ${patient.lastName}`,
                                                     mrn: patient.mrn,
-                                                    date: new Date(lab.createdAt).toLocaleDateString(),
+                                                    date: format(new Date(lab.createdAt), "MMM dd, yyyy HH:mm"),
                                                     results: lab.results?.map((r: any) => ({
                                                         testName: r.testName,
                                                         value: r.value,
@@ -460,7 +503,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                                 <div>
                                                     <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight italic">{(lab.tests || [lab.testType]).join(', ')}</h4>
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">
-                                                        {new Date(lab.createdAt).toLocaleDateString()} • {lab.status.toUpperCase()}
+                                                        {format(new Date(lab.createdAt), "MMM dd, yyyy HH:mm")} • {lab.status.toUpperCase()}
                                                     </p>
                                                 </div>
                                             </div>
@@ -498,7 +541,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                                     type: 'radiology',
                                                     patientName: `${patient.firstName} ${patient.lastName}`,
                                                     mrn: patient.mrn,
-                                                    date: new Date(item.createdAt).toLocaleDateString(),
+                                                    date: format(new Date(item.createdAt), "MMM dd, yyyy HH:mm"),
                                                     radiology: {
                                                         findings: item.report?.findings || "Findings pending interpretation.",
                                                         impression: item.report?.impression || "Impression pending.",
@@ -514,7 +557,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                                     </div>
                                                     <div>
                                                         <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight italic">{item.imagingType} • {item.bodyPart}</h4>
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{new Date(item.createdAt).toLocaleDateString()}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{format(new Date(item.createdAt), "MMM dd, yyyy HH:mm")}</p>
                                                     </div>
                                                 </div>
                                                 <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${item.status === 'completed' ? 'bg-purple-50 text-purple-600' : 'bg-slate-50 text-slate-400 border border-slate-100'
@@ -583,9 +626,141 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                 />
                             </div>
                         )}
+
+                        {activeTab === "archive" && (
+                            <div className="space-y-12">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-3 px-2">
+                                        <History size={18} className="text-slate-300" /> Patient Evidence Archive
+                                    </h3>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-2">
+                                    {history.loading ? (
+                                        [...Array(6)].map((_, i) => (
+                                            <div key={i} className="h-40 bg-slate-100 animate-pulse rounded-[32px]" />
+                                        ))
+                                    ) : history.documents.length === 0 ? (
+                                        <div className="col-span-full py-20 text-center border-2 border-dashed border-slate-200 rounded-[40px]">
+                                            <p className="text-slate-400 font-black uppercase tracking-[0.2em] italic">No historical records uploaded by patient</p>
+                                        </div>
+                                    ) : (
+                                        history.documents.map((doc: any) => (
+                                            <div key={doc._id} className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm hover:shadow-xl hover:border-olive-400 transition-all group relative overflow-hidden">
+                                                <div className="relative z-10 flex flex-col h-full justify-between">
+                                                    <div className="flex justify-between items-start mb-6">
+                                                        <div className="w-14 h-14 rounded-2xl bg-olive-50 text-olive-600 flex items-center justify-center border border-olive-100 group-hover:scale-110 transition-transform shadow-inner">
+                                                            <FileText size={28} />
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-[10px] font-black text-slate-900 uppercase tracking-tight line-clamp-1 max-w-[120px]">{doc.fileName}</p>
+                                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{(doc.fileSize / 1024 / 1024).toFixed(2)} MB</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-4">
+                                                        <div className="inline-block px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                                                            {doc.documentType}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-[9px] text-slate-400 font-bold uppercase tracking-tight">
+                                                            <Calendar size={12} /> {format(new Date(doc.createdAt), "MMM dd, yyyy HH:mm")}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mt-8 pt-6 border-t border-slate-50 flex gap-3">
+                                                        <button
+                                                            onClick={() => setPreviewDoc(doc)}
+                                                            className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-black text-[9px] uppercase tracking-widest hover:bg-olive-700 transition-all shadow-lg shadow-slate-900/10 flex items-center justify-center gap-2"
+                                                        >
+                                                            <ZoomIn size={14} /> Preview
+                                                        </button>
+                                                        <a
+                                                            href={doc.fileUrl}
+                                                            download
+                                                            target="_blank"
+                                                            className="w-12 h-11 bg-white border border-slate-200 text-slate-400 rounded-xl flex items-center justify-center hover:text-slate-900 transition-all hover:bg-slate-50 shadow-sm"
+                                                        >
+                                                            <Download size={16} />
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                <div className="absolute top-[-20%] right-[-10%] text-slate-50 group-hover:text-olive-50 transition-colors pointer-events-none">
+                                                    <FileText size={160} />
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
+
+            {/* In-App Preview Modal */}
+            {previewDoc && (
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/90 backdrop-blur-xl p-4 md:p-10 animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-6xl h-full rounded-[48px] shadow-2xl overflow-hidden border border-white/20 flex flex-col animate-in zoom-in-95 duration-500">
+                        {/* Modal Header */}
+                        <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-white relative z-10">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 rounded-3xl bg-olive-50 flex items-center justify-center text-olive-600 shadow-inner">
+                                    <FileText size={32} />
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-black text-olive-600 uppercase tracking-[0.3em] mb-1">Medical Record Preview</p>
+                                    <h3 className="text-2xl font-black text-slate-900 tracking-tight italic flex items-center gap-3">
+                                        {previewDoc.fileName}
+                                        <span className="text-xs bg-slate-100 text-slate-500 px-3 py-1 rounded-full not-italic font-black uppercase tracking-widest border border-slate-200">
+                                            {previewDoc.documentType}
+                                        </span>
+                                    </h3>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <a
+                                    href={previewDoc.fileUrl}
+                                    download
+                                    target="_blank"
+                                    className="p-4 bg-slate-50 text-slate-400 rounded-2xl hover:text-slate-900 transition-all hover:bg-slate-100"
+                                >
+                                    <Download size={24} />
+                                </a>
+                                <button
+                                    onClick={() => setPreviewDoc(null)}
+                                    className="w-16 h-16 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-3xl transition-all shadow-sm"
+                                >
+                                    <X size={28} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 bg-slate-100 p-8 overflow-hidden">
+                            <div className="w-full h-full rounded-[32px] border border-slate-200 bg-white overflow-hidden shadow-inner flex items-center justify-center relative">
+                                {previewDoc.mimeType === 'application/pdf' ? (
+                                    <iframe
+                                        src={`${previewDoc.fileUrl}#toolbar=0`}
+                                        className="w-full h-full border-none"
+                                    />
+                                ) : (
+                                    <img
+                                        src={previewDoc.fileUrl}
+                                        alt={previewDoc.fileName}
+                                        className="max-w-full max-h-full object-contain"
+                                    />
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-slate-50/50 flex justify-center border-t border-slate-100">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <AlertCircle size={12} /> Patient assumes full responsibility for document accuracy
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

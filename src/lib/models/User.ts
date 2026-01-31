@@ -44,6 +44,10 @@ export interface IUser extends Document {
     joiningDate?: Date;
     specialization?: string;
     consultationFee?: number;
+    workingHours?: {
+        start: string;
+        end: string;
+    };
     shift?: string;
     ward?: string;
 }
@@ -79,6 +83,14 @@ const UserSchema = new Schema<IUser>(
         joiningDate: { type: Date },
         specialization: { type: String },   // Doctor
         consultationFee: { type: Number },  // Doctor
+        workingHours: {
+            type: {
+                start: { type: String, default: "09:00" },
+                end: { type: String, default: "17:00" }
+            },
+            default: { start: "09:00", end: "17:00" },
+            _id: false
+        },
         shift: { type: String },            // Nurse
         ward: { type: String },             // Nurse
     },

@@ -4,6 +4,7 @@ import User, { UserRole } from '../src/lib/models/User';
 import Patient from '../src/lib/models/Patient';
 import Appointment from '../src/lib/models/Appointment';
 import LabResult from '../src/lib/models/LabResult';
+import InventoryItem from '../src/lib/models/InventoryItem';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -22,11 +23,12 @@ async function seed() {
         await Patient.deleteMany({});
         await Appointment.deleteMany({});
         await LabResult.deleteMany({});
+        await InventoryItem.deleteMany({});
 
         console.log('Cleared existing data.');
 
         // Create a Doctor
-        const hashedPassword = await bcrypt.hash('password123', 10);
+        const hashedPassword = await bcrypt.hash('a', 10);
         const doctor = await User.create({
             email: 'doctor@medicore.com',
             password: hashedPassword,
@@ -46,7 +48,7 @@ async function seed() {
             { email: 'frontdesk@medicore.com', role: 'frontdesk', first: 'Pam', last: 'Beesly' },
             { email: 'lab@medicore.com', role: 'labtech', first: 'Dexter', last: 'Morgan' },
             { email: 'billing@medicore.com', role: 'billing', first: 'Skyler', last: 'White' },
-            { email: 'pharmacy@medicore.com', role: 'pharmacy_inventory', first: 'Walter', last: 'White' },
+            { email: 'pharmacy@medicore.com', role: 'pharmacist', first: 'Walter', last: 'White' },
             { email: 'hr@medicore.com', role: 'hr', first: 'Toby', last: 'Flenderson' },
             { email: 'patient@medicore.com', role: 'patient', first: 'John', last: 'Doe' }
         ];
@@ -91,6 +93,23 @@ async function seed() {
             gender: 'Male',
             contact: { phone: '5551234567', email: 'charlie@example.com' },
             assignedDoctorId: doctor._id
+        });
+
+        // Create Patient Record for the logged-in demo user
+        const patientDemo = await Patient.create({
+            mrn: 'MRN-DEMO',
+            firstName: 'John',
+            lastName: 'Doe',
+            dob: new Date('1980-01-01'),
+            gender: 'Male',
+            contact: { phone: '0000000000', email: 'patient@medicore.com' },
+            assignedDoctorId: doctor._id,
+            address: {
+                street: '123 Health St',
+                city: 'Medicore City',
+                state: 'NY',
+                zipCode: '10001'
+            }
         });
         console.log('Patients created.');
 
@@ -161,6 +180,65 @@ async function seed() {
         });
 
         console.log('Lab results created.');
+
+        // Create Inventory Items
+        await InventoryItem.create({
+            sku: 'MED001',
+            name: 'Amoxicillin 500mg',
+            category: 'medication',
+            unit: 'Capsule',
+            quantityOnHand: 500,
+            reorderLevel: 100,
+            unitCost: 5.50,
+            sellingPrice: 15.00,
+            lotNumber: 'AX-2024-001',
+            expiryDate: new Date('2025-12-31'),
+            isActive: true
+        });
+
+        await InventoryItem.create({
+            sku: 'MED002',
+            name: 'Paracetamol 500mg',
+            category: 'medication',
+            unit: 'Tablet',
+            quantityOnHand: 1000,
+            reorderLevel: 200,
+            unitCost: 1.20,
+            sellingPrice: 5.00,
+            lotNumber: 'PCM-2024-055',
+            expiryDate: new Date('2026-06-30'),
+            isActive: true
+        });
+
+        await InventoryItem.create({
+            sku: 'SUP001',
+            name: 'Surgical Mask',
+            category: 'supply',
+            unit: 'Box',
+            quantityOnHand: 120,
+            reorderLevel: 50,
+            unitCost: 150.00,
+            sellingPrice: 300.00,
+            lotNumber: 'SUP-MASK-009',
+            expiryDate: new Date('2028-01-01'),
+            isActive: true
+        });
+
+        await InventoryItem.create({
+            sku: 'SUP002',
+            name: 'Exam Gloves (L)',
+            category: 'supply',
+            unit: 'Box',
+            quantityOnHand: 45,
+            reorderLevel: 20,
+            unitCost: 400.00,
+            sellingPrice: 650.00,
+            lotNumber: 'GLV-2023-998',
+            expiryDate: new Date('2027-05-15'),
+            isActive: true
+        });
+
+        console.log('Inventory items created.');
         console.log('Seeding complete!');
         process.exit(0);
     } catch (error) {

@@ -74,7 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Role-based navigation mapping - Strictly separated as per requirements
     const navConfig: Record<string, string[]> = {
-        doctor: ["Overview", "Patients", "Schedule", "Clinical", "Surgery", "ICU Tracking", "Support"],
+        doctor: ["Overview", "Patients", "Schedule", "Surgery", "ICU Tracking", "Support"],
         pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Purchase Orders"], // Unified Pharmacy & Inventory
         labtech: ["Overview", "Pending Lab Orders", "Radiology", "Test Scheduling", "Sample Tracking", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
@@ -82,7 +82,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
 
         finance: ["Overview", "Ticket Approvals", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
-        patient: ["Overview", "Medical Wallet", "Report Viewer", "Insurance", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
+        patient: ["Overview", "Medical History", "Insurance", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
         hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
         admin: ["Overview", "User Management", "Staff Overview", "Departments & Services", "Stock Summary", "Billing & Payments", "Expense Oversight", "Salary Overview", "Medical Claims", "Hospital Chain", "Reports", "Analytics", "Settings"], // Master Control
         emergency: ["Overview", "Triage", "Clinical Workspace", "Ambulance", "Alerts"], // Emergency
@@ -145,8 +145,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 
         // Patient Portal
+        { name: "Medical History", href: `/${urlRole}/medical-history`, icon: FileText },
         { name: "Insurance", href: `/${urlRole}/insurance`, icon: ShieldCheck },
-        { name: "Report Viewer", href: `/${urlRole}/viewer`, icon: Beaker },
         { name: "e-Prescriptions", href: `/${urlRole}/prescriptions`, icon: Package },
         { name: "Booking", href: `/${urlRole}/booking`, icon: Calendar },
         { name: "Queue Status", href: `/${urlRole}/queue-status`, icon: Activity },

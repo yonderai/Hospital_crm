@@ -35,23 +35,36 @@ interface Appointment {
     reason: string;
 }
 
+import { useRouter } from "next/navigation";
+
+// ... imports
+
 export default function DoctorDashboard() {
+    const router = useRouter(); // Hook for navigation
     const [stats, setStats] = useState<any[]>([]);
     const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [filterStatus, setFilterStatus] = useState<string>('all'); // State for filtering
     const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
     const [selectedAptId, setSelectedAptId] = useState<string | null>(null);
+    const [availability, setAvailability] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     const fetchData = async () => {
         try {
             setLoading(true);
             const today = new Date().toISOString().split('T')[0];
-            const [statsRes, appointmentsRes] = await Promise.all([
+            const [statsRes, appointmentsRes, availabilityRes] = await Promise.all([
                 fetch('/api/doctor/stats'),
-                fetch(`/api/appointments?date=${today}`)
+                fetch(`/api/appointments?date=${today}`),
+                fetch(`/api/doctor/availability?date=${today}`)
             ]);
 
             const statsData = await statsRes.ok ? await statsRes.json() : { stats: [] };
+
+            if (availabilityRes.ok) {
+                const availData = await availabilityRes.json();
+                setAvailability(availData);
+            }
 
             if (appointmentsRes.ok) {
                 const apptData = await appointmentsRes.json();
@@ -68,7 +81,21 @@ export default function DoctorDashboard() {
 
     useEffect(() => {
         fetchData();
+
+        // Auto-refresh every 30 seconds for real-time stats
+        const interval = setInterval(() => {
+            fetchData();
+        }, 30000);
+
+        return () => clearInterval(interval);
     }, []);
+
+    // Filter appointments based on active filter
+    const filteredAppointments = appointments.filter(apt => {
+        if (filterStatus === 'all') return true;
+        if (filterStatus === 'completed') return apt.status === 'completed';
+        return true;
+    });
 
     const getDueSoonText = (appt: Appointment) => {
         if (appt.status === "completed") return <span className="text-green-600 font-bold uppercase">Completed</span>;
@@ -97,164 +124,200 @@ export default function DoctorDashboard() {
         return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    // If a patient is selected, show Clinical Profile
-    if (selectedPatient) {
-        return (
-            <DashboardLayout>
-                <ClinicalProfile
-                    patient={selectedPatient}
-                    appointmentId={selectedAptId || undefined}
-                    onBack={() => {
-                        setSelectedPatient(null);
-                        setSelectedAptId(null);
-                        fetchData();
-                    }}
-                />
-            </DashboardLayout>
-        );
-    }
-
     return (
         <DashboardLayout>
             <div className="space-y-10">
-                {/* Header Section */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Physician Workstation</h2>
-                        <p className="text-slate-500 text-sm font-medium mt-1 uppercase tracking-widest">DR. HOUSE • DIAGNOSTIC MEDICINE</p>
-                    </div>
+                {/* Header ... */}
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {stats.map((stat, i) => {
+                        const IconComponent = {
+                            "Users": Users,
+                            "Calendar": Calendar,
+                            "Stethoscope": Stethoscope,
+                            "Beaker": Beaker,
+                            "AlertTriangle": AlertTriangle
+                        }[stat.icon as string] || Activity;
+
+                        // Determing active state for UI feedback
+                        const isActive = (stat.title === "Today's Patients" && filterStatus === 'all') ||
+                            (stat.title === "Patients Consulted" && filterStatus === 'completed');
+
+                        return (
+                            <div
+                                key={i}
+                                onClick={() => {
+                                    if (stat.title === "Today's Patients") setFilterStatus('all');
+                                    if (stat.title === "Patients Consulted") setFilterStatus('completed');
+                                    if (stat.title === "Patients Under Care") router.push('/doctor/patients');
+                                }}
+                                className={`bg-white p-6 rounded-[32px] border shadow-sm hover:shadow-md transition-all flex items-center gap-4 group cursor-pointer
+                                    ${isActive ? 'border-olive-500 ring-2 ring-olive-100' : 'border-slate-100'}
+                                `}
+                            >
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                                    <IconComponent size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">{stat.title}</p>
+                                    <p className="text-3xl font-black text-slate-900 tracking-tight">{stat.value}</p>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* Main Content Split */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    {/* Left Box: Appointment List */}
-                    <div className="lg:col-span-2 bg-white rounded-[40px] border border-slate-100 shadow-sm flex flex-col h-full overflow-hidden min-h-[600px]">
-                        <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-                            <div>
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight">Today's Schedule</h3>
-                                <p className="text-xs text-slate-500 font-medium mt-1">Managed Appointments & Patient Queue</p>
+                {selectedPatient ? (
+                    <div className="animate-in fade-in slide-in-from-bottom-5 duration-500">
+                        <ClinicalProfile
+                            patient={selectedPatient}
+                            appointmentId={selectedAptId || undefined}
+                            onBack={() => {
+                                setSelectedPatient(null);
+                                setSelectedAptId(null);
+                                fetchData();
+                            }}
+                        />
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        {/* Left Box: Appointment List */}
+                        <div className="lg:col-span-2 bg-white rounded-[40px] border border-slate-100 shadow-sm flex flex-col h-full overflow-hidden min-h-[600px]">
+                            {/* ... Existing Appointment List Code ... */}
+                            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                                <div>
+                                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Today's Schedule</h3>
+                                    <p className="text-xs text-slate-500 font-medium mt-1">
+                                        {filterStatus === 'completed' ? 'Showing Consulted Patients' : 'Managed Appointments & Patient Queue'}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        if (confirm('Process past appointments as No-Show?')) {
+                                            await fetch('/api/appointments/auto-cancel', { method: 'POST' });
+                                            window.location.reload();
+                                        }
+                                    }}
+                                    className="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-all shadow-sm"
+                                >
+                                    Auto-Process
+                                </button>
                             </div>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                                <input placeholder="Search Patient..." className="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-olive-500" />
+                            <div className="flex-1 overflow-y-auto">
+                                {loading ? (
+                                    <div className="p-8 space-y-4">
+                                        {/* Loading Skeletons */}
+                                        {[...Array(5)].map((_, i) => (
+                                            <div key={i} className="h-16 bg-slate-50 animate-pulse rounded-2xl" />
+                                        ))}
+                                    </div>
+                                ) : filteredAppointments.length === 0 ? (
+                                    <div className="p-12 text-center">
+                                        <p className="text-slate-400 font-bold italic uppercase tracking-widest text-[10px]">No appointments found for this queue</p>
+                                    </div>
+                                ) : (
+                                    <table className="w-full text-left">
+                                        {/* Table Header */}
+                                        <tbody className="divide-y divide-slate-50">
+                                            {filteredAppointments.map((appt) => (
+                                                <tr key={appt._id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer" onClick={() => {
+                                                    setSelectedPatient(appt.patientId);
+                                                    setSelectedAptId(appt._id);
+                                                }}>
+                                                    <td className="p-4 border-b border-slate-50">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm
+                                                                ${appt.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                                    appt.status === 'cancelled' || appt.status === 'no-show' ? 'bg-red-50 text-red-400 decoration-slice line-through' :
+                                                                        'bg-slate-100 text-slate-600'}
+                                                            `}>
+                                                                {formatTime(appt.startTime)}
+                                                            </div>
+                                                            <div>
+                                                                <p className={`font-bold text-slate-900 ${['cancelled', 'no-show'].includes(appt.status) ? 'line-through text-slate-400' : ''}`}>
+                                                                    {appt.patientId?.firstName || 'Unknown'} {appt.patientId?.lastName || 'Patient'}
+                                                                </p>
+                                                                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{appt.type}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 border-b border-slate-50 text-right">
+                                                        {getDueSoonText(appt)}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
                             </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto">
-                            {loading ? (
-                                <div className="p-8 space-y-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <div key={i} className="h-12 bg-slate-50 rounded-xl animate-pulse"></div>
-                                    ))}
-                                </div>
-                            ) : appointments.length === 0 ? (
-                                <div className="p-12 text-center">
-                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-                                        <Calendar size={32} />
+
+                        {/* Right Box: Quick Actions & Availability */}
+                        <div className="flex flex-col gap-8">
+                            {/* Next Patient Card */}
+                            <div className="bg-[#0F172A] rounded-[40px] p-8 text-white relative overflow-hidden shadow-2xl">
+                                <h4 className="text-xs font-black uppercase tracking-widest mb-6 relative z-10 text-teal-400 italic">Sentinel Insight</h4>
+                                <div className="space-y-6 relative z-10">
+                                    <p className="text-sm font-medium text-slate-300 leading-relaxed italic">"Optimal care begins with chronological context. Review labs and history before initiating consultation."</p>
+                                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-500">Node α-01 Status</p>
+                                        <div className="text-xs font-bold mt-1 text-slate-100 flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Clinical Stream Active
+                                        </div>
                                     </div>
-                                    <h4 className="text-lg font-bold text-slate-900 uppercase">no appointment</h4>
-                                    <p className="text-slate-500 text-sm mt-1">You have a clear schedule for today.</p>
                                 </div>
-                            ) : (
-                                <table className="w-full text-left">
-                                    <thead>
-                                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
-                                            <th className="px-8 py-4">Timing</th>
-                                            <th className="px-8 py-4">Patient</th>
-                                            <th className="px-8 py-4">Type</th>
-                                            <th className="px-8 py-4">Due Status</th>
-                                            <th className="px-8 py-4 text-right pr-12">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {appointments.map((appt) => (
-                                            <tr key={appt._id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer" onClick={() => {
-                                                setSelectedPatient(appt.patientId);
-                                                setSelectedAptId(appt._id);
-                                            }}>
-                                                <td className="px-8 py-5">
-                                                    <div className="flex items-center gap-2">
-                                                        <Clock size={14} className="text-slate-400" />
-                                                        <span className="text-sm font-bold text-slate-700">{formatTime(appt.startTime)}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-5">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-olive-100 flex items-center justify-center text-olive-700 font-black text-xs uppercase border-2 border-white shadow-sm">
-                                                            {appt.patientId?.firstName?.[0]}
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-sm font-bold text-slate-900 leading-tight">
-                                                                {appt.patientId?.firstName} {appt.patientId?.lastName}
-                                                            </p>
-                                                            <p className="text-[10px] text-slate-400 font-medium">MRN: {appt.patientId?.mrn}</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-5">
-                                                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-bold uppercase tracking-wide">
-                                                        {appt.type}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-5">
-                                                    <span className="text-xs font-semibold">
-                                                        {getDueSoonText(appt)}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-5 text-right pr-6">
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedPatient(appt.patientId);
-                                                            setSelectedAptId(appt._id);
-                                                        }}
-                                                        className="text-olive-600 hover:text-olive-800 font-bold text-xs uppercase flex items-center justify-end gap-1"
-                                                    >
-                                                        Open <Stethoscope size={14} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                <Activity size={200} className="absolute bottom-[-20%] right-[-20%] text-white/5" />
+                            </div>
+
+                            {/* Availability Overview Card */}
+                            {availability && (
+                                <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm p-8 space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-lg font-black text-slate-900 tracking-tight">Availability Overview</h4>
+                                        <Clock className="text-olive-500" size={20} />
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div className="bg-slate-50 rounded-2xl p-4 text-center">
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase">Total</p>
+                                            <p className="text-xl font-black text-slate-900">{availability.totalHours}h</p>
+                                        </div>
+                                        <div className="bg-red-50 rounded-2xl p-4 text-center">
+                                            <p className="text-[10px] text-red-400 font-bold uppercase">Booked</p>
+                                            <p className="text-xl font-black text-red-600">{availability.bookedSlots}</p>
+                                        </div>
+                                        <div className="bg-green-50 rounded-2xl p-4 text-center">
+                                            <p className="text-[10px] text-green-500 font-bold uppercase">Free</p>
+                                            <p className="text-xl font-black text-green-600">{availability.freeSlots}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-400 font-bold uppercase mb-3">Time Slots</p>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {availability.slots.map((slot: any, idx: number) => (
+                                                <div
+                                                    key={idx}
+                                                    className={`
+                                                        py-2 px-1 rounded-xl text-center text-[10px] font-bold uppercase tracking-wide border
+                                                        ${slot.status === 'free'
+                                                            ? 'bg-white border-green-200 text-green-700 shadow-sm'
+                                                            : 'bg-slate-100 border-transparent text-slate-400 cursor-not-allowed decoration-slice'}
+                                                    `}
+                                                >
+                                                    {slot.time}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </div>
-
-                    {/* Right Box: Quick Actions */}
-                    <div className="flex flex-col gap-8">
-                        <div className="bg-[#0F172A] rounded-[40px] p-8 text-white relative overflow-hidden shadow-2xl">
-                            <div className="relative z-10 space-y-6">
-                                <h4 className="text-xl font-black tracking-tight leading-tight">Next Patient</h4>
-                                {appointments.filter(a => !['completed', 'cancelled', 'no-show'].includes(a.status)).length > 0 ? (
-                                    <>
-                                        <p className="text-sm text-slate-400">
-                                            Your next appointment is with <span className="text-white font-bold">
-                                                {appointments.filter(a => !['completed', 'cancelled', 'no-show'].includes(a.status))[0].patientId?.firstName} {appointments.filter(a => !['completed', 'cancelled', 'no-show'].includes(a.status))[0].patientId?.lastName}
-                                            </span> at {formatTime(appointments.filter(a => !['completed', 'cancelled', 'no-show'].includes(a.status))[0].startTime)}.
-                                        </p>
-                                        <div className="pt-4">
-                                            <button
-                                                onClick={() => {
-                                                    const nextAppt = appointments.filter(a => !['completed', 'cancelled', 'no-show'].includes(a.status))[0];
-                                                    setSelectedPatient(nextAppt.patientId);
-                                                    setSelectedAptId(nextAppt._id);
-                                                }}
-                                                className="w-full py-4 bg-olive-500 hover:bg-olive-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-olive-500/20"
-                                            >
-                                                Start Session
-                                            </button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <p className="text-sm text-slate-400 uppercase font-black">
-                                        no appointment
-                                    </p>
-                                )}
-                            </div>
-                            <Activity className="absolute bottom-[-10%] right-[-10%] text-white/5" size={200} />
-                        </div>
-                    </div>
-                </div>
+                )}
             </div>
         </DashboardLayout>
     );
 }
+

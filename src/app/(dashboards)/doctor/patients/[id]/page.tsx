@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
     User, Phone, MapPin, Calendar, Activity,
     AlertCircle, FileText, Pill, Beaker, Plus, X, Check,
-    History, Clipboard, ClipboardList, ChevronLeft, Clock
+    History, Clipboard, ClipboardList, ChevronLeft, Clock, Eye
 } from "lucide-react";
 import Link from "next/link";
 
@@ -17,8 +17,10 @@ export default function PatientDetails() {
     const [patient, setPatient] = useState<any>(null);
     const [prescriptions, setPrescriptions] = useState<any[]>([]);
     const [labs, setLabs] = useState<any[]>([]);
+    const [documents, setDocuments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
+    const [previewDoc, setPreviewDoc] = useState<any | null>(null);
 
     // Modals
     const [showRxModal, setShowRxModal] = useState(false);
@@ -40,7 +42,16 @@ export default function PatientDetails() {
                 fetch(`/api/patients/${params.id}/labs`)
             ]);
 
-            if (patientRes.ok) setPatient(await patientRes.json());
+            if (patientRes.ok) {
+                const patientData = await patientRes.json();
+                setPatient(patientData);
+                // Fetch documents using the patient's ID
+                const docRes = await fetch(`/api/patient/documents?patientId=${params.id}`);
+                if (docRes.ok) {
+                    const docData = await docRes.json();
+                    setDocuments(docData.documents || []);
+                }
+            }
             if (rxRes.ok) setPrescriptions(await rxRes.json());
             if (labRes.ok) setLabs(await labRes.json());
         } catch (error) {
@@ -147,7 +158,8 @@ export default function PatientDetails() {
                     {[
                         { id: 'overview', label: 'Clinical Overview', icon: Clipboard },
                         { id: 'prescriptions', label: 'E-Prescriptions', icon: Pill },
-                        { id: 'labs', label: 'Diagnostics & Labs', icon: Beaker }
+                        { id: 'labs', label: 'Diagnostics & Labs', icon: Beaker },
+                        { id: 'documents', label: 'Historical Records', icon: History }
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -300,6 +312,45 @@ export default function PatientDetails() {
                             </div>
                         </div>
                     )}
+
+                    {activeTab === 'documents' && (
+                        <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <div className="flex items-center justify-between mb-10">
+                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                                    <History size={24} className="text-olive-600" /> Patient Uploaded Archive
+                                </h3>
+                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{documents.length} Records Found</div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {documents.length === 0 ? (
+                                    <div className="col-span-full py-20 text-center text-slate-300 font-black uppercase tracking-[0.2em] italic border-2 border-dashed border-slate-50 rounded-[32px]">No uploaded history discovered</div>
+                                ) : (
+                                    documents.map((doc, idx) => (
+                                        <div key={idx} className="p-8 bg-slate-50/50 rounded-[32px] border border-slate-100 flex items-center justify-between group hover:bg-white hover:border-olive-400 transition-all hover:shadow-xl hover:shadow-olive-600/5">
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-olive-600 shadow-sm border border-slate-50">
+                                                    <FileText size={24} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-slate-900 group-hover:text-olive-700 transition-colors">{doc.fileName}</p>
+                                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">
+                                                        {doc.documentType.replace('_', ' ')} • {new Date(doc.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => setPreviewDoc(doc)}
+                                                className="w-12 h-12 flex items-center justify-center bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-olive-600 hover:border-olive-200 shadow-sm transition-all"
+                                            >
+                                                <Eye size={20} />
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* RX MODAL */}
@@ -442,6 +493,62 @@ export default function PatientDetails() {
                         </div>
                     </div>
                 )}
+
+                {/* DOCUMENT PREVIEW MODAL */}
+                {previewDoc && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-white w-full max-w-5xl h-[90vh] rounded-[48px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300 border border-white/20">
+                            {/* Modal Header */}
+                            <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-olive-50 rounded-2xl flex items-center justify-center text-olive-600">
+                                        <FileText size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-black text-slate-900 tracking-tight italic uppercase">{previewDoc.fileName}</h4>
+                                        <p className="text-[10px] text-olive-600 font-black uppercase tracking-widest mt-1">
+                                            {previewDoc.documentType.replace('_', ' ')} • Uploaded on {new Date(previewDoc.createdAt).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <a
+                                        href={previewDoc.fileUrl}
+                                        download
+                                        className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                                    >
+                                        Download Archive
+                                    </a>
+                                    <button
+                                        onClick={() => setPreviewDoc(null)}
+                                        className="w-12 h-12 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-2xl transition-all border border-red-100"
+                                    >
+                                        <Plus size={24} className="rotate-45" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Modal Body */}
+                            <div className="flex-1 bg-slate-50 p-8 overflow-hidden">
+                                <div className="w-full h-full rounded-[32px] border border-slate-200 bg-white overflow-hidden shadow-inner flex items-center justify-center">
+                                    {previewDoc.mimeType === 'application/pdf' ? (
+                                        <iframe
+                                            src={`${previewDoc.fileUrl}#toolbar=0`}
+                                            className="w-full h-full border-none"
+                                        />
+                                    ) : (
+                                        <img
+                                            src={previewDoc.fileUrl}
+                                            alt={previewDoc.fileName}
+                                            className="max-w-full max-h-full object-contain p-4"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </DashboardLayout>
     );

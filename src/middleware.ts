@@ -102,8 +102,11 @@ function getDashboardUrl(role: string) {
 }
 
 function isAccessAllowed(role: string, path: string) {
+    // Whitelist API and Uploads for all authenticated users
     if (path.startsWith("/api")) return true;
+    if (path.startsWith("/uploads")) return true;
 
+    // Role-specific paths
     if (role === 'doctor' && path.startsWith('/doctor')) return true;
     if (role === 'nurse' && path.startsWith('/nurse')) return true;
     if (role === 'admin' && path.startsWith('/admin')) return true;
@@ -117,7 +120,6 @@ function isAccessAllowed(role: string, path: string) {
     if (role === 'finance' && path.startsWith('/finance')) return true;
     if (role === 'emergency' && path.startsWith('/emergency')) return true;
     if (role === 'maintenance' && path.startsWith('/maintenance')) return true;
-
 
     return false;
 }
