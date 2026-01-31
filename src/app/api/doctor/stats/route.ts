@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import Appointment from '@/lib/models/Appointment';
 import User from '@/lib/models/User';
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
 
@@ -22,20 +22,30 @@ export async function GET() {
         }
 
         await dbConnect();
+        const { searchParams } = new URL(req.url);
+        const dateParam = searchParams.get('date');
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        let startDate, endDate;
 
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        if (dateParam) {
+            startDate = new Date(dateParam);
+            startDate.setUTCHours(0, 0, 0, 0);
+            endDate = new Date(dateParam);
+            endDate.setUTCHours(23, 59, 59, 999);
+        } else {
+            startDate = new Date();
+            startDate.setUTCHours(0, 0, 0, 0);
+            endDate = new Date(startDate);
+            endDate.setUTCDate(endDate.getUTCDate() + 1);
+        }
 
         // Aggregation to get stats in one go
         const stats = await Appointment.aggregate([
             {
                 $match: {
-                    providerId: new mongoose.Types.ObjectId(userId), // Match doctor ID using string/ObjectId handling from mongoose
-                    startTime: { $gte: today, $lt: tomorrow },
-                    status: { $ne: 'cancelled' } // Don't count cancelled for workload
+                    providerId: new mongoose.Types.ObjectId(userId as string),
+                    startTime: { $gte: startDate, $lte: endDate },
+                    status: { $ne: 'cancelled' }
                 }
             },
             {

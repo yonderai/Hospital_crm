@@ -2,9 +2,10 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Download, ArrowRight, QrCode } from "lucide-react";
+import { CheckCircle2, Download, ArrowRight, QrCode, Loader2 } from "lucide-react";
+import { Suspense } from "react";
 
-export default function RegistrationSuccessPage() {
+function RegistrationSuccessContent() {
     const params = useSearchParams();
     const mrn = params.get("mrn");
 
@@ -45,5 +46,20 @@ export default function RegistrationSuccessPage() {
 
             </div>
         </div>
+    );
+}
+
+export default function RegistrationSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+                <div className="text-center">
+                    <Loader2 className="animate-spin mx-auto mb-4" size={40} />
+                    <p className="text-slate-500 font-medium">Loading...</p>
+                </div>
+            </div>
+        }>
+            <RegistrationSuccessContent />
+        </Suspense>
     );
 }

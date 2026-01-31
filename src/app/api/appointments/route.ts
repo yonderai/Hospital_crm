@@ -54,10 +54,10 @@ export async function GET(req: Request) {
             const dateObj = new Date(dateParam);
             if (!isNaN(dateObj.getTime())) {
                 const startOfDay = new Date(dateObj);
-                startOfDay.setHours(0, 0, 0, 0);
+                startOfDay.setUTCHours(0, 0, 0, 0);
 
                 const endOfDay = new Date(dateObj);
-                endOfDay.setHours(23, 59, 59, 999);
+                endOfDay.setUTCHours(23, 59, 59, 999);
 
                 query = {
                     ...query,

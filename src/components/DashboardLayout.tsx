@@ -82,7 +82,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
 
         finance: ["Overview", "Ticket Approvals", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
-        patient: ["Overview", "Medical History", "Insurance", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
+        patient: ["Overview", "Report Viewer", "Medical History", "Insurance", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
         hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
         admin: ["Overview", "User Management", "Staff Overview", "Departments & Services", "Stock Summary", "Billing & Payments", "Expense Oversight", "Salary Overview", "Medical Claims", "Hospital Chain", "Reports", "Analytics", "Settings"], // Master Control
         emergency: ["Overview", "Triage", "Clinical Workspace", "Ambulance", "Alerts"], // Emergency
@@ -145,6 +145,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 
         // Patient Portal
+        { name: "Report Viewer", href: `/${urlRole}/reports`, icon: Microscope },
         { name: "Medical History", href: `/${urlRole}/medical-history`, icon: FileText },
         { name: "Insurance", href: `/${urlRole}/insurance`, icon: ShieldCheck },
         { name: "e-Prescriptions", href: `/${urlRole}/prescriptions`, icon: Package },
@@ -281,15 +282,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <div className="h-8 w-px bg-slate-100" />
 
                         {/* User Profile ONLY */}
-                        <div className="flex items-center gap-4">
+                        <Link href={`/${role}/profile`} className="flex items-center gap-4 group hover:bg-slate-50 p-2 rounded-2xl transition-all">
                             <div className="text-right">
-                                <p className="text-sm font-bold text-slate-900">{userName}</p>
+                                <p className="text-sm font-bold text-slate-900 group-hover:text-olive-700 transition-colors">{userName}</p>
                                 <p className="text-[10px] font-black text-olive-600 uppercase tracking-widest">{role}</p>
                             </div>
-                            <div className="w-10 h-10 bg-olive-100 rounded-full flex items-center justify-center text-olive-700 font-black text-xs uppercase border-2 border-white shadow-sm">
+                            <div className="w-10 h-10 bg-olive-100 rounded-full flex items-center justify-center text-olive-700 font-black text-xs uppercase border-2 border-white shadow-sm group-hover:scale-110 transition-transform">
                                 {userName?.[0] || "U"}
                             </div>
-                        </div>
+                        </Link>
                     </div>
                 </header>
 

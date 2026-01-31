@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import {
     QrCode,
     Search,
@@ -13,7 +13,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function CheckInPage() {
+function CheckInPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -268,5 +268,18 @@ export default function CheckInPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function CheckInPage() {
+    return (
+        <Suspense fallback={
+            <div className="max-w-2xl mx-auto mt-20 text-center">
+                <Loader2 className="animate-spin mx-auto mb-4" size={40} />
+                <p className="text-slate-500 font-medium">Loading check-in page...</p>
+            </div>
+        }>
+            <CheckInPageContent />
+        </Suspense>
     );
 }

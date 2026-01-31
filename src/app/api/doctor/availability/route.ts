@@ -17,12 +17,12 @@ export async function GET(request: Request) {
         const dateParam = searchParams.get("date");
         const date = dateParam ? new Date(dateParam) : new Date();
 
-        // Set range for the entire day (00:00:00 to 23:59:59)
+        // Set range for the entire day (00:00:00 to 23:59:59 UTC)
         const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
+        startOfDay.setUTCHours(0, 0, 0, 0);
 
         const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
+        endOfDay.setUTCHours(23, 59, 59, 999);
 
         await dbConnect();
 

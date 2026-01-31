@@ -31,13 +31,25 @@ export async function GET(req: Request) {
         const doctorId = new mongoose.Types.ObjectId(userId);
         let matchStage: any = {};
 
-        // stats calculations need boundaries
-        const today = new Date();
-        const yesterday = subDays(today, 1);
-        const todayStart = startOfDay(today);
-        const todayEnd = endOfDay(today);
-        const yesterdayStart = startOfDay(yesterday);
-        const yesterdayEnd = endOfDay(yesterday);
+        // Anchor date for stats calculations (tiles)
+        const anchorDateParam = searchParams.get('anchorDate');
+        let todayStart, todayEnd, yesterdayStart, yesterdayEnd;
+
+        let baseDate = anchorDateParam ? new Date(anchorDateParam) : new Date();
+        if (isNaN(baseDate.getTime())) baseDate = new Date();
+
+        // Define boundaries relative to the anchor date (UTC)
+        todayStart = new Date(baseDate);
+        todayStart.setUTCHours(0, 0, 0, 0);
+        todayEnd = new Date(baseDate);
+        todayEnd.setUTCHours(23, 59, 59, 999);
+
+        const yDate = new Date(todayStart);
+        yDate.setUTCDate(yDate.getUTCDate() - 1);
+        yesterdayStart = new Date(yDate);
+        yesterdayStart.setUTCHours(0, 0, 0, 0);
+        yesterdayEnd = new Date(yDate);
+        yesterdayEnd.setUTCHours(23, 59, 59, 999);
 
         // 1. Base Criteria (RBAC) - Include patients from appointments
         let baseCriteria: any = {};

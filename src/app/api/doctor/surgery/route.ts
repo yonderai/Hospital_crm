@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import ORCase from '@/lib/models/ORCase';
 import Staff from '@/lib/models/Staff';
+import Encounter from '@/lib/models/Encounter';
 
 export async function POST(req: NextRequest) {
     await dbConnect();
@@ -23,16 +24,30 @@ export async function POST(req: NextRequest) {
 
         const newCase = await ORCase.create({
             patientId,
-            surgeonId: doctor?._id || "64b0f1a2e4b0f1a2e4b0f1a2", // Placeholder if no doctor found
+            surgeonId: doctor?._id || "64b0f1a2e4b0f1a2e4b0f1a2",
             procedureName,
-            procedureCode: "SURG-" + Math.floor(Math.random() * 1000),
+            procedureCode: "SURG-" + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
             scheduledDate: new Date(scheduledDate),
-            startTime: startTime, // Storing as string or Date depends on model usage, model says Date but form gives string
+            startTime: startTime,
             orRoomId,
             status: 'scheduled',
-            notes // Adding notes to ORCase if model supports it or as complications/postOpNotes placeholder?
-            // Note: ORCase model doesn't have 'notes', I'll map it to 'complications' or similar if needed, 
-            // but let's check model again. Model has complications, postOpNotes.
+            notes
+        });
+
+        // Create an accompanying Encounter for clinical history/SOAP notes
+        await Encounter.create({
+            encounterId: "ENC-" + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
+            patientId,
+            providerId: doctor?._id || "64b0f1a2e4b0f1a2e4b0f1a2",
+            type: "outpatient",
+            chiefComplaint: `Surgery Scheduled: ${procedureName}`,
+            soapNotes: {
+                subjective: `Patient scheduled for ${procedureName}.`,
+                objective: `Planned for ${scheduledDate} at ${startTime} in ${orRoomId}.`,
+                assessment: `Requires surgical intervention: ${procedureName}.`,
+                plan: notes || "Standard pre-operative protocol."
+            },
+            status: "open"
         });
 
         return NextResponse.json(newCase, { status: 201 });

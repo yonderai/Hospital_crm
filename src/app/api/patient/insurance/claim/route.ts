@@ -18,6 +18,8 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { mrn, email, amount, reason, policyNumber } = body;
 
+        console.log("Claim request received:", { mrn, email, amount, reason, policyNumber });
+
         if (!amount || amount <= 0) {
             return NextResponse.json({ error: 'Valid claim amount is required' }, { status: 400 });
         }
@@ -35,10 +37,29 @@ export async function POST(req: Request) {
         }
 
         if (!patient) {
+            console.error("Patient not found for claim");
             return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
         }
 
-        // 2. Find or create a default Payer (Insurance)
+        // 2. Fetch unpaid invoices to check total balance
+        const invoices = await Invoice.find({
+            patientId: patient._id,
+            balanceDue: { $gt: 0 },
+            status: { $nin: ["paid", "void"] }
+        }).sort({ createdAt: 1 });
+
+        const totalBalanceDue = invoices.reduce((sum, inv) => sum + (inv.balanceDue || 0), 0);
+        console.log(`Total balance due for patient ${patient.mrn}: ${totalBalanceDue}`);
+
+        // Validation: Amount cannot exceed total balance due
+        if (amount > totalBalanceDue) {
+            console.warn(`Claim amount ${amount} exceeds balance ${totalBalanceDue}`);
+            return NextResponse.json({
+                error: `Not valid to claim: Amount ₹${amount} exceeds total outstanding balance of ₹${totalBalanceDue}`
+            }, { status: 400 });
+        }
+
+        // 3. Find or create a default Payer (Insurance)
         let payer = await Payer.findOne({ name: patient.insuranceInfo?.provider || "Default Insurance" });
         if (!payer) {
             payer = await Payer.create({
@@ -48,26 +69,23 @@ export async function POST(req: Request) {
             });
         }
 
-        // 3. Create the Claim record
+        // 4. Create the Claim record
+        // Note: Claim model requires encounterId, payerId, patientId
         const claim = await Claim.create({
             patientId: patient._id,
-            encounterId: new mongoose.Types.ObjectId(), // Mocking encounter link
+            encounterId: patient.lastEncounterId || new mongoose.Types.ObjectId(), // Use real encounter if available, else mock
             payerId: payer._id,
             claimNumber: `CLM-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
             status: "paid", // Auto-approving for demo purposes
             amountBilled: amount,
             amountAllowed: amount,
             submittedAt: new Date(),
-            adjudicationNotes: reason || "Manual claim submission"
+            adjudicationNotes: reason || "Manual claim submission from patient portal"
         });
 
-        // 4. Update Invoices (Oldest first)
-        const invoices = await Invoice.find({
-            patientId: patient._id,
-            balanceDue: { $gt: 0 },
-            status: { $nin: ["paid", "void"] }
-        }).sort({ createdAt: 1 });
+        console.log("Created claim:", claim.claimNumber);
 
+        // 5. Update Invoices (Deduct from oldest first)
         let remainingClaim = amount;
         for (const inv of invoices) {
             if (remainingClaim <= 0) break;
@@ -77,18 +95,26 @@ export async function POST(req: Request) {
             inv.balanceDue -= deduction;
             inv.insuranceCoverage = (inv.insuranceCoverage || 0) + deduction;
 
-            // Update insurance calculation fields
+            // Safely update insuranceCalculation
             if (!inv.insuranceCalculation) {
                 inv.insuranceCalculation = {
-                    totalBillAmount: inv.totalAmount,
+                    totalBillAmount: inv.totalAmount || 0,
                     insuranceCoveredAmount: 0,
-                    totalPatientPayable: inv.totalAmount,
+                    totalPatientPayable: inv.totalAmount || 0,
+                    deductibleApplied: 0,
+                    coPayApplied: 0,
+                    coInsuranceApplied: 0,
                     claimStatus: "not_initiated"
                 };
             }
 
-            inv.insuranceCalculation.insuranceCoveredAmount += deduction;
-            inv.insuranceCalculation.totalPatientPayable -= deduction;
+            // Ensure numeric values to prevent NaN
+            const currentCovered = Number(inv.insuranceCalculation.insuranceCoveredAmount) || 0;
+            const currentPayable = Number(inv.insuranceCalculation.totalPatientPayable) || (Number(inv.totalAmount) || 0);
+
+            inv.insuranceCalculation.insuranceCoveredAmount = currentCovered + deduction;
+            inv.insuranceCalculation.totalPatientPayable = currentPayable - deduction;
+            inv.insuranceCalculation.totalBillAmount = Number(inv.totalAmount) || 0;
             inv.insuranceCalculation.claimStatus = inv.balanceDue === 0 ? "approved" : "partial";
             inv.insuranceCalculation.claimId = claim.claimNumber;
 
@@ -100,30 +126,26 @@ export async function POST(req: Request) {
 
             await inv.save();
             remainingClaim -= deduction;
-        }
-
-        // 5. Update Patient Insurance Utilization
-        if (patient.insuranceInfo && patient.insuranceInfo.hasInsurance) {
-            // This part depends on how you want to track total balance.
-            // Sum insured vs balance.
-            // For now, let's assume sumInsured is the limit and we subtract from balance if it exists.
-            // If patient insuranceInfo just contains metadata, we might need a separate way to track usage.
-            // In the UI, 'balance' was used.
-
-            // Let's update insuranceInfo.sumInsured related fields if they exist
-            // (Note: Patient model doesn't have an 'availableBalance' field, but the UI mocked it)
-            // We could store it in notes or a custom metadata for now if needed, 
-            // but the UI calculates it from invoices usually.
+            console.log(`Updated invoice ${inv.invoiceNumber}: New balance ${inv.balanceDue}`);
         }
 
         return NextResponse.json({
+            success: true,
             message: 'Claim processed and billing updated',
             claimNumber: claim.claimNumber,
-            amountDeducted: amount - remainingClaim
+            amountDeducted: amount - remainingClaim,
+            remainingBalance: totalBalanceDue - (amount - remainingClaim)
         });
 
-    } catch (error) {
-        console.error("Claim processing error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    } catch (error: any) {
+        console.error("CRITICAL ERROR in Claim Processing:");
+        console.error("Message:", error.message);
+        console.error("Stack:", error.stack);
+
+        // Return the specific error message so we can see it in the alert box
+        return NextResponse.json({
+            error: error.message || "Internal Server Error",
+            details: error.stack
+        }, { status: 500 });
     }
 }

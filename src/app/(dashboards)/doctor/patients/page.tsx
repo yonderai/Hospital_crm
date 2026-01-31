@@ -38,8 +38,12 @@ export default function DoctorPatients() {
         const fetchPatients = async () => {
             setLoading(true);
             try {
+                const d = new Date();
+                const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
                 const params = new URLSearchParams();
                 if (debouncedSearch) params.append('search', debouncedSearch);
+                params.append('anchorDate', todayStr);
                 if (dateFilter !== 'all') params.append('date', dateFilter);
 
                 const res = await fetch(`/api/patients?${params.toString()}`);
@@ -178,9 +182,9 @@ export default function DoctorPatients() {
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-2">
                                                 <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${p.status === 'Treatment Done' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                        p.status === 'Awaiting Tx' ? 'bg-orange-50 text-orange-600 border-orange-100' :
-                                                            p.status === 'Admitted' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                                'bg-slate-50 text-slate-600 border-slate-100'
+                                                    p.status === 'Awaiting Tx' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                                                        p.status === 'Admitted' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                            'bg-slate-50 text-slate-600 border-slate-100'
                                                     }`}>
                                                     {p.status}
                                                 </span>

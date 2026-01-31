@@ -14,14 +14,17 @@ import {
     Calendar,
     Image as ImageIcon,
     Sliders,
-    AlertCircle
+    AlertCircle,
+    X
 } from "lucide-react";
+import ReportModal from "@/components/doctor/ReportModal";
 
 export default function PatientChart() {
     const params = useParams();
     const [patient, setPatient] = useState<any>(null);
     const [activeTab, setActiveTab] = useState('Timeline');
     const [loading, setLoading] = useState(true);
+    const [selectedReport, setSelectedReport] = useState<any>(null);
 
     useEffect(() => {
         const fetchPatient = async () => {
@@ -71,10 +74,28 @@ export default function PatientChart() {
                         {activeTab === 'Timeline' && <TimelineView patientId={params.id} />}
                         {activeTab === 'SOAP Notes' && <SOAPView patientId={params.id} />}
                         {activeTab === 'Medications' && <MedicationsView patientId={params.id} />}
-                        {activeTab === 'Labs & Imaging' && <LabsImagingView patientId={params.id} />}
+                        {activeTab === 'Labs & Imaging' && <LabsImagingView patientId={params.id} onSelectReport={setSelectedReport} patient={patient} />}
                         {activeTab === 'Procedures' && <ProceduresView patientId={params.id} />}
                     </div>
                 </div>
+
+                {selectedReport && (
+                    <div className="no-print">
+                        <ReportModal
+                            title={selectedReport.title}
+                            data={selectedReport.data}
+                            imageUrl={selectedReport.imageUrl}
+                            onClose={() => setSelectedReport(null)}
+                        />
+                        {/* Overlay to hide print/download buttons as requested for doctor section */}
+                        <style jsx global>{`
+                            .no-print button[title="Print Report"],
+                            .no-print button[title="Download PDF"] {
+                                display: none !important;
+                            }
+                        `}</style>
+                    </div>
+                )}
             </div>
         </DashboardLayout>
     );
@@ -308,7 +329,7 @@ function MedicationsView({ patientId }: { patientId: any }) {
     );
 }
 
-function LabsImagingView({ patientId }: { patientId: any }) {
+function LabsImagingView({ patientId, onSelectReport, patient }: { patientId: any, onSelectReport: (report: any) => void, patient: any }) {
     const [labs, setLabs] = useState<any[]>([]);
     const [radiology, setRadiology] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -340,7 +361,10 @@ function LabsImagingView({ patientId }: { patientId: any }) {
             testName: r.testName,
             date: new Date(order.resultDate || order.createdAt).toLocaleDateString(),
             result: order.status,
-            value: `${r.value} ${r.unit}`,
+            value: r.value,
+            unit: r.unit,
+            referenceRange: r.referenceRange,
+            abnormalFlag: r.abnormalFlag,
             abnormal: r.abnormalFlag
         }))
     );
@@ -350,7 +374,10 @@ function LabsImagingView({ patientId }: { patientId: any }) {
         date: new Date(order.createdAt).toLocaleDateString(),
         result: order.status,
         value: 'Pending',
-        abnormal: false
+        unit: '',
+        referenceRange: '',
+        abnormal: false,
+        abnormalFlag: false
     }));
 
     return (
@@ -377,7 +404,20 @@ function LabsImagingView({ patientId }: { patientId: any }) {
                     </div>
                     <div className="flex flex-wrap gap-10">
                         {radiology.map((item, i) => (
-                            <div key={i} className="group relative">
+                            <div key={i} className="group relative cursor-pointer" onClick={() => onSelectReport({
+                                title: `Imaging Report: ${item.imagingType}`,
+                                data: {
+                                    type: 'radiology',
+                                    patientName: `${patient.firstName} ${patient.lastName}`,
+                                    mrn: patient.mrn,
+                                    date: new Date(item.createdAt).toLocaleDateString(),
+                                    radiology: {
+                                        findings: item.report?.findings || "Findings pending interpretation.",
+                                        impression: item.report?.impression || "Impression pending.",
+                                        recommendations: item.report?.recommendations
+                                    }
+                                }
+                            })}>
                                 <div
                                     className="bg-slate-900 rounded-[32px] overflow-hidden shadow-2xl transition-all border-8 border-slate-900 group-hover:border-olive-500 relative"
                                     style={{ width: `${scanSize}px`, height: `${scanSize}px` }}
@@ -431,7 +471,23 @@ function LabsImagingView({ patientId }: { patientId: any }) {
                         {displayLabs.length === 0 ? (
                             <tr><td colSpan={4} className="p-10 text-center text-slate-400 italic">No lab history recorded</td></tr>
                         ) : displayLabs.map((l, i) => (
-                            <tr key={i} className="hover:bg-slate-50/30 transition-colors">
+                            <tr key={i} className="hover:bg-slate-50/30 transition-colors cursor-pointer" onClick={() => onSelectReport({
+                                title: `Diagnostic Report: ${l.testName}`,
+                                data: {
+                                    type: 'lab',
+                                    patientName: `${patient.firstName} ${patient.lastName}`,
+                                    mrn: patient.mrn,
+                                    date: l.date,
+                                    testName: l.testName,
+                                    results: [{
+                                        testName: l.testName,
+                                        value: l.value,
+                                        unit: l.unit || '',
+                                        referenceRange: l.referenceRange || 'N/A',
+                                        abnormalFlag: l.abnormalFlag
+                                    }]
+                                }
+                            })}>
                                 <td className="px-10 py-6">
                                     <p className="font-black text-slate-900 text-sm italic tracking-tight uppercase">{l.testName}</p>
                                 </td>
@@ -444,9 +500,14 @@ function LabsImagingView({ patientId }: { patientId: any }) {
                                 </td>
                                 <td className="px-10 py-6">
                                     <div className="flex items-center gap-4">
-                                        <p className={`text-lg font-black italic tracking-tighter ${l.abnormal ? 'text-red-600 underline decoration-2 underline-offset-4' : 'text-slate-900'}`}>
-                                            {l.value}
-                                        </p>
+                                        <div className="flex flex-col">
+                                            <p className={`text-lg font-black italic tracking-tighter ${l.abnormal ? 'text-red-600 underline decoration-2 underline-offset-4' : 'text-slate-900'}`}>
+                                                {l.value} <span className="text-xs opacity-50 not-italic font-bold tracking-normal">{l.unit}</span>
+                                            </p>
+                                            {l.referenceRange && (
+                                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Range: {l.referenceRange}</p>
+                                            )}
+                                        </div>
                                         {l.abnormal && <AlertCircle size={14} className="text-red-500" />}
                                     </div>
                                 </td>

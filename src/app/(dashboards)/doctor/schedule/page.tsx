@@ -23,7 +23,8 @@ export default function DoctorSchedule() {
 
     // Helper to format date for API (YYYY-MM-DD)
     const formatDateForApi = (date: Date) => {
-        return date.toISOString().split('T')[0];
+        const d = new Date(date);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
 
     // Helper for display date

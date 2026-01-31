@@ -4,11 +4,11 @@ import ORCase from '@/lib/models/ORCase';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     await dbConnect();
     try {
-        const patientId = params.id;
+        const { id: patientId } = await params;
         const surgeries = await ORCase.find({ patientId })
             .populate('surgeonId', 'firstName lastName')
             .sort({ scheduledDate: -1 });

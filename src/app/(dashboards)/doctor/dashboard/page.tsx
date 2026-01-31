@@ -51,10 +51,11 @@ export default function DoctorDashboard() {
 
     const fetchData = async () => {
         try {
-            setLoading(true);
-            const today = new Date().toISOString().split('T')[0];
+            const d = new Date();
+            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
             const [statsRes, appointmentsRes, availabilityRes] = await Promise.all([
-                fetch('/api/doctor/stats'),
+                fetch(`/api/doctor/stats?date=${today}`),
                 fetch(`/api/appointments?date=${today}`),
                 fetch(`/api/doctor/availability?date=${today}`)
             ]);
@@ -257,20 +258,123 @@ export default function DoctorDashboard() {
 
                         {/* Right Box: Quick Actions & Availability */}
                         <div className="flex flex-col gap-8">
-                            {/* Next Patient Card */}
-                            <div className="bg-[#0F172A] rounded-[40px] p-8 text-white relative overflow-hidden shadow-2xl">
-                                <h4 className="text-xs font-black uppercase tracking-widest mb-6 relative z-10 text-teal-400 italic">Sentinel Insight</h4>
-                                <div className="space-y-6 relative z-10">
-                                    <p className="text-sm font-medium text-slate-300 leading-relaxed italic">"Optimal care begins with chronological context. Review labs and history before initiating consultation."</p>
-                                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-teal-500">Node α-01 Status</p>
-                                        <div className="text-xs font-bold mt-1 text-slate-100 flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> Clinical Stream Active
-                                        </div>
+                            {/* Next Scheduled Patient Card */}
+                            {(() => {
+                                // Find next upcoming appointment
+                                const now = new Date();
+                                const upcomingAppointments = appointments
+                                    .filter(apt =>
+                                        apt.status !== 'completed' &&
+                                        apt.status !== 'cancelled' &&
+                                        apt.status !== 'no-show' &&
+                                        new Date(apt.startTime) > new Date(now.getTime() - 30 * 60000) // Include appointments that started up to 30 min ago
+                                    )
+                                    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+                                const nextAppointment = upcomingAppointments[0];
+
+                                // Check if Start Session should be enabled (within 15 minutes of start time)
+                                const isSessionTime = nextAppointment ? (() => {
+                                    const startTime = new Date(nextAppointment.startTime);
+                                    const diffMs = startTime.getTime() - now.getTime();
+                                    const diffMins = Math.floor(diffMs / 60000);
+                                    return diffMins <= 15 && diffMins >= -30; // 15 min before to 30 min after
+                                })() : false;
+
+                                const handleCancelAppointment = async () => {
+                                    if (!nextAppointment) return;
+                                    if (confirm(`Cancel appointment with ${nextAppointment.patientId?.firstName} ${nextAppointment.patientId?.lastName}?`)) {
+                                        try {
+                                            const res = await fetch(`/api/appointments/${nextAppointment._id}`, {
+                                                method: 'PATCH',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ status: 'cancelled' })
+                                            });
+                                            if (res.ok) {
+                                                fetchData(); // Refresh dashboard
+                                            }
+                                        } catch (error) {
+                                            console.error('Failed to cancel appointment:', error);
+                                        }
+                                    }
+                                };
+
+                                return (
+                                    <div className="bg-gradient-to-br from-olive-600 to-olive-700 rounded-[40px] p-8 text-white relative overflow-hidden shadow-2xl">
+                                        <h4 className="text-xs font-black uppercase tracking-widest mb-6 relative z-10 text-olive-200">Next Scheduled Patient</h4>
+
+                                        {nextAppointment ? (
+                                            <div className="space-y-6 relative z-10">
+                                                {/* Patient Info */}
+                                                <div className="space-y-3">
+                                                    <div>
+                                                        <p className="text-xs font-bold text-olive-200 uppercase tracking-wider mb-1">Patient</p>
+                                                        <p className="text-2xl font-black text-white">
+                                                            {nextAppointment.patientId?.firstName} {nextAppointment.patientId?.lastName}
+                                                        </p>
+                                                        <p className="text-sm text-olive-100 font-medium mt-1">
+                                                            MRN: {nextAppointment.patientId?.mrn}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="p-4 bg-white/10 rounded-2xl border border-white/20">
+                                                        <p className="text-xs font-bold text-olive-200 uppercase tracking-wider mb-1">Scheduled Time</p>
+                                                        <p className="text-xl font-black text-white">
+                                                            {formatTime(nextAppointment.startTime)}
+                                                        </p>
+                                                        <p className="text-xs text-olive-100 mt-1">
+                                                            {nextAppointment.type} • {nextAppointment.reason}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Action Buttons */}
+                                                <div className="space-y-3">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedPatient(nextAppointment.patientId);
+                                                            setSelectedAptId(nextAppointment._id);
+                                                        }}
+                                                        disabled={!isSessionTime}
+                                                        className={`w-full py-4 rounded-2xl font-bold uppercase tracking-wider transition-all shadow-lg
+                                                            ${isSessionTime
+                                                                ? 'bg-white text-olive-700 hover:bg-olive-50 hover:scale-[1.02]'
+                                                                : 'bg-white/20 text-white/50 cursor-not-allowed'
+                                                            }`}
+                                                        title={!isSessionTime ? 'Session can be started 15 minutes before scheduled time' : 'Start consultation'}
+                                                    >
+                                                        {isSessionTime ? '▶ Start Session' : '🔒 Session Locked'}
+                                                    </button>
+
+                                                    <button
+                                                        onClick={handleCancelAppointment}
+                                                        className="w-full py-3 rounded-2xl font-bold uppercase tracking-wider transition-all bg-red-500/20 text-red-100 border border-red-400/30 hover:bg-red-500/30 hover:border-red-400/50"
+                                                    >
+                                                        Cancel Appointment
+                                                    </button>
+                                                </div>
+
+                                                {/* Time indicator */}
+                                                <div className="text-center">
+                                                    <p className="text-xs text-olive-200">
+                                                        {getDueSoonText(nextAppointment)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4 relative z-10 text-center py-8">
+                                                <Calendar size={48} className="mx-auto text-olive-200 opacity-50" />
+                                                <div>
+                                                    <p className="text-lg font-bold text-white mb-2">No Appointments</p>
+                                                    <p className="text-sm text-olive-200">No upcoming appointments scheduled for today</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <Clock size={180} className="absolute bottom-[-15%] right-[-15%] text-white/5" />
                                     </div>
-                                </div>
-                                <Activity size={200} className="absolute bottom-[-20%] right-[-20%] text-white/5" />
-                            </div>
+                                );
+                            })()}
 
                             {/* Availability Overview Card */}
                             {availability && (

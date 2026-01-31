@@ -11,6 +11,7 @@ interface ReportModalProps {
         patientName: string;
         mrn: string;
         date: string;
+        testName?: string;
         results?: {
             testName: string;
             value: string;
@@ -43,29 +44,29 @@ export default function ReportModal({ imageUrl, title, onClose, data }: ReportMo
             <div className="relative w-full max-w-5xl h-full flex flex-col bg-white rounded-none md:rounded-[40px] shadow-2xl overflow-hidden border border-white/20 print:shadow-none print:border-none print:rounded-none">
 
                 {/* Modal Header - Hidden on Print */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50 no-print">
+                <div className="flex items-center justify-between p-6 border-b border-slate-700 bg-slate-800 no-print">
                     <div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight">{title}</h3>
-                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Official Medical Record • Non-Transferable</p>
+                        <h3 className="text-xl font-bold text-white tracking-tight">Diagnostic Report: {data?.testName || title}</h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Official Medical Record • Non-Transferable</p>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                         <button
                             onClick={handlePrint}
-                            className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-slate-900 transition-colors shadow-sm"
+                            className="p-3 bg-slate-700 border border-slate-600 rounded-2xl text-slate-300 hover:text-white hover:bg-slate-600 transition-colors"
                             title="Print Report"
                         >
                             <Printer size={18} />
                         </button>
                         <button
                             onClick={handleDownload}
-                            className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-slate-900 transition-colors shadow-sm"
+                            className="p-3 bg-slate-700 border border-slate-600 rounded-2xl text-slate-300 hover:text-white hover:bg-slate-600 transition-colors"
                             title="Download PDF"
                         >
                             <Download size={18} />
                         </button>
                         <button
                             onClick={onClose}
-                            className="p-3 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20"
+                            className="p-3 bg-slate-900 text-white rounded-2xl hover:bg-black transition-colors"
                         >
                             <X size={18} />
                         </button>
