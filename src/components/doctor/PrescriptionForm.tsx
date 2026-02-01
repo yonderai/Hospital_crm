@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Plus, Trash } from "lucide-react";
 
-export default function PrescriptionForm({ patientId, appointmentId, onSuccess }: { patientId: string; appointmentId?: string; onSuccess: () => void }) {
+export default function PrescriptionForm({ patientId, appointmentId, encounterId, onSuccess }: { patientId: string; appointmentId?: string; encounterId?: string; onSuccess: () => void }) {
     const [loading, setLoading] = useState(false);
     const [meds, setMeds] = useState([
         { drugName: "", dosage: "", frequency: "1-0-1", route: "Oral", duration: "5 days", quantity: 10, instructions: "" }
@@ -32,6 +32,7 @@ export default function PrescriptionForm({ patientId, appointmentId, onSuccess }
                 body: JSON.stringify({
                     patientId,
                     appointmentId,
+                    encounterId,
                     medications: meds
                 })
             });

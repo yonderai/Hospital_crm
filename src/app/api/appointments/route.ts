@@ -69,6 +69,24 @@ export async function GET(req: Request) {
             }
         }
 
+        // Search Filtering (Patient Name or MRN)
+        const search = searchParams.get('search');
+        if (search) {
+            const regex = new RegExp(search, 'i');
+            const matchedPatients = await Patient.find({
+                $or: [
+                    { firstName: { $regex: regex } },
+                    { lastName: { $regex: regex } },
+                    { mrn: { $regex: regex } }
+                ]
+            }).distinct('_id');
+
+            query = {
+                ...query,
+                patientId: { $in: matchedPatients }
+            };
+        }
+
         // Populate patient and provider details for display
         const appointments = await Appointment.find(query)
             .populate('patientId', 'firstName lastName mrn dob gender contact bloodType allergies chronicConditions emergencyContact insuranceInfo')

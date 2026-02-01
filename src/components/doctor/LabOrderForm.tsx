@@ -7,7 +7,7 @@ const LAB_TESTS = [
     "Thyroid Profile", "Urine Routine", "X-Ray Chest PA", "MRI Brain", "CT Scan Abdomen"
 ];
 
-export default function LabOrderForm({ patientId, onSuccess }: { patientId: string; onSuccess: () => void }) {
+export default function LabOrderForm({ patientId, appointmentId, encounterId, onSuccess }: { patientId: string; appointmentId?: string; encounterId?: string; onSuccess: () => void }) {
     const [loading, setLoading] = useState(false);
     const [selectedTests, setSelectedTests] = useState<string[]>([]);
     const [priority, setPriority] = useState("routine");
@@ -31,6 +31,8 @@ export default function LabOrderForm({ patientId, onSuccess }: { patientId: stri
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     patientId,
+                    appointmentId,
+                    encounterId,
                     tests: selectedTests,
                     priority
                 })

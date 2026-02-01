@@ -16,34 +16,83 @@ import {
     LogOut,
     Bell,
     Search,
-    Settings,
     BarChart3,
     Aperture,
     Wrench,
     Wind,
     FlaskConical,
+    ChevronRight,
+    Menu,
+    X,
+    Settings,
+    UserCircle,
+    Stethoscope,
+    Pill as PillIcon,
+    AlertCircle,
     Scissors,
-    Pill,
     Microscope,
     ShoppingBag,
     Ambulance,
     Siren,
-    Stethoscope,
     AlertTriangle,
-
     Hammer,
     ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { data: session } = useSession();
     const pathname = usePathname();
+    const router = useRouter();
+
+    // Omni Search State
+    const [searchTerm, setSearchTerm] = useState("");
+    const [searchResults, setSearchResults] = useState<{ patients: any[], clinicalHistory: any[] }>({ patients: [], clinicalHistory: [] });
+    const [isSearching, setIsSearching] = useState(false);
+    const [showResults, setShowResults] = useState(false);
 
     // Demo Mode Fallback: Use sessionStorage if no real session exists
     const [demoState, setDemoState] = useState<{ role: string, name: string } | null>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
+
+    // Debounce search
+    useEffect(() => {
+        const handler = setTimeout(async () => {
+            if (searchTerm.length >= 2) {
+                setIsSearching(true);
+                try {
+                    const [patientRes, clinicalRes] = await Promise.all([
+                        fetch(`/api/patients?search=${encodeURIComponent(searchTerm)}`),
+                        fetch(`/api/clinical/search?search=${encodeURIComponent(searchTerm)}`)
+                    ]);
+
+                    let patients = [];
+                    let clinicalHistory = [];
+
+                    if (patientRes.ok) {
+                        const data = await patientRes.json();
+                        patients = Array.isArray(data) ? data : [];
+                    }
+                    if (clinicalRes.ok) {
+                        clinicalHistory = await clinicalRes.json();
+                    }
+
+                    setSearchResults({ patients, clinicalHistory });
+                    setShowResults(true);
+                } catch (error) {
+                    console.error("Search failed:", error);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else {
+                setSearchResults({ patients: [], clinicalHistory: [] });
+                setShowResults(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
 
     useEffect(() => {
         const storedRole = sessionStorage.getItem("userRole");
@@ -98,7 +147,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Surgery", href: `/${urlRole}/or-management`, icon: Scissors },
         { name: "ICU Tracking", href: `/${urlRole}/icu-tracking`, icon: Activity },
         { name: "Laboratory", href: `/${urlRole}/laboratory`, icon: Microscope },
-        { name: "Pharmacy", href: `/${urlRole}/pharmacy`, icon: Pill },
+        { name: "Pharmacy", href: `/${urlRole}/pharmacy`, icon: PillIcon },
         { name: "Support", href: `/${urlRole}/support`, icon: Hammer }, // New Support Link
         // Pharmacy & Inventory
         { name: "Dispensing", href: `/${urlRole}/dispensing`, icon: Package },
@@ -260,14 +309,119 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Top Header */}
                 <header className="h-20 bg-white border-b border-slate-200 px-8 flex items-center justify-between">
-                    <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-2xl w-96">
-                        <Search size={18} className="text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Omni Search (Patients, Records, Orders...)"
-                            className="bg-transparent border-none outline-none text-sm font-medium text-slate-900 w-full placeholder:text-slate-400"
-                        />
-                    </div>
+                    {/* Omni Search - Hidden on Patients and Schedule pages as they have local search */}
+                    {!['/doctor/patients', '/doctor/schedule'].includes(pathname) ? (
+                        <div className="relative group/search">
+                            <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 px-4 py-2.5 rounded-2xl w-96 transition-all focus-within:ring-2 focus-within:ring-olive-500/20 focus-within:bg-white focus-within:border-olive-200">
+                                <Search size={18} className={`${isSearching ? 'animate-pulse text-olive-500' : 'text-slate-400'}`} />
+                                <input
+                                    type="text"
+                                    placeholder="Omni Search (Patients, Records, Orders...)"
+                                    className="bg-transparent border-none outline-none text-sm font-medium text-slate-900 w-full placeholder:text-slate-400"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onFocus={() => searchTerm.length >= 2 && setShowResults(true)}
+                                />
+                            </div>
+
+                            {/* Search Results Dropdown */}
+                            {showResults && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setShowResults(false)}
+                                    />
+                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden z-50 max-h-[480px] flex flex-col">
+                                        <div className="p-4 bg-slate-50/50 border-b border-slate-50 flex items-center justify-between">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Search Results</span>
+                                            {isSearching && <div className="w-4 h-4 border-2 border-olive-500 border-t-transparent rounded-full animate-spin" />}
+                                        </div>
+                                        <div className="overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-slate-100 cursor-default">
+                                            {(searchResults.patients.length > 0 || searchResults.clinicalHistory.length > 0) ? (
+                                                <div className="py-2">
+                                                    {/* Patients Section */}
+                                                    {searchResults.patients.length > 0 && (
+                                                        <div className="px-6 py-2 bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-widest">Matching Patients</div>
+                                                    )}
+                                                    {searchResults.patients.map((p) => (
+                                                        <button
+                                                            key={p._id}
+                                                            onClick={() => {
+                                                                router.push(`/${urlRole}/clinical?patientId=${p._id}`);
+                                                                setShowResults(false);
+                                                                setSearchTerm("");
+                                                            }}
+                                                            className="w-full px-6 py-4 flex items-center gap-4 hover:bg-olive-50 transition-colors text-left group"
+                                                        >
+                                                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-olive-600 transition-colors">
+                                                                <Users size={18} />
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="text-sm font-bold text-slate-900 group-hover:text-olive-700">{p.firstName} {p.lastName}</h4>
+                                                                <div className="flex items-center gap-2 mt-0.5">
+                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{p.mrn}</span>
+                                                                    <span className="w-1 h-1 rounded-full bg-slate-200" />
+                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{p.dob ? new Date().getFullYear() - new Date(p.dob).getFullYear() : 'N/A'}Y</span>
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+
+                                                    {/* Clinical History Section */}
+                                                    {searchResults.clinicalHistory.length > 0 && (
+                                                        <div className="px-6 py-3 bg-slate-50 text-[9px] font-black text-slate-400 uppercase tracking-widest mt-2 border-t border-slate-100">Medical History Matches</div>
+                                                    )}
+                                                    {searchResults.clinicalHistory.map((h) => (
+                                                        <button
+                                                            key={h.id}
+                                                            onClick={() => {
+                                                                const params = new URLSearchParams();
+                                                                params.append('patientId', h.patientId);
+                                                                params.append('tab', 'case-report');
+                                                                if (h.encounterId) params.append('encounterId', h.encounterId);
+                                                                if (h.appointmentId) params.append('aptId', h.appointmentId);
+
+                                                                router.push(`/${urlRole}/clinical?${params.toString()}`);
+                                                                setShowResults(false);
+                                                                setSearchTerm("");
+                                                            }}
+                                                            className="w-full px-6 py-4 flex items-center gap-4 hover:bg-olive-50 transition-colors text-left group"
+                                                        >
+                                                            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-olive-600 transition-colors">
+                                                                <Activity size={18} />
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <h4 className="text-sm font-bold text-slate-900 group-hover:text-olive-700">{h.condition}</h4>
+                                                                    <span className="text-[9px] bg-slate-200 text-slate-500 px-2 py-0.5 rounded font-black uppercase tracking-tighter">History</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 mt-0.5">
+                                                                    <span className="text-[10px] font-black text-olive-600 uppercase tracking-tight">{h.patientName}</span>
+                                                                    <span className="w-1 h-1 rounded-full bg-slate-200" />
+                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(h.date).toLocaleDateString()}</span>
+                                                                </div>
+                                                            </div>
+                                                            <ChevronRight size={14} className="ml-auto text-slate-300 group-hover:text-olive-500 transition-transform group-hover:translate-x-1" />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            ) : !isSearching && (
+                                                <div className="p-10 flex flex-col items-center justify-center text-center">
+                                                    <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-3">
+                                                        <Search size={24} />
+                                                    </div>
+                                                    <p className="text-sm font-bold text-slate-900">No results found</p>
+                                                    <p className="text-xs text-slate-500 mt-1">No history related to this disease</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex-1" /> // Spacer when search is hidden
+                    )}
 
                     <div className="flex items-center gap-6">
                         <div className="flex gap-2">

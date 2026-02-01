@@ -128,6 +128,25 @@ export async function GET(req: Request) {
         ]);
         const outpatientCompletedToday = allCompletedPatientIds.size;
 
+        // Determine target range for the patient list lookup
+        let focusStart = todayStart;
+        let focusEnd = todayEnd;
+        if (filterDate === 'yesterday') {
+            focusStart = yesterdayStart;
+            focusEnd = yesterdayEnd;
+        } else if (filterDate && filterDate !== 'all' && filterDate !== 'today') {
+            focusStart = startOfDay(new Date(filterDate));
+            focusEnd = endOfDay(new Date(filterDate));
+        }
+
+        // Target range for status settle (Show historical treatment done if filtered by 'all')
+        let targetStart = focusStart;
+        let targetEnd = focusEnd;
+        if (!filterDate || filterDate === 'all') {
+            targetStart = new Date(0);
+            targetEnd = todayEnd;
+        }
+
         const patients = await Patient.aggregate([
             { $match: matchStage },
             { $sort: { updatedAt: -1 } },
@@ -146,8 +165,20 @@ export async function GET(req: Request) {
             {
                 $lookup: {
                     from: "prescriptions",
-                    localField: "_id",
-                    foreignField: "patientId",
+                    let: { patientId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$patientId", "$$patientId"] },
+                                        { $gte: ["$createdAt", targetStart] }, // Relative to filter
+                                        { $lte: ["$createdAt", targetEnd] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
                     as: "prescriptions"
                 }
             },
@@ -162,14 +193,35 @@ export async function GET(req: Request) {
                                     $and: [
                                         { $eq: ["$patientId", "$$patientId"] },
                                         { $eq: ["$status", "completed"] },
-                                        { $gte: ["$startTime", todayStart] },
-                                        { $lte: ["$startTime", todayEnd] }
+                                        { $gte: ["$startTime", targetStart] }, // Relative to filter
+                                        { $lte: ["$startTime", targetEnd] }
                                     ]
                                 }
                             }
                         }
                     ],
-                    as: "todayCompletedAppt"
+                    as: "rangeCompletedAppt"
+                }
+            },
+            {
+                $lookup: {
+                    from: "appointments",
+                    let: { patientId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$patientId", "$$patientId"] },
+                                        { $eq: ["$providerId", doctorId] }, // Only count appointments for this doctor
+                                        { $gte: ["$startTime", focusStart] }, // Focus-aware (Today/Yesterday)
+                                        { $lte: ["$startTime", focusEnd] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: "rangeAppointments"
                 }
             },
             // Removed strict prescription filter as requested - allow viewing all assigned patients
@@ -218,17 +270,32 @@ export async function GET(req: Request) {
                 }
             }
 
-            const isApptCompletedToday = p.todayCompletedAppt && p.todayCompletedAppt.length > 0;
-            const treatmentGiven = hasPrescription || isApptCompletedToday;
+            const isApptCompletedInFocus = p.rangeAppointments?.some((a: any) => a.status === 'completed');
+            const hasPrescriptionInFocus = p.prescriptions?.some((rx: any) => new Date(rx.createdAt) >= focusStart && new Date(rx.createdAt) <= focusEnd);
+            const treatmentGivenInFocus = isApptCompletedInFocus || hasPrescriptionInFocus;
 
-            // High-priority override: If treatment is done (Prescription written OR Appt marked completed)
-            if (treatmentGiven) {
+            const hasCancelledInFocus = p.rangeAppointments?.some((a: any) => a.status === 'cancelled');
+            const treatmentGivenHistory = (p.prescriptions && p.prescriptions.length > 0) || (p.rangeCompletedAppt && p.rangeCompletedAppt.length > 0);
+
+            // 1. If treatment happened in the current focus range -> DONE
+            if (treatmentGivenInFocus) {
                 status = "Treatment Done";
                 category = "outpatient";
-            } else if (category === 'pending' || category === 'outpatient') {
-                // If no prescription/completion and not admitted/post-op, it's a pending case
+            }
+            // 2. If NO treatment happened in focus, but a CANCELLATION did -> CANCELLED
+            else if (hasCancelledInFocus) {
+                status = "Cancelled";
+                category = "inpatient";
+            }
+            // 3. If no focus activity, check if they were ever treated (for general directory view)
+            else if (treatmentGivenHistory) {
+                status = "Treatment Done";
+                category = "outpatient";
+            }
+            // 4. Default to Awaiting Tx
+            else {
                 status = "Awaiting Tx";
-                category = "inpatient"; // Map to the 'In-Patient' tab as requested for pending
+                category = "inpatient";
             }
 
             const severity = activeEnc?.vitals?.oxygenSaturation < 95 ? "High" : "Medium";
@@ -243,7 +310,8 @@ export async function GET(req: Request) {
                 hasPrescription,
                 condition: p.chronicConditions?.[0] || "General Checkup",
                 lastVisit: p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : "Never",
-                severity: severity
+                severity: severity,
+                appointmentCount: p.rangeAppointments?.length || 0
             };
         });
 

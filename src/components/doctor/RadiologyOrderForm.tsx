@@ -8,7 +8,7 @@ const IMAGING_TYPES = [
     { type: "Ultrasound", parts: ["Abdomen", "Pelvis", "Thyroid"] }
 ];
 
-export default function RadiologyOrderForm({ patientId, onSuccess }: { patientId: string; onSuccess: () => void }) {
+export default function RadiologyOrderForm({ patientId, appointmentId, encounterId, onSuccess }: { patientId: string; appointmentId?: string; encounterId?: string; onSuccess: () => void }) {
     const [loading, setLoading] = useState(false);
     const [selectedType, setSelectedType] = useState(IMAGING_TYPES[0].type);
     const [selectedPart, setSelectedPart] = useState(IMAGING_TYPES[0].parts[0]);
@@ -30,6 +30,8 @@ export default function RadiologyOrderForm({ patientId, onSuccess }: { patientId
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     patientId,
+                    appointmentId,
+                    encounterId,
                     imagingType: selectedType,
                     bodyPart: selectedPart,
                     priority,

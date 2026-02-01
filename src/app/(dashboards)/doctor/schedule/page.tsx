@@ -11,7 +11,8 @@ import {
     Filter,
     CheckCircle,
     Pill,
-    Calendar as CalendarIcon
+    Calendar as CalendarIcon,
+    Search
 } from "lucide-react";
 import Link from "next/link";
 
@@ -20,6 +21,16 @@ export default function DoctorSchedule() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    // Debounce effect for search
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
 
     // Helper to format date for API (YYYY-MM-DD)
     const formatDateForApi = (date: Date) => {
@@ -42,9 +53,12 @@ export default function DoctorSchedule() {
             setLoading(true);
             setError(null);
             try {
-                // Fetch filtered by date
+                // Fetch filtered by date and search
                 const dateStr = formatDateForApi(selectedDate);
-                const url = `/api/appointments?date=${dateStr}`;
+                let url = `/api/appointments?date=${dateStr}`;
+                if (debouncedSearch) {
+                    url += `&search=${encodeURIComponent(debouncedSearch)}`;
+                }
                 console.log("Fetching schedule from:", url);
 
                 const res = await fetch(url);
@@ -87,7 +101,7 @@ export default function DoctorSchedule() {
             }
         };
         fetchSchedule();
-    }, [selectedDate]);
+    }, [selectedDate, debouncedSearch]);
 
     const handlePrevDay = () => {
         const newDate = new Date(selectedDate);
@@ -116,13 +130,20 @@ export default function DoctorSchedule() {
                             DR. GREGORY HOUSE • {formatDateDisplay(selectedDate).toUpperCase()}
                         </p>
                     </div>
-                    <div className="flex gap-4">
-                        <button className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-slate-900 shadow-sm transition-all">
+                    <div className="flex gap-4 items-center">
+                        <div className="flex items-center gap-3 bg-white border border-slate-100 px-4 py-2.5 rounded-2xl w-72 shadow-sm transition-all focus-within:ring-2 focus-within:ring-olive-500/20 focus-within:border-olive-200">
+                            <Search size={18} className="text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search patient name..."
+                                className="bg-transparent border-none outline-none text-sm font-medium text-slate-900 w-full placeholder:text-slate-400"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <button className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-slate-900 shadow-sm transition-all focus:ring-2 focus:ring-olive-500/10">
                             <Filter size={20} />
                         </button>
-                        {/* <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all">
-                            <Plus size={16} /> Add Block
-                        </button> */}
                     </div>
                 </div>
 
@@ -215,7 +236,7 @@ export default function DoctorSchedule() {
                                                         <User size={24} />
                                                     </div>
                                                     <div>
-                                                        <Link href={`/doctor/clinical?patientId=${item.patientId}&tab=prescription&aptId=${item.id}`} className="group/name">
+                                                        <Link href={`/doctor/clinical?patientId=${item.patientId}&aptId=${item.id}`} className="group/name">
                                                             <h4 className="text-sm font-black text-slate-900 tracking-tight group-hover/name:text-olive-700 transition-colors underline decoration-slate-200 underline-offset-4">{item.patientName}</h4>
                                                         </Link>
                                                         <div className="flex items-center gap-3 mt-1">
@@ -237,7 +258,7 @@ export default function DoctorSchedule() {
                                                         {item.status}
                                                     </span>
                                                     <Link
-                                                        href={`/doctor/clinical?patientId=${item.patientId}&tab=consultation&aptId=${item.id}`}
+                                                        href={`/doctor/clinical?patientId=${item.patientId}&aptId=${item.id}`}
                                                         className="p-2 text-slate-400 hover:text-slate-900 transition-all"
                                                     >
                                                         <ChevronRight size={20} />

@@ -5,6 +5,7 @@ export interface IPrescription extends Document {
     patientId: mongoose.Types.ObjectId;
     providerId: mongoose.Types.ObjectId;
     encounterId?: mongoose.Types.ObjectId;
+    appointmentId?: mongoose.Types.ObjectId;
     medications: {
         drugName: string;
         dosage: string;
@@ -27,6 +28,7 @@ const PrescriptionSchema = new Schema<IPrescription>(
         patientId: { type: Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
         providerId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
         encounterId: { type: Schema.Types.ObjectId, ref: "Encounter" },
+        appointmentId: { type: Schema.Types.ObjectId, ref: "Appointment" },
         medications: [
             {
                 drugName: { type: String, required: true },

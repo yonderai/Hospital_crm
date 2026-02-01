@@ -56,7 +56,9 @@ export async function POST(
             orderingProviderId: (session.user as any).id,
             priority: priority || 'routine',
             results: [],
-            createdAt: new Date()
+            createdAt: new Date(),
+            encounterId: body.encounterId,
+            appointmentId: body.appointmentId
         });
 
         return NextResponse.json(newLab, { status: 201 });

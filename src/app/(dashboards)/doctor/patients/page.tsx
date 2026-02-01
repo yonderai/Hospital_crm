@@ -174,7 +174,14 @@ export default function DoctorPatients() {
                                                     {(p.firstName?.[0] || "")}{(p.lastName?.[0] || "")}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-black text-slate-900 tracking-tight">{p.firstName} {p.lastName}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-black text-slate-900 tracking-tight">{p.firstName} {p.lastName}</p>
+                                                        {p.appointmentCount > 1 && (
+                                                            <span className="text-[8px] font-black px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-100 uppercase tracking-tighter">
+                                                                {p.appointmentCount} Schedules
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">MRN-{p.mrn}</p>
                                                 </div>
                                             </div>
@@ -184,7 +191,8 @@ export default function DoctorPatients() {
                                                 <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${p.status === 'Treatment Done' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
                                                     p.status === 'Awaiting Tx' ? 'bg-orange-50 text-orange-600 border-orange-100' :
                                                         p.status === 'Admitted' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                            'bg-slate-50 text-slate-600 border-slate-100'
+                                                            p.status === 'Cancelled' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                                'bg-slate-50 text-slate-600 border-slate-100'
                                                     }`}>
                                                     {p.status}
                                                 </span>

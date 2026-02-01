@@ -34,9 +34,11 @@ function DoctorClinicalContent() {
         const patientId = searchParams.get('patientId');
         const tab = searchParams.get('tab');
         const appointmentId = searchParams.get('aptId');
+        const eId = searchParams.get('encounterId');
 
         if (tab) setInitialTab(tab);
-        if (appointmentId) setAptId(appointmentId);
+        setAptId(appointmentId || undefined);
+        setEncounterId(eId || undefined);
 
         if (patientId) {
             const fetchPatient = async () => {
@@ -179,6 +181,7 @@ function DoctorClinicalContent() {
 
                 {selectedPatient ? (
                     <ClinicalProfile
+                        key={`${selectedPatient?._id}-${aptId || ''}-${encounterId || ''}-${initialTab}`}
                         patient={selectedPatient}
                         initialTab={initialTab}
                         appointmentId={aptId}

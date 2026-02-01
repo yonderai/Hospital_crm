@@ -56,7 +56,9 @@ export async function POST(
             providerId: (session.user as any).id,
             medications,
             status: 'active',
-            prescribedDate: new Date()
+            prescribedDate: new Date(),
+            encounterId: body.encounterId,
+            appointmentId: body.appointmentId
         });
 
         return NextResponse.json(newPrescription, { status: 201 });

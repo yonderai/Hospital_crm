@@ -8,6 +8,7 @@ export interface ILabOrder extends Document {
     orderingProviderId?: mongoose.Types.ObjectId;
     orderSource: "internal" | "direct";
     encounterId?: mongoose.Types.ObjectId;
+    appointmentId?: mongoose.Types.ObjectId;
     tests: string[];
     scheduledAt?: Date;
     technicianId?: mongoose.Types.ObjectId;
@@ -36,6 +37,7 @@ const LabOrderSchema = new Schema<ILabOrder>(
         orderingProviderId: { type: Schema.Types.ObjectId, ref: "User", index: true },
         orderSource: { type: String, enum: ["internal", "direct"], default: "internal" },
         encounterId: { type: Schema.Types.ObjectId, ref: "Encounter" },
+        appointmentId: { type: Schema.Types.ObjectId, ref: "Appointment" },
         tests: { type: [String], required: true },
         scheduledAt: { type: Date },
         technicianId: { type: Schema.Types.ObjectId, ref: "User" },

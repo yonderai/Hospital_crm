@@ -14,8 +14,8 @@ import ReportModal from "./ReportModal";
 import { format } from "date-fns";
 
 export default function ClinicalProfile(props: { patient: any; onBack: () => void; initialTab?: string; appointmentId?: string; encounterId?: string }) {
-    const { onBack, appointmentId, encounterId, patient, initialTab = "overview" } = props;
-    const [activeTab, setActiveTab] = useState(initialTab);
+    const { onBack, appointmentId, encounterId, patient, initialTab } = props;
+    const [activeTab, setActiveTab] = useState(initialTab || "overview");
     const [history, setHistory] = useState<any>({
         prescriptions: [],
         labs: [],
@@ -29,38 +29,36 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
     const [previewDoc, setPreviewDoc] = useState<any | null>(null);
 
     const fetchHistory = async () => {
+        if (!patient?._id) return;
+        setHistory((prev: any) => ({ ...prev, loading: true }));
         try {
-            setHistory((prev: any) => ({ ...prev, loading: true }));
-            const [rxRes, labsRes, radRes, surgeryRes, consultRes, docRes] = await Promise.all([
-                fetch(`/api/patients/${patient._id}/prescriptions`),
-                fetch(`/api/patients/${patient._id}/labs`),
-                fetch(`/api/patients/${patient._id}/radiology`),
-                fetch(`/api/patients/${patient._id}/surgery`),
-                fetch(`/api/patients/${patient._id}/consultations`),
-                fetch(`/api/patient/documents?patientId=${patient._id}`)
+            const [consultations, prescriptions, labs, radiology, surgeries, documents] = await Promise.all([
+                fetch(`/api/patients/${patient._id}/consultations`).then(res => res.ok ? res.json() : []),
+                fetch(`/api/patients/${patient._id}/prescriptions`).then(res => res.ok ? res.json() : []),
+                fetch(`/api/patients/${patient._id}/labs`).then(res => res.ok ? res.json() : []),
+                fetch(`/api/patients/${patient._id}/radiology`).then(res => res.ok ? res.json() : []),
+                fetch(`/api/patients/${patient._id}/surgery`).then(res => res.ok ? res.json() : []),
+                fetch(`/api/patient/documents?patientId=${patient._id}`).then(res => res.ok ? res.json() : { documents: [] })
             ]);
 
-            const [rxData, labsData, radData, consultData, docData] = await Promise.all([
-                rxRes.ok ? rxRes.json() : [],
-                labsRes.ok ? labsRes.json() : [],
-                radRes.ok ? radRes.json() : [],
-                consultRes.ok ? consultRes.json() : [],
-                docRes.ok ? docRes.json() : { documents: [] }
-            ]);
-
-            const surgeriesData = await fetch(`/api/patients/${patient._id}/surgery`).then(r => r.ok ? r.json() : []);
+            console.log("ClinicalProfile: History Fetched", {
+                encounterId,
+                appointmentId,
+                rxCount: prescriptions.length,
+                linkedRxs: prescriptions.filter((r: any) => r.encounterId || r.appointmentId).length
+            });
 
             setHistory({
-                prescriptions: rxData,
-                labs: labsData,
-                radiology: radData,
-                surgeries: surgeriesData,
-                consultations: consultData,
-                documents: docData.documents || [],
+                consultations,
+                prescriptions,
+                labs,
+                radiology,
+                surgeries,
+                documents: documents.documents || [],
                 loading: false
             });
         } catch (error) {
-            console.error("Failed to fetch history:", error);
+            console.error("ClinicalProfile: Fetch Error", error);
             setHistory((prev: any) => ({ ...prev, loading: false }));
         }
     };
@@ -70,6 +68,13 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
             fetchHistory();
         }
     }, [patient?._id]);
+
+    // Handle initial tab for deep links - Only if explicitly passed
+    useEffect(() => {
+        if (initialTab) {
+            setActiveTab(initialTab);
+        }
+    }, [initialTab]);
 
     return (
         <div className="h-full flex flex-col bg-slate-50">
@@ -114,13 +119,14 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
             <div className="flex border-b border-slate-200 bg-white px-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
                 {[
                     { id: 'overview', label: 'Overview', icon: History },
+                    { id: 'case-report', label: 'Case Report', icon: FileText, hidden: true },
                     { id: 'consultation', label: 'Consultation', icon: FileText },
                     { id: 'prescription', label: 'Prescription', icon: Pill },
                     { id: 'labs', label: 'Lab Orders', icon: FlaskConical },
                     { id: 'radiology', label: 'Radiology', icon: Scan },
                     { id: 'surgery', label: 'Surgery', icon: Scissors },
                     { id: 'archive', label: 'Records Archive', icon: Activity }
-                ].map(tab => (
+                ].filter(t => !t.hidden).map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
@@ -140,6 +146,77 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
 
                     {activeTab === "overview" && (
                         <div className="space-y-8">
+                            {/* Surgery Alert - Shows 1 hour before scheduled surgery */}
+                            {(() => {
+                                const now = new Date();
+                                const upcomingSurgeries = history.surgeries?.filter((surgery: any) => {
+                                    if (surgery.status === 'cancelled' || surgery.status === 'completed') return false;
+
+                                    const surgeryDate = new Date(surgery.scheduledDate);
+                                    const [hours, minutes] = (surgery.startTime || '00:00').split(':');
+                                    surgeryDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+                                    const timeDiff = surgeryDate.getTime() - now.getTime();
+                                    const hoursDiff = timeDiff / (1000 * 60 * 60);
+
+                                    // Show alert if surgery is within next 1 hour and hasn't started yet
+                                    return hoursDiff > 0 && hoursDiff <= 1;
+                                }) || [];
+
+                                if (upcomingSurgeries.length === 0) return null;
+
+                                return (
+                                    <div className="bg-gradient-to-br from-red-600 via-red-500 to-orange-500 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden animate-pulse">
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent_70%)]" />
+                                        <div className="relative z-10 space-y-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                                    <AlertCircle size={32} className="text-white" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">⚠️ URGENT SURGERY ALERT</p>
+                                                    <h3 className="text-2xl font-black italic tracking-tight mt-1">Surgery Scheduled Within 1 Hour</h3>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                {upcomingSurgeries.map((surgery: any, idx: number) => {
+                                                    const surgeryDate = new Date(surgery.scheduledDate);
+                                                    const [hours, minutes] = (surgery.startTime || '00:00').split(':');
+                                                    surgeryDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                                                    const minutesUntil = Math.floor((surgeryDate.getTime() - now.getTime()) / (1000 * 60));
+
+                                                    return (
+                                                        <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
+                                                            <div className="flex justify-between items-start mb-4">
+                                                                <div>
+                                                                    <p className="text-lg font-black uppercase italic">{surgery.procedureName}</p>
+                                                                    <p className="text-xs text-white/80 mt-1">OR Room: {surgery.orRoomId}</p>
+                                                                </div>
+                                                                <div className="bg-white/20 px-4 py-2 rounded-2xl text-center">
+                                                                    <p className="text-2xl font-black">{minutesUntil}</p>
+                                                                    <p className="text-[9px] font-bold uppercase tracking-widest">Minutes</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="grid grid-cols-2 gap-4 text-xs">
+                                                                <div>
+                                                                    <p className="text-white/60 uppercase font-bold text-[9px] tracking-widest">Scheduled Time</p>
+                                                                    <p className="font-black mt-1">{surgery.startTime}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-white/60 uppercase font-bold text-[9px] tracking-widest">Status</p>
+                                                                    <p className="font-black mt-1 uppercase">{surgery.status}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
                             {/* Patient Quick Info Card */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm space-y-4">
@@ -380,6 +457,270 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                         </div>
                     )}
 
+                    {activeTab === "case-report" && (encounterId || appointmentId) && (
+                        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+                            {/* Case Report Header */}
+                            <div className="bg-slate-900 rounded-[40px] p-12 text-white shadow-2xl relative overflow-hidden">
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 text-olive-400 font-black text-[10px] uppercase tracking-[0.4em] mb-4">
+                                        <Activity size={14} /> Comprehensive Case Report
+                                    </div>
+                                    <h3 className="text-4xl font-black italic tracking-tighter mb-2">
+                                        {history.consultations.find((c: any) => (encounterId && c._id?.toString() === encounterId) || (appointmentId && c.appointmentId?.toString() === appointmentId))?.chiefComplaint ||
+                                            history.consultations.find((c: any) => (encounterId && c._id?.toString() === encounterId) || (appointmentId && c.appointmentId?.toString() === appointmentId))?.diagnosis?.[0] ||
+                                            "Clinical Encounter Review"}
+                                    </h3>
+                                    <div className="flex items-center gap-6 text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-6">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar size={14} /> {format(new Date(history.consultations.find((c: any) => (encounterId && c._id?.toString() === encounterId) || (appointmentId && c.appointmentId?.toString() === appointmentId))?.createdAt || new Date()), "MMMM dd, yyyy")}
+                                        </div>
+                                        <div className="w-1 h-1 rounded-full bg-slate-700" />
+                                        <div className="flex items-center gap-2">
+                                            <User size={14} /> {patient.firstName} {patient.lastName}
+                                        </div>
+                                        <div className="w-1 h-1 rounded-full bg-slate-700" />
+                                        <div className="text-olive-500">MRN: {patient.mrn}</div>
+                                    </div>
+                                </div>
+                                <FileText size={200} className="absolute bottom-[-10%] right-[-5%] text-white/5 pointer-events-none" />
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                                {/* Left Column: Assessment & Plan */}
+                                <div className="lg:col-span-2 space-y-10">
+                                    <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-sm space-y-8">
+                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-4 flex items-center gap-3">
+                                            <Stethoscope size={20} className="text-olive-600" /> Clinical Assessment
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-2">
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Subjective (Chief Complaint)</p>
+                                                <p className="text-sm text-slate-700 leading-relaxed italic">
+                                                    {history.consultations.find((c: any) => (encounterId && c._id?.toString() === encounterId) || (appointmentId && c.appointmentId?.toString() === appointmentId))?.soapNotes?.subjective || "No subjective notes recorded."}
+                                                </p>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Assessment & Diagnosis</p>
+                                                <p className="text-sm font-bold text-slate-900 leading-relaxed">
+                                                    {history.consultations.find((c: any) => (encounterId && c._id?.toString() === encounterId) || (appointmentId && c.appointmentId?.toString() === appointmentId))?.soapNotes?.assessment || "Status Post Review"}
+                                                </p>
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {history.consultations.find((c: any) => (encounterId && c._id?.toString() === encounterId) || (appointmentId && c.appointmentId?.toString() === appointmentId))?.diagnosis?.map((d: string) => (
+                                                        <span key={d} className="px-2 py-1 bg-slate-100 text-slate-500 rounded text-[9px] font-black uppercase tracking-tight">{d}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="pt-8 border-t border-slate-50 space-y-4">
+                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Clinical Plan</p>
+                                            <p className="text-sm text-slate-700 leading-relaxed">
+                                                {history.consultations.find((c: any) => (encounterId && c._id?.toString() === encounterId) || (appointmentId && c.appointmentId?.toString() === appointmentId))?.soapNotes?.plan || "Standard follow-up protocol."}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Prescription List */}
+                                    <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-sm space-y-8">
+                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-4 flex items-center gap-3">
+                                            <Pill size={20} className="text-olive-600" /> Medications Prescribed
+                                        </h4>
+                                        <div className="space-y-4">
+                                            {(() => {
+                                                const filteredPrescriptions = history.prescriptions.filter((rx: any) =>
+                                                    (encounterId && (rx.encounterId?.toString() === encounterId || rx.appointmentId?.toString() === encounterId || rx._id?.toString() === encounterId)) ||
+                                                    (appointmentId && (rx.appointmentId?.toString() === appointmentId || rx.encounterId?.toString() === appointmentId || rx._id?.toString() === appointmentId))
+                                                );
+
+                                                const displayPrescriptions = filteredPrescriptions.length > 0 ? filteredPrescriptions : history.prescriptions;
+                                                const showingAllData = filteredPrescriptions.length === 0 && history.prescriptions.length > 0;
+
+                                                return (
+                                                    <>
+                                                        {showingAllData && (
+                                                            <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                                                                <p className="text-xs font-bold text-amber-800 flex items-center gap-2">
+                                                                    <AlertCircle size={14} />
+                                                                    No prescriptions linked to this specific visit. Showing all patient prescriptions for reference.
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        {displayPrescriptions.length > 0 ? (
+                                                            displayPrescriptions.map((rx: any, i: number) => (
+                                                                <div key={i} className="space-y-4">
+                                                                    {rx.medications.map((m: any, j: number) => (
+                                                                        <div key={j} className="flex justify-between items-center p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-olive-300 transition-all">
+                                                                            <div className="flex items-center gap-4">
+                                                                                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-olive-600">
+                                                                                    <Pill size={24} />
+                                                                                </div>
+                                                                                <div>
+                                                                                    <p className="text-md font-black text-slate-900 uppercase italic">{m.drugName}</p>
+                                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{m.dosage} • {m.frequency}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="text-right">
+                                                                                <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{m.duration}</p>
+                                                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Qty: {m.quantity}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <p className="text-sm text-slate-400 italic py-10 text-center border-2 border-dashed border-slate-100 rounded-[32px]">No medications recorded for this patient.</p>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Right Column: Investigations */}
+                                <div className="space-y-10">
+                                    <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-sm space-y-8">
+                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-4 flex items-center gap-3">
+                                            <FlaskConical size={20} className="text-olive-600" /> Laboratory Results
+                                        </h4>
+                                        <div className="space-y-4">
+                                            {(() => {
+                                                const filteredLabs = history.labs.filter((lab: any) =>
+                                                    (encounterId && (lab.encounterId?.toString() === encounterId || lab.appointmentId?.toString() === encounterId || lab._id?.toString() === encounterId)) ||
+                                                    (appointmentId && (lab.appointmentId?.toString() === appointmentId || lab.encounterId?.toString() === appointmentId || lab._id?.toString() === appointmentId))
+                                                );
+
+                                                const displayLabs = filteredLabs.length > 0 ? filteredLabs : history.labs;
+                                                const showingAllData = filteredLabs.length === 0 && history.labs.length > 0;
+
+                                                return (
+                                                    <>
+                                                        {showingAllData && (
+                                                            <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                                                                <p className="text-xs font-bold text-amber-800 flex items-center gap-2">
+                                                                    <AlertCircle size={14} />
+                                                                    No lab orders linked to this specific visit. Showing all patient lab results for reference.
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        {displayLabs.length > 0 ? (
+                                                            displayLabs.map((lab: any, i: number) => (
+                                                                <div key={i}
+                                                                    onClick={() => setSelectedReport({
+                                                                        title: `Diagnostic Report: ${lab.tests?.[0] || 'Lab Result'}`,
+                                                                        data: {
+                                                                            type: 'lab',
+                                                                            patientName: `${patient.firstName} ${patient.lastName}`,
+                                                                            mrn: patient.mrn,
+                                                                            date: format(new Date(lab.createdAt), "MMM dd, yyyy HH:mm"),
+                                                                            results: lab.results?.map((r: any) => ({
+                                                                                testName: r.testName,
+                                                                                value: r.value,
+                                                                                unit: r.unit,
+                                                                                referenceRange: r.referenceRange,
+                                                                                abnormalFlag: r.abnormalFlag
+                                                                            }))
+                                                                        }
+                                                                    })}
+                                                                    className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 hover:border-blue-400 transition-all cursor-pointer group">
+                                                                    <div className="flex justify-between items-center">
+                                                                        <h5 className="text-xs font-black text-slate-900 uppercase italic">{lab.tests?.join(', ') || lab.testType}</h5>
+                                                                        <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-all" />
+                                                                    </div>
+                                                                    <div className="space-y-3">
+                                                                        {lab.results?.map((r: any, j: number) => (
+                                                                            <div key={j} className="flex justify-between items-end border-b border-slate-200/50 pb-2 last:border-0 last:pb-0">
+                                                                                <div>
+                                                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{r.testName}</p>
+                                                                                    <p className="text-sm font-black text-slate-900 italic mt-1">{r.value} <span className="text-[9px] font-normal not-italic opacity-60 uppercase">{r.unit}</span></p>
+                                                                                </div>
+                                                                                {r.abnormalFlag && (
+                                                                                    <span className="text-[8px] font-black bg-red-100 text-red-600 px-2 py-0.5 rounded uppercase mb-1">Abnormal</span>
+                                                                                )}
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <p className="text-xs text-slate-400 italic">No lab investigations for this patient.</p>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-sm space-y-8">
+                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest border-b border-slate-50 pb-4 flex items-center gap-3">
+                                            <Scan size={20} className="text-olive-600" /> Radiology Reports
+                                        </h4>
+                                        <div className="space-y-6">
+                                            {(() => {
+                                                const filteredRadiology = history.radiology.filter((rad: any) =>
+                                                    (encounterId && (rad.encounterId?.toString() === encounterId || rad.appointmentId?.toString() === encounterId || rad._id?.toString() === encounterId)) ||
+                                                    (appointmentId && (rad.appointmentId?.toString() === appointmentId || rad.encounterId?.toString() === appointmentId || rad._id?.toString() === appointmentId))
+                                                );
+
+                                                const displayRadiology = filteredRadiology.length > 0 ? filteredRadiology : history.radiology;
+                                                const showingAllData = filteredRadiology.length === 0 && history.radiology.length > 0;
+
+                                                return (
+                                                    <>
+                                                        {showingAllData && (
+                                                            <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                                                                <p className="text-xs font-bold text-amber-800 flex items-center gap-2">
+                                                                    <AlertCircle size={14} />
+                                                                    No imaging studies linked to this specific visit. Showing all patient radiology reports for reference.
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        {displayRadiology.length > 0 ? (
+                                                            displayRadiology.map((rad: any, i: number) => (
+                                                                <div key={i}
+                                                                    onClick={() => setSelectedReport({
+                                                                        title: `Imaging Report: ${rad.imagingType}`,
+                                                                        data: {
+                                                                            type: 'radiology',
+                                                                            patientName: `${patient.firstName} ${patient.lastName}`,
+                                                                            mrn: patient.mrn,
+                                                                            date: format(new Date(rad.createdAt), "MMM dd, yyyy HH:mm"),
+                                                                            radiology: {
+                                                                                findings: rad.report?.findings || "Findings pending interpretation.",
+                                                                                impression: rad.report?.impression || "Impression pending.",
+                                                                                recommendations: rad.report?.recommendations
+                                                                            }
+                                                                        }
+                                                                    })}
+                                                                    className="space-y-4 p-6 bg-slate-50 rounded-3xl border border-slate-100 hover:border-purple-400 transition-all cursor-pointer group">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="text-xs font-black text-slate-900 uppercase italic">{rad.imagingType}</p>
+                                                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">{rad.bodyPart}</p>
+                                                                        </div>
+                                                                        <div className="text-olive-600 group-hover:text-purple-600 transition-colors">
+                                                                            <ZoomIn size={18} />
+                                                                        </div>
+                                                                    </div>
+                                                                    {rad.report && (
+                                                                        <div className="p-4 bg-slate-50 rounded-2xl text-[10px] text-slate-600 leading-relaxed italic border border-slate-100">
+                                                                            "{rad.report.interpretation}"
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <p className="text-xs text-slate-400 italic">No imaging studies for this patient.</p>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Forms Rendering Section */}
                     <div className="space-y-12">
                         {activeTab === "consultation" && (
@@ -437,7 +778,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                         )}
                         {activeTab === "prescription" && (
                             <div className="space-y-12">
-                                <PrescriptionForm patientId={patient._id} appointmentId={appointmentId} onSuccess={fetchHistory} />
+                                <PrescriptionForm patientId={patient._id} appointmentId={appointmentId} encounterId={encounterId} onSuccess={fetchHistory} />
                                 <ClinicalSection
                                     title="Medication History"
                                     icon={Pill}
@@ -470,7 +811,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                         )}
                         {activeTab === "labs" && (
                             <div className="space-y-12">
-                                <LabOrderForm patientId={patient._id} onSuccess={fetchHistory} />
+                                <LabOrderForm patientId={patient._id} appointmentId={appointmentId} encounterId={encounterId} onSuccess={fetchHistory} />
                                 <ClinicalSection
                                     title="Diagnostic Archive"
                                     icon={FlaskConical}
@@ -527,7 +868,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                         )}
                         {activeTab === "radiology" && (
                             <div className="space-y-12">
-                                <RadiologyOrderForm patientId={patient._id} onSuccess={fetchHistory} />
+                                <RadiologyOrderForm patientId={patient._id} appointmentId={appointmentId} encounterId={encounterId} onSuccess={fetchHistory} />
                                 <ClinicalSection
                                     title="Imaging Findings"
                                     icon={Activity}

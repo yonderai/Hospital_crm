@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IImagingOrder extends Document {
     patientId: mongoose.Types.ObjectId;
     encounterId?: mongoose.Types.ObjectId;
+    appointmentId?: mongoose.Types.ObjectId;
     orderedBy: mongoose.Types.ObjectId;
     imagingType: string; // e.g., "X-Ray", "MRI", "CT Scan", "Ultrasound"
     bodyPart: string;
@@ -19,6 +20,7 @@ const ImagingOrderSchema = new Schema<IImagingOrder>(
     {
         patientId: { type: Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
         encounterId: { type: Schema.Types.ObjectId, ref: "Encounter", index: true },
+        appointmentId: { type: Schema.Types.ObjectId, ref: "Appointment", index: true },
         orderedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
         imagingType: { type: String, required: true },
         bodyPart: { type: String, required: true },

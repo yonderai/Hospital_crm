@@ -15,6 +15,7 @@ export async function POST(req: Request) {
 
         await dbConnect();
         const data = await req.json();
+        console.log("Creating prescription with data:", JSON.stringify(data, null, 2));
 
         // 1. Create Prescription
         const prescription = await Prescription.create({
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
             prescriptionId: `RX-${Date.now()}`,
             status: "active", // Maps to "Pending Dispense" logic
         });
+        console.log("Saved prescription encounterId:", prescription.encounterId);
 
         // 2. Auto-Close Appointment if applicable
         if (data.appointmentId) {
