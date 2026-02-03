@@ -7,7 +7,7 @@ interface ReportModalProps {
     title: string;
     onClose: () => void;
     data?: {
-        type: "lab" | "radiology";
+        type: "lab" | "radiology" | "surgery";
         patientName: string;
         mrn: string;
         date: string;
@@ -23,6 +23,14 @@ interface ReportModalProps {
             findings: string;
             impression: string;
             recommendations?: string;
+        };
+        surgery?: {
+            preOpDiagnosis: string;
+            postOpDiagnosis: string;
+            findings: string;
+            procedureDetails: string;
+            postOpInstructions: string;
+            surgeonName: string;
         };
     };
 }
@@ -147,6 +155,36 @@ export default function ReportModal({ imageUrl, title, onClose, data }: ReportMo
                                             <p className="text-sm font-medium text-slate-600 leading-relaxed">{data.radiology.recommendations}</p>
                                         </div>
                                     )}
+                                </div>
+                            )}
+
+                            {data?.type === 'surgery' && data.surgery && (
+                                <div className="space-y-8">
+                                    <div className="grid grid-cols-2 gap-8 border-b border-slate-50 pb-8">
+                                        <div>
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 font-black italic">Pre-operative Diagnosis</h4>
+                                            <p className="text-sm font-bold text-slate-900">{data.surgery.preOpDiagnosis}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 font-black italic">Post-operative Diagnosis</h4>
+                                            <p className="text-sm font-bold text-slate-900">{data.surgery.postOpDiagnosis}</p>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 font-black underline decoration-olive-500 decoration-2 underline-offset-4 italic">Operative Findings</h4>
+                                        <p className="text-sm font-medium text-slate-800 leading-relaxed italic bg-slate-50/50 p-8 rounded-[32px] border border-slate-100 italic">{data.surgery.findings}</p>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 font-black italic">Procedure Details</h4>
+                                        <p className="text-sm font-medium text-slate-800 whitespace-pre-wrap leading-loose">{data.surgery.procedureDetails}</p>
+                                    </div>
+
+                                    <div className="bg-olive-50/50 p-8 rounded-[40px] border border-olive-100/50 shadow-inner">
+                                        <h4 className="text-[10px] font-black text-olive-600 uppercase tracking-widest mb-4 italic tracking-[0.2em] font-black">Post-operative Instructions</h4>
+                                        <p className="text-sm font-medium text-olive-900 leading-relaxed whitespace-pre-wrap">{data.surgery.postOpInstructions}</p>
+                                    </div>
                                 </div>
                             )}
 

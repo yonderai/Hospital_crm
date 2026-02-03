@@ -10,6 +10,7 @@ import {
     History, Clipboard, ClipboardList, ChevronLeft, Clock, Eye
 } from "lucide-react";
 import Link from "next/link";
+import MedicineAutocomplete from "@/components/doctor/MedicineAutocomplete";
 
 export default function PatientDetails() {
     const params = useParams();
@@ -374,16 +375,18 @@ export default function PatientDetails() {
                                             <div className="grid grid-cols-2 gap-6">
                                                 <div className="space-y-2">
                                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Medication Identity</label>
-                                                    <input
-                                                        type="text" required
-                                                        className="w-full bg-white border border-slate-100 px-6 py-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-olive-500 transition-all shadow-sm"
-                                                        placeholder="e.g., Amoxicillin"
+                                                    <MedicineAutocomplete
                                                         value={med.drugName}
-                                                        onChange={e => {
+                                                        onChange={(val) => {
                                                             const newMeds = [...rxData.medications];
-                                                            newMeds[idx].drugName = e.target.value;
+                                                            newMeds[idx].drugName = val;
                                                             setRxData({ ...rxData, medications: newMeds });
                                                         }}
+                                                        onSelect={(item) => {
+                                                            // Auto-fill unit or other details if available in future
+                                                            console.log("Selected:", item);
+                                                        }}
+                                                        placeholder="e.g., Amoxicillin"
                                                     />
                                                 </div>
                                                 <div className="space-y-2">

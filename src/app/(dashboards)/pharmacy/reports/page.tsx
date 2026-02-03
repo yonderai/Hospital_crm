@@ -18,9 +18,11 @@ import {
 interface DispensedMedicine {
     _id: string;
     patientId: { firstName: string, lastName: string, mrn: string };
+    customerDetails?: { name: string, phone: string };
     providerId: { firstName: string, lastName: string };
     medications: { drugName: string, quantity: number, unitPrice?: number }[];
     status: string;
+    paymentMode?: string;
     updatedAt: string;
 }
 
@@ -53,6 +55,8 @@ export default function ReportsPage() {
     const filteredHistory = history.filter(h =>
         `${h.patientId?.firstName} ${h.patientId?.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         h.patientId?.mrn.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        h.customerDetails?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        h.customerDetails?.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
         h.medications.some(m => m.drugName.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
@@ -81,6 +85,14 @@ export default function ReportsPage() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
+                    <button
+                        onClick={fetchData}
+                        disabled={loading}
+                        className="p-3 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 text-slate-400 hover:text-olive-600 transition-all"
+                        title="Refresh Data"
+                    >
+                        <Clock size={18} className={loading ? "animate-spin" : ""} />
+                    </button>
                 </div>
 
                 {/* Stats Grid */}
@@ -188,9 +200,11 @@ export default function ReportsPage() {
                                             </td>
                                             <td className="px-10 py-6">
                                                 <p className="text-sm font-black text-slate-900 uppercase tracking-tight group-hover:text-olive-700 transition-colors">
-                                                    {log.patientId?.firstName} {log.patientId?.lastName}
+                                                    {log.customerDetails?.name ? log.customerDetails.name : `${log.patientId?.firstName} ${log.patientId?.lastName}`}
                                                 </p>
-                                                <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">MRN: {log.patientId?.mrn}</p>
+                                                <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">
+                                                    {log.customerDetails?.name ? `Phone: ${log.customerDetails.phone || 'N/A'}` : `MRN: ${log.patientId?.mrn}`}
+                                                </p>
                                             </td>
                                             <td className="px-10 py-6">
                                                 <div className="flex flex-wrap gap-2">
@@ -206,7 +220,7 @@ export default function ReportsPage() {
                                             </td>
                                             <td className="px-10 py-6 text-center">
                                                 <span className="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 uppercase tracking-widest">
-                                                    <CheckCircle2 size={10} /> Dispensed
+                                                    <CheckCircle2 size={10} /> {log.paymentMode ? `Paid (${log.paymentMode})` : "Dispensed"}
                                                 </span>
                                             </td>
                                         </tr>

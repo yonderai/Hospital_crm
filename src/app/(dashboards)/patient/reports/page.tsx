@@ -22,6 +22,7 @@ export default function PatientReportsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedReport, setSelectedReport] = useState<any | null>(null);
+    const [patientData, setPatientData] = useState<any>(null);
     const [activeFilter, setActiveFilter] = useState<"all" | "lab" | "radiology">("all");
 
     useEffect(() => {
@@ -34,6 +35,7 @@ export default function PatientReportsPage() {
             const res = await fetch("/api/patient/results");
             const data = await res.json();
             if (data.results) setResults(data.results);
+            if (data.patient) setPatientData(data.patient);
         } catch (err) {
             console.error("Failed to fetch reports", err);
         } finally {
@@ -75,8 +77,8 @@ export default function PatientReportsPage() {
                     <button
                         onClick={() => setActiveFilter("all")}
                         className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeFilter === "all"
-                                ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20"
-                                : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"
+                            ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20"
+                            : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"
                             }`}
                     >
                         All Reports
@@ -84,8 +86,8 @@ export default function PatientReportsPage() {
                     <button
                         onClick={() => setActiveFilter("lab")}
                         className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === "lab"
-                                ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                                : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"
+                            ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                            : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"
                             }`}
                     >
                         <Beaker size={14} />
@@ -94,13 +96,14 @@ export default function PatientReportsPage() {
                     <button
                         onClick={() => setActiveFilter("radiology")}
                         className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeFilter === "radiology"
-                                ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20"
-                                : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"
+                            ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20"
+                            : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300"
                             }`}
                     >
                         <Aperture size={14} />
                         Radiology
                     </button>
+
                 </div>
 
                 {/* Reports Grid */}
@@ -136,14 +139,16 @@ export default function PatientReportsPage() {
                                 <div>
                                     <div className="flex justify-between items-start mb-6">
                                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform ${item.type === 'lab'
-                                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                                            ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                                            : item.type === 'surgery'
+                                                ? 'bg-gradient-to-br from-olive-500 to-olive-700'
                                                 : 'bg-gradient-to-br from-purple-500 to-pink-600'
                                             }`}>
-                                            {item.type === 'lab' ? <Beaker className="text-white" size={24} /> : <Aperture className="text-white" size={24} />}
+                                            {item.type === 'lab' ? <Beaker className="text-white" size={24} /> : item.type === 'surgery' ? <Activity className="text-white" size={24} /> : <Aperture className="text-white" size={24} />}
                                         </div>
                                         <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${item.status === 'final' || item.status === 'completed'
-                                                ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                                                : 'bg-amber-50 text-amber-600 border border-amber-100'
+                                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                                            : 'bg-amber-50 text-amber-600 border border-amber-100'
                                             }`}>
                                             {item.status}
                                         </span>
@@ -161,11 +166,11 @@ export default function PatientReportsPage() {
                                 <div className="mt-8">
                                     <button
                                         onClick={() => setSelectedReport({
-                                            title: item.type === 'lab' ? `Lab Report: ${item.title}` : `Imaging Report: ${item.title}`,
+                                            title: item.type === 'lab' ? `Lab Report: ${item.title}` : item.type === 'surgery' ? `Surgical Report: ${item.title}` : `Imaging Report: ${item.title}`,
                                             data: {
                                                 type: item.type,
-                                                patientName: "My Record",
-                                                mrn: "SELF-VIEW",
+                                                patientName: patientData?.name || "Patient Record",
+                                                mrn: patientData?.mrn || "SELF-VIEW",
                                                 date: format(new Date(item.date), "MMM dd, yyyy HH:mm"),
                                                 testName: item.title,
                                                 results: item.type === 'lab' ? (item.details.results || [{
@@ -179,6 +184,14 @@ export default function PatientReportsPage() {
                                                     findings: item.details.report?.findings || 'No findings available',
                                                     impression: item.details.report?.impression || item.details.report?.interpretation || 'No impression available',
                                                     recommendations: item.details.report?.recommendations
+                                                } : undefined,
+                                                surgery: item.type === 'surgery' ? {
+                                                    preOpDiagnosis: item.details.surgeryReport?.preOpDiagnosis,
+                                                    postOpDiagnosis: item.details.surgeryReport?.postOpDiagnosis,
+                                                    findings: item.details.surgeryReport?.findings,
+                                                    procedureDetails: item.details.surgeryReport?.procedureDetails,
+                                                    postOpInstructions: item.details.surgeryReport?.postOpInstructions,
+                                                    surgeonName: item.details.surgeonId ? `${item.details.surgeonId.firstName} ${item.details.surgeonId.lastName}` : "Unknown Surgeon"
                                                 } : undefined
                                             }
                                         })}

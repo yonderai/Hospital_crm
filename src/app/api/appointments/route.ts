@@ -110,7 +110,8 @@ export async function POST(req: Request) {
         }
 
         const role = (session.user as any).role;
-        if (role !== 'patient' && role !== 'admin' && role !== 'frontdesk') {
+        // Allow finance users to book for themselves (Employee Health)
+        if (role !== 'patient' && role !== 'admin' && role !== 'frontdesk' && role !== 'finance') {
             return NextResponse.json({ error: "Only patients or staff can book appointments" }, { status: 403 });
         }
 
@@ -131,15 +132,24 @@ export async function POST(req: Request) {
         // Determine targeted Patient ID
         let targetPatientId = body.patientId;
 
-        if (role === 'patient') {
-            const patientProfile = await Patient.findOne({ "contact.email": session.user?.email });
+        // Self-booking for Patient OR Finance (Employee)
+        if (role === 'patient' || role === 'finance') {
+            // Try lenient search first
+            let patientProfile = await Patient.findOne({
+                $or: [
+                    { "contact.email": session.user?.email },
+                    { "contact.email": session.user?.email?.toLowerCase() }
+                ]
+            });
+
             if (!patientProfile) {
+                console.error(`Appointment Error: No patient profile found for ${session.user?.email} (Role: ${role})`);
                 return NextResponse.json({ error: "Patient profile not found. Please contact administration." }, { status: 404 });
             }
             targetPatientId = patientProfile._id;
 
-            // STRICT RBAC: Patient can only book with assigned doctor
-            if (patientProfile.assignedDoctorId && patientProfile.assignedDoctorId.toString() !== providerId) {
+            // STRICT RBAC: Patient can only book with assigned doctor (SKIP FOR FINANCE/STAFF)
+            if (role === 'patient' && patientProfile.assignedDoctorId && patientProfile.assignedDoctorId.toString() !== providerId) {
                 return NextResponse.json({ error: "You can only book appointments with your assigned doctor." }, { status: 403 });
             }
         }

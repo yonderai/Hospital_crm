@@ -49,15 +49,18 @@ export default function DoctorDashboard() {
     const [availability, setAvailability] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+    const [surgeries, setSurgeries] = useState<any[]>([]); // New State
+
     const fetchData = async () => {
         try {
             const d = new Date();
             const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-            const [statsRes, appointmentsRes, availabilityRes] = await Promise.all([
+            const [statsRes, appointmentsRes, availabilityRes, surgeryRes] = await Promise.all([
                 fetch(`/api/doctor/stats?date=${today}`),
                 fetch(`/api/appointments?date=${today}`),
-                fetch(`/api/doctor/availability?date=${today}`)
+                fetch(`/api/doctor/availability?date=${today}`),
+                fetch(`/api/doctor/surgery`)
             ]);
 
             const statsData = await statsRes.ok ? await statsRes.json() : { stats: [] };
@@ -70,6 +73,10 @@ export default function DoctorDashboard() {
             if (appointmentsRes.ok) {
                 const apptData = await appointmentsRes.json();
                 setAppointments(apptData);
+            }
+
+            if (surgeryRes.ok) {
+                setSurgeries(await surgeryRes.json());
             }
 
             setStats(statsData.stats || []);
@@ -129,6 +136,77 @@ export default function DoctorDashboard() {
         <DashboardLayout>
             <div className="space-y-10">
                 {/* Header ... */}
+
+                {/* GLOBAL SURGERY ALERT */}
+                {(() => {
+                    const now = new Date();
+                    const upcomingSurgeries = surgeries?.filter((surgery: any) => {
+                        if (surgery.status === 'cancelled' || surgery.status === 'completed') return false;
+
+                        const surgeryDate = new Date(surgery.scheduledDate);
+                        const [hours, minutes] = (surgery.startTime || '00:00').split(':');
+                        surgeryDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+                        const timeDiff = surgeryDate.getTime() - now.getTime();
+                        const hoursDiff = timeDiff / (1000 * 60 * 60);
+
+                        // Show alert if surgery is within next 1 hour and hasn't started yet
+                        return hoursDiff > 0 && hoursDiff <= 1;
+                    }) || [];
+
+                    if (upcomingSurgeries.length === 0) return null;
+
+                    return (
+                        <div className="bg-gradient-to-br from-red-600 via-red-500 to-orange-500 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden animate-pulse mb-8">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent_70%)]" />
+                            <div className="relative z-10 space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                        <AlertTriangle size={32} className="text-white" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">⚠️ URGENT SURGERY ALERT</p>
+                                        <h3 className="text-2xl font-black italic tracking-tight mt-1">Surgery Scheduled Within 1 Hour</h3>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {upcomingSurgeries.map((surgery: any, idx: number) => {
+                                        const surgeryDate = new Date(surgery.scheduledDate);
+                                        const [hours, minutes] = (surgery.startTime || '00:00').split(':');
+                                        surgeryDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                                        const minutesUntil = Math.floor((surgeryDate.getTime() - now.getTime()) / (1000 * 60));
+
+                                        return (
+                                            <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <p className="text-lg font-black uppercase italic">{surgery.procedureName}</p>
+                                                        <p className="text-xs text-white/80 mt-1">OR Room: {surgery.orRoomId} • Patient: {surgery.patientId?.firstName} {surgery.patientId?.lastName}</p>
+                                                    </div>
+                                                    <div className="bg-white/20 px-4 py-2 rounded-2xl text-center">
+                                                        <p className="text-2xl font-black">{minutesUntil}</p>
+                                                        <p className="text-[9px] font-bold uppercase tracking-widest">Minutes</p>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4 text-xs">
+                                                    <div>
+                                                        <p className="text-white/60 uppercase font-bold text-[9px] tracking-widest">Scheduled Time</p>
+                                                        <p className="font-black mt-1">{surgery.startTime}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-white/60 uppercase font-bold text-[9px] tracking-widest">Status</p>
+                                                        <p className="font-black mt-1 uppercase">{surgery.status}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

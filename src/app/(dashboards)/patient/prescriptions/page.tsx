@@ -9,6 +9,7 @@ export default function PatientPrescriptionsPage() {
     const [prescriptions, setPrescriptions] = useState<any[]>([]);
 
     useEffect(() => {
+        console.log("Prescriptions page loaded");
         fetch('/api/patient/prescriptions')
             .then(res => res.json())
             .then(json => {
@@ -62,9 +63,6 @@ export default function PatientPrescriptionsPage() {
                                                     {med.frequency} • {med.duration}
                                                 </p>
                                             </div>
-                                            <button className="px-4 py-2 bg-white border border-slate-200 text-xs font-bold text-slate-600 rounded-xl hover:text-olive-700 transition-all uppercase tracking-wider">
-                                                Request Refill
-                                            </button>
                                         </div>
                                     ))}
                                 </div>

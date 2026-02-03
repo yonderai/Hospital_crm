@@ -18,6 +18,14 @@ export interface IORCase extends Document {
     complications?: string;
     postOpNotes?: string;
     notes?: string;
+    surgeryReport?: {
+        preOpDiagnosis: string;
+        postOpDiagnosis: string;
+        findings: string;
+        procedureDetails: string;
+        postOpInstructions: string;
+        reportDate: Date;
+    };
     createdAt: Date;
     updatedAt: Date;
 }
@@ -44,6 +52,14 @@ const ORCaseSchema: Schema = new Schema({
     complications: { type: String },
     postOpNotes: { type: String },
     notes: { type: String },
+    surgeryReport: {
+        preOpDiagnosis: { type: String },
+        postOpDiagnosis: { type: String },
+        findings: { type: String },
+        procedureDetails: { type: String },
+        postOpInstructions: { type: String },
+        reportDate: { type: Date }
+    }
 }, { timestamps: true });
 
 export default mongoose.models.ORCase || mongoose.model<IORCase>('ORCase', ORCaseSchema);

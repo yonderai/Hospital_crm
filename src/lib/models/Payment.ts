@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IPayment extends Document {
-    patientId: mongoose.Types.ObjectId;
+    patientId?: mongoose.Types.ObjectId;
+    customerName?: string;
     invoiceId?: mongoose.Types.ObjectId;
     claimId?: mongoose.Types.ObjectId;
     amount: number;
@@ -16,7 +17,8 @@ export interface IPayment extends Document {
 
 const PaymentSchema = new Schema<IPayment>(
     {
-        patientId: { type: Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
+        patientId: { type: Schema.Types.ObjectId, ref: "Patient", index: true },
+        customerName: { type: String },
         invoiceId: { type: Schema.Types.ObjectId, ref: "Invoice", index: true },
         claimId: { type: Schema.Types.ObjectId, ref: "Claim", index: true },
         amount: { type: Number, required: true },

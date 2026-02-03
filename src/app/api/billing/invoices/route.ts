@@ -21,20 +21,30 @@ export async function GET() {
 
         await dbConnect();
 
-        // Fetch draft/sent/overdue invoices
-        const rawInvoices = await Invoice.find({ status: { $in: ["draft", "sent", "overdue"] } })
+        // Fetch all invoices (including paid ones for pharmacy sales)
+        const rawInvoices = await Invoice.find({ status: { $in: ["draft", "sent", "overdue", "paid", "partial"] } })
             .populate("patientId", "firstName lastName mrn")
             .sort({ updatedAt: -1 })
             .lean();
 
-        const invoices = rawInvoices.map((inv: any) => ({
-            id: inv.invoiceNumber || "N/A",
-            name: inv.patientId ? `${inv.patientId.firstName} ${inv.patientId.lastName}` : "Unknown Patient",
-            status: inv.status.charAt(0).toUpperCase() + inv.status.slice(1),
-            date: new Date(inv.updatedAt).toLocaleDateString(),
-            value: `₹${(inv.balanceDue || 0).toLocaleString()}`,
-            _raw: inv
-        }));
+        const invoices = rawInvoices.map((inv: any) => {
+            let displayName = "Unknown Patient";
+
+            if (inv.patientId && typeof inv.patientId === 'object' && (inv.patientId.firstName || inv.patientId.lastName)) {
+                displayName = `${inv.patientId.firstName || ''} ${inv.patientId.lastName || ''}`.trim();
+            } else if (inv.customerDetails && inv.customerDetails.name) {
+                displayName = inv.customerDetails.name;
+            }
+
+            return {
+                id: inv.invoiceNumber || "N/A",
+                name: displayName,
+                status: inv.status.charAt(0).toUpperCase() + inv.status.slice(1),
+                date: new Date(inv.updatedAt).toLocaleDateString(),
+                value: `₹${(inv.balanceDue || 0).toLocaleString()}`,
+                _raw: inv
+            };
+        });
 
         console.log(`[API] Returning ${invoices.length} invoices`);
         return NextResponse.json({

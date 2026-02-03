@@ -77,6 +77,28 @@ export default function UtilitiesPage() {
         }
     };
 
+    const handlePayment = async (id: string) => {
+        if (!confirm("Are you sure you want to mark this bill as PAID?")) return;
+
+        try {
+            const res = await fetch("/api/finance/utilities", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, status: "paid" })
+            });
+
+            if (res.ok) {
+                fetchBills();
+            } else {
+                const data = await res.json();
+                alert(`Failed to update status: ${data.error || "Unknown error"}`);
+            }
+        } catch (error) {
+            console.error(error);
+            alert("An error occurred while updating status.");
+        }
+    };
+
     const getIcon = (type: string) => {
         if (type === 'electricity') return <Zap size={16} />;
         if (type === 'water') return <Droplets size={16} />;
@@ -236,6 +258,7 @@ export default function UtilitiesPage() {
                                     <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Consumption</th>
                                     <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
                                     <th className="px-8 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                                    <th className="px-8 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -269,6 +292,16 @@ export default function UtilitiesPage() {
                                                     }`}>
                                                     {bill.status}
                                                 </span>
+                                            </td>
+                                            <td className="px-8 py-4 text-right">
+                                                {bill.status !== 'paid' && (
+                                                    <button
+                                                        onClick={() => handlePayment(bill._id)}
+                                                        className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-olive-600 shadow-lg shadow-slate-200 hover:shadow-olive-600/20 transition-all active:scale-95"
+                                                    >
+                                                        Pay Now
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))

@@ -20,7 +20,7 @@ const PayerSchema = new Schema<IPayer>(
             required: true,
             enum: ["insurance", "government", "self-pay"]
         },
-        contactPhone: { type: String },
+        contactPhone: { type: String, minlength: 10, maxlength: 10 },
         contactEmail: { type: String },
         address: { type: String },
         taxId: { type: String },

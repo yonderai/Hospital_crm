@@ -109,7 +109,7 @@ function isAccessAllowed(role: string, path: string) {
     // Role-specific paths
     if (role === 'doctor' && path.startsWith('/doctor')) return true;
     if (role === 'nurse' && path.startsWith('/nurse')) return true;
-    if (role === 'admin' && path.startsWith('/admin')) return true;
+    if (role === 'admin') return true;
     if (role === 'frontdesk' && path.startsWith('/frontdesk')) return true;
     if ((role === 'labtech' || role === 'lab') && path.startsWith('/lab')) return true;
     if (role === 'pathology' && path.startsWith('/pathology')) return true;

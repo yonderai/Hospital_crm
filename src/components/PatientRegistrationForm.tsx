@@ -246,7 +246,18 @@ export default function PatientRegistrationForm({ onSuccess }: { onSuccess?: () 
                 <div className="grid grid-cols-2 gap-6">
                     <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
-                        <input name="phone" required className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:border-olive-500 outline-none transition-all font-medium text-slate-900" placeholder="10 Digits" onChange={handleChange} />
+                        <input
+                            name="phone"
+                            required
+                            maxLength={10}
+                            value={formData.phone}
+                            className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:border-olive-500 outline-none transition-all font-medium text-slate-900"
+                            placeholder="10 Digits"
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                setFormData(prev => ({ ...prev, phone: val }));
+                            }}
+                        />
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">Email (Optional)</label>
@@ -288,7 +299,17 @@ export default function PatientRegistrationForm({ onSuccess }: { onSuccess?: () 
                     </div>
                     <div className="col-span-1">
                         <label className="block text-xs font-bold text-slate-700 mb-1">Phone *</label>
-                        <input name="emergencyPhone" required className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl outline-none" onChange={handleChange} />
+                        <input
+                            name="emergencyPhone"
+                            required
+                            maxLength={10}
+                            value={formData.emergencyPhone}
+                            className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                setFormData(prev => ({ ...prev, emergencyPhone: val }));
+                            }}
+                        />
                     </div>
                 </div>
             </section>

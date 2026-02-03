@@ -32,7 +32,7 @@ const StaffSchema = new Schema<IStaff>(
         firstName: { type: String, required: true },
         lastName: { type: String, required: true },
         email: { type: String, required: true, unique: true },
-        phone: { type: String, required: true },
+        phone: { type: String, required: true, minlength: 10, maxlength: 10 },
         role: { type: String, required: true },
         department: { type: String, required: true },
         designation: { type: String, required: true },

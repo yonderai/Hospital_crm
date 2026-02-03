@@ -20,6 +20,18 @@ import {
 export default function ORDashboard() {
     const [allCases, setAllCases] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [selectedCase, setSelectedCase] = useState<any | null>(null);
+    const [reportForm, setReportForm] = useState({
+        preOpDiagnosis: "",
+        postOpDiagnosis: "",
+        findings: "",
+        procedureDetails: "",
+        postOpInstructions: "",
+        complications: "",
+        postOpNotes: ""
+    });
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchCases = async () => {
@@ -52,6 +64,48 @@ export default function ORDashboard() {
             case "completed": return "text-emerald-600 bg-emerald-50 border-emerald-100";
             case "cancelled": return "text-rose-600 bg-rose-50 border-rose-100";
             default: return "text-orange-600 bg-orange-50 border-orange-100";
+        }
+    };
+
+    const handleSubmitReport = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedCase) return;
+
+        setSubmitting(true);
+        try {
+            const res = await fetch("/api/doctor/surgery/report", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    caseId: selectedCase._id,
+                    ...reportForm
+                })
+            });
+
+            if (res.ok) {
+                setIsReportModalOpen(false);
+                setSelectedCase(null);
+                setReportForm({
+                    preOpDiagnosis: "",
+                    postOpDiagnosis: "",
+                    findings: "",
+                    procedureDetails: "",
+                    postOpInstructions: "",
+                    complications: "",
+                    postOpNotes: ""
+                });
+                // Re-fetch cases
+                const updRes = await fetch("/api/doctor/surgery");
+                const updData = await updRes.json();
+                setAllCases(updData);
+            } else {
+                alert("Failed to submit report");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error submitting report");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -129,7 +183,7 @@ export default function ORDashboard() {
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Procedure</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Surgeon</th>
                                     <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                                    <th className="px-6 py-4"></th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Report</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -179,7 +233,20 @@ export default function ORDashboard() {
                                                 {cs.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-right">
+                                        <td className="px-6 py-5 text-right flex items-center gap-2">
+                                            {cs.status === 'completed' ? (
+                                                <span className="text-[10px] font-black text-emerald-600 uppercase bg-emerald-50 px-3 py-1 rounded-lg">Reported</span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedCase(cs);
+                                                        setIsReportModalOpen(true);
+                                                    }}
+                                                    className="px-4 py-2 bg-olive-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-olive-700 transition-all shadow-sm"
+                                                >
+                                                    Add Report
+                                                </button>
+                                            )}
                                             <button className="p-2 hover:bg-white rounded-lg transition-colors group">
                                                 <ChevronRight size={18} className="text-slate-300 group-hover:text-olive-600" />
                                             </button>
@@ -231,6 +298,133 @@ export default function ORDashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* SURGERY REPORT MODAL */}
+            {isReportModalOpen && selectedCase && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+                    <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-[48px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                        {/* Header */}
+                        <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 bg-olive-50 rounded-3xl flex items-center justify-center text-olive-600 shadow-sm">
+                                    <Plus size={28} />
+                                </div>
+                                <div>
+                                    <h4 className="text-2xl font-black text-slate-900 tracking-tight italic uppercase">Surgery Report</h4>
+                                    <p className="text-[10px] text-olive-600 font-bold uppercase tracking-widest mt-1">
+                                        Patient: {selectedCase.patientId?.firstName} {selectedCase.patientId?.lastName} • Case: {selectedCase.procedureName}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsReportModalOpen(false)}
+                                className="w-14 h-14 flex items-center justify-center bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-2xl transition-all shadow-sm"
+                            >
+                                <Plus size={24} className="rotate-45" />
+                            </button>
+                        </div>
+
+                        {/* Form Body */}
+                        <div className="flex-1 overflow-y-auto p-10 bg-slate-50/30">
+                            <form id="surgeryReportForm" onSubmit={handleSubmitReport} className="grid grid-cols-2 gap-8">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pre-operative Diagnosis</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full bg-white border border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-900 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm"
+                                        placeholder="Enter pre-op diagnosis..."
+                                        value={reportForm.preOpDiagnosis}
+                                        onChange={(e) => setReportForm({ ...reportForm, preOpDiagnosis: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Post-operative Diagnosis</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full bg-white border border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-900 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm"
+                                        placeholder="Enter post-op diagnosis..."
+                                        value={reportForm.postOpDiagnosis}
+                                        onChange={(e) => setReportForm({ ...reportForm, postOpDiagnosis: e.target.value })}
+                                    />
+                                </div>
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Operative Findings</label>
+                                    <textarea
+                                        required
+                                        rows={3}
+                                        className="w-full bg-white border border-slate-100 rounded-3xl p-6 text-sm font-medium text-slate-800 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm"
+                                        placeholder="Describe findings during surgery..."
+                                        value={reportForm.findings}
+                                        onChange={(e) => setReportForm({ ...reportForm, findings: e.target.value })}
+                                    />
+                                </div>
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Procedure Details</label>
+                                    <textarea
+                                        required
+                                        rows={5}
+                                        className="w-full bg-white border border-slate-100 rounded-3xl p-6 text-sm font-medium text-slate-800 leading-relaxed outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm"
+                                        placeholder="Detailed step-by-step procedure notes..."
+                                        value={reportForm.procedureDetails}
+                                        onChange={(e) => setReportForm({ ...reportForm, procedureDetails: e.target.value })}
+                                    />
+                                </div>
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Post-operative Instructions</label>
+                                    <textarea
+                                        required
+                                        rows={3}
+                                        className="w-full bg-white border border-slate-100 rounded-3xl p-6 text-sm font-medium text-olive-900 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm bg-olive-50/30"
+                                        placeholder="Care instructions for patient..."
+                                        value={reportForm.postOpInstructions}
+                                        onChange={(e) => setReportForm({ ...reportForm, postOpInstructions: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Complications (Optional)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-white border border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-900 outline-none focus:ring-4 ring-rose-100/50 transition-all shadow-sm"
+                                        placeholder="Any complications encountered..."
+                                        value={reportForm.complications}
+                                        onChange={(e) => setReportForm({ ...reportForm, complications: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Additional Notes</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-white border border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-900 outline-none focus:ring-4 ring-slate-100 transition-all shadow-sm"
+                                        placeholder="Miscellaneous surgery notes..."
+                                        value={reportForm.postOpNotes}
+                                        onChange={(e) => setReportForm({ ...reportForm, postOpNotes: e.target.value })}
+                                    />
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-10 border-t border-slate-100 bg-white flex justify-end gap-4 shrink-0">
+                            <button
+                                onClick={() => setIsReportModalOpen(false)}
+                                className="px-10 py-5 bg-slate-100 text-slate-600 rounded-3xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all shadow-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                form="surgeryReportForm"
+                                type="submit"
+                                disabled={submitting}
+                                className="px-12 py-5 bg-olive-600 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest hover:bg-olive-700 transition-all shadow-lg shadow-olive-600/20 disabled:opacity-50"
+                            >
+                                {submitting ? "Processing..." : "Submit Surgery Report"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </DashboardLayout>
     );
 }

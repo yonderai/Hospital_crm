@@ -22,6 +22,7 @@ import {
     Wind,
     FlaskConical,
     ChevronRight,
+    Grid,
     Menu,
     X,
     Settings,
@@ -130,8 +131,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         nurse: ["Overview", "Duty Roster", "Assigned Patients", "Ward Management", "ICU Monitor", "Clinical Updates"], // Nurse Portal
         billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
 
-        finance: ["Overview", "Ticket Approvals", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
-        patient: ["Overview", "Report Viewer", "Medical History", "Insurance", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
+        finance: ["Overview", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
+        patient: ["Overview", "Report Viewer", "Medical History", "Surgery", "Insurance", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
         hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
         admin: ["Overview", "User Management", "Staff Overview", "Departments & Services", "Stock Summary", "Billing & Payments", "Expense Oversight", "Salary Overview", "Medical Claims", "Hospital Chain", "Reports", "Analytics", "Settings"], // Master Control
         emergency: ["Overview", "Triage", "Clinical Workspace", "Ambulance", "Alerts"], // Emergency
@@ -184,7 +185,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Invoices", href: `/${urlRole}/invoices`, icon: FileText },
         // Back Office / Finance
 
-        { name: "Ticket Approvals", href: `/${role}/tickets`, icon: ShieldCheck },
+
         { name: "Procurement", href: `/${role}/procurement`, icon: Package },
         { name: "Expenses", href: `/${role}/expenses`, icon: DollarSign },
         { name: "Utilities", href: `/${role}/utilities`, icon: Wind },

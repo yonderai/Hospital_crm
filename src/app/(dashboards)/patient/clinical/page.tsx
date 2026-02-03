@@ -14,11 +14,14 @@ import {
     ArrowUpRight,
     Stethoscope
 } from "lucide-react";
+import ReportModal from "@/components/doctor/ReportModal";
+import { format } from "date-fns";
 
 export default function PatientClinicalPage() {
     const [stats, setStats] = useState<any[]>([]);
     const [surgeries, setSurgeries] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedReport, setSelectedReport] = useState<any | null>(null);
 
     useEffect(() => {
         setTimeout(() => {
@@ -33,15 +36,13 @@ export default function PatientClinicalPage() {
 
         const fetchPatientData = async () => {
             try {
-                // For demo, we assume patientId is "64b0f1a2e4b0f1a2e4b0f1a2" (John Doe)
-                const patientId = "64b0f1a2e4b0f1a2e4b0f1a2";
-                const res = await fetch(`/api/patients/${patientId}/surgery`);
+                const res = await fetch(`/api/patient/surgery`);
                 if (res.ok) {
                     const data = await res.json();
                     setSurgeries(data);
                 }
             } catch (err) {
-                console.error(err);
+                console.error("Failed to fetch surgeries", err);
             }
         };
         fetchPatientData();
@@ -125,15 +126,52 @@ export default function PatientClinicalPage() {
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(s.scheduledDate).toLocaleDateString()} • {s.startTime}</p>
                                                 </div>
                                             </div>
-                                            <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${s.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
-                                                {s.status}
-                                            </span>
+                                            <div className="flex items-center gap-3">
+                                                <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${s.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                    {s.status}
+                                                </span>
+                                                {s.status === 'completed' && s.surgeryReport && (
+                                                    <button
+                                                        onClick={() => setSelectedReport({
+                                                            title: `Surgical Report: ${s.procedureName}`,
+                                                            data: {
+                                                                type: 'surgery',
+                                                                patientName: "My Record",
+                                                                mrn: "SELF-VIEW",
+                                                                date: format(new Date(s.surgeryReport.reportDate || s.updatedAt), "MMM dd, yyyy HH:mm"),
+                                                                testName: s.procedureName,
+                                                                surgery: {
+                                                                    preOpDiagnosis: s.surgeryReport.preOpDiagnosis,
+                                                                    postOpDiagnosis: s.surgeryReport.postOpDiagnosis,
+                                                                    findings: s.surgeryReport.findings,
+                                                                    procedureDetails: s.surgeryReport.procedureDetails,
+                                                                    postOpInstructions: s.surgeryReport.postOpInstructions,
+                                                                    surgeonName: s.surgeonId ? `Dr. ${s.surgeonId.firstName} ${s.surgeonId.lastName}` : "Unknown Surgeon"
+                                                                }
+                                                            }
+                                                        })}
+                                                        className="p-2 text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                                                        title="View Report"
+                                                    >
+                                                        <FileText size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         )}
                     </div>
+
+                    {/* Report Modal */}
+                    {selectedReport && (
+                        <ReportModal
+                            title={selectedReport.title}
+                            data={selectedReport.data}
+                            onClose={() => setSelectedReport(null)}
+                        />
+                    )}
 
                     {/* Care Team */}
                     <div className="space-y-8">

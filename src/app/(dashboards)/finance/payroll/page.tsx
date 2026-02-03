@@ -119,22 +119,22 @@ export default function PayrollPage() {
                                         <tr key={record._id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all">
                                             <td className="px-8 py-4">
                                                 <p className="text-sm font-black text-slate-900">
-                                                    {record.staffId?.firstName} {record.staffId?.lastName}
+                                                    {record.employeeName || `${record.staffId?.firstName || ''} ${record.staffId?.lastName || ''}`.trim()}
                                                 </p>
                                             </td>
                                             <td className="px-8 py-4">
                                                 <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
-                                                    {record.staffId?.role || 'Staff'}
+                                                    {record.designation || record.staffId?.role || 'Staff'}
                                                 </span>
                                             </td>
                                             <td className="px-8 py-4 text-sm font-bold text-slate-600">
-                                                {record.month}/{record.year}
+                                                {record.paymentMonth || `${record.month}/${record.year}`}
                                             </td>
                                             <td className="px-8 py-4 text-sm font-bold text-slate-600">
-                                                ₹{record.baseSalary.toLocaleString()}
+                                                ₹{(record.basicSalary || record.baseSalary || 0).toLocaleString()}
                                             </td>
                                             <td className="px-8 py-4 text-sm font-black text-slate-900">
-                                                ₹{record.netPay.toLocaleString()}
+                                                ₹{(record.netSalary || record.netPay || 0).toLocaleString()}
                                             </td>
                                             <td className="px-8 py-4">
                                                 <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${record.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'

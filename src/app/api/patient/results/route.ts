@@ -7,6 +7,8 @@ import LabResult from "@/lib/models/LabResult";
 import LabOrder from "@/lib/models/LabOrder";
 import ImagingOrder from "@/lib/models/ImagingOrder";
 import RadiologyReport from "@/lib/models/RadiologyReport";
+import User from "@/lib/models/User";
+import Staff from "@/lib/models/Staff";
 
 export async function GET(request: Request) {
     try {
@@ -63,6 +65,16 @@ export async function GET(request: Request) {
 
         console.log("Found radiology reports:", radiologyReports.length);
 
+        // 6. Fetch Surgery Reports (ORCases where report is filled)
+        const ORCase = (await import("@/lib/models/ORCase")).default;
+        const surgeryCases = await ORCase.find({
+            patientId: patient._id,
+            status: 'completed',
+            surgeryReport: { $exists: true }
+        }).populate('surgeonId', 'firstName lastName').lean();
+
+        console.log("Found surgery reports:", surgeryCases.length);
+
         // Create a map of orderId to report
         const reportMap = new Map();
         radiologyReports.forEach(report => {
@@ -115,10 +127,20 @@ export async function GET(request: Request) {
             };
         });
 
+        const normalizedSurgery = (surgeryCases as any[]).map(item => ({
+            id: item._id,
+            type: 'surgery',
+            title: `Surgical Report: ${item.procedureName}`,
+            date: item.surgeryReport?.reportDate || item.updatedAt,
+            status: 'completed',
+            summary: item.surgeryReport?.postOpDiagnosis || item.procedureName,
+            details: item
+        }));
+
         // Combine all, avoiding duplicates if a LabResult and LabOrder represent the same thing
         // We'll use a simple approach: if multiple items have the same date/title within a short window, we might skip.
         // For now, combining is safer.
-        const combinedResults = [...normalizedLabs, ...normalizedLabOrders, ...normalizedRadiology].sort((a, b) =>
+        const combinedResults = [...normalizedLabs, ...normalizedLabOrders, ...normalizedRadiology, ...normalizedSurgery].sort((a, b) =>
             new Date(b.date).getTime() - new Date(a.date).getTime()
         );
 

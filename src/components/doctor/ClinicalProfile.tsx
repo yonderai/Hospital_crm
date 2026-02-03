@@ -101,7 +101,21 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                 </div>
                 <div className="text-right">
                     <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Global Status</div>
-                    <div className="font-black text-olive-600 uppercase text-xs mt-1 italic tracking-widest">Active Consultation</div>
+                    {(() => {
+                        const currentConsultation = history.consultations.find((c: any) =>
+                            (encounterId && c._id?.toString() === encounterId) ||
+                            (appointmentId && c.appointmentId?.toString() === appointmentId)
+                        );
+
+                        const isConsultationClosed = currentConsultation?.status === 'closed';
+
+                        return (
+                            <div className={`font-black uppercase text-xs mt-1 italic tracking-widest ${isConsultationClosed ? "text-slate-500" : "text-olive-600"
+                                }`}>
+                                {isConsultationClosed ? "Consultation Completed" : "Active Consultation"}
+                            </div>
+                        );
+                    })()}
                 </div>
             </div>
 

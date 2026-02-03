@@ -12,7 +12,8 @@ import {
     Eye,
     ChevronRight,
     Calendar,
-    Stethoscope
+    Stethoscope,
+    Scissors
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -96,11 +97,13 @@ export default function PatientRecords() {
                                 <div className="flex gap-8 items-center text-left">
                                     <div className={`w-16 h-16 rounded-3xl flex items-center justify-center ${rec.type === 'lab' ? 'bg-blue-50 text-blue-600' :
                                         rec.type === 'imaging' ? 'bg-purple-50 text-purple-600' :
-                                            'bg-olive-50 text-olive-600'
+                                            rec.type === 'surgery' ? 'bg-olive-50 text-olive-600' :
+                                                'bg-indigo-50 text-indigo-600'
                                         }`}>
                                         {rec.type === 'lab' ? <Beaker size={28} /> :
                                             rec.type === 'imaging' ? <Camera size={28} /> :
-                                                <Stethoscope size={28} />}
+                                                rec.type === 'surgery' ? <Scissors size={28} /> :
+                                                    <Stethoscope size={28} />}
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-3">

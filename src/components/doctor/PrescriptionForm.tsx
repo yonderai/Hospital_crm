@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Plus, Trash } from "lucide-react";
+import MedicineAutocomplete from "@/components/doctor/MedicineAutocomplete";
 
 export default function PrescriptionForm({ patientId, appointmentId, encounterId, onSuccess }: { patientId: string; appointmentId?: string; encounterId?: string; onSuccess: () => void }) {
     const [loading, setLoading] = useState(false);
@@ -36,15 +37,17 @@ export default function PrescriptionForm({ patientId, appointmentId, encounterId
                     medications: meds
                 })
             });
+            const result = await res.json();
             if (res.ok) {
                 alert("Prescription sent to Pharmacy & Billing!");
                 setMeds([{ drugName: "", dosage: "", frequency: "1-0-1", route: "Oral", duration: "5 days", quantity: 10, instructions: "" }]);
                 onSuccess();
             } else {
-                alert("Error saving prescription");
+                alert(result.error || "Error saving prescription");
             }
         } catch (error) {
             console.error(error);
+            alert("Network error or server unavailable");
         } finally {
             setLoading(false);
         }
@@ -56,15 +59,18 @@ export default function PrescriptionForm({ patientId, appointmentId, encounterId
 
             {meds.map((med, index) => (
                 <div key={index} className="grid grid-cols-7 gap-2 items-end border-b border-gray-100 pb-2">
-                    <div className="col-span-2">
+                    <div className="col-span-3">
                         <label className="text-xs font-semibold text-gray-500">Medicine</label>
-                        <input required className="w-full text-sm border-gray-300 rounded" placeholder="Drug Name"
-                            value={med.drugName} onChange={e => updateMed(index, 'drugName', e.target.value)} />
-                    </div>
-                    <div>
-                        <label className="text-xs font-semibold text-gray-500">Dosage</label>
-                        <input required className="w-full text-sm border-gray-300 rounded" placeholder="500mg"
-                            value={med.dosage} onChange={e => updateMed(index, 'dosage', e.target.value)} />
+                        <MedicineAutocomplete
+                            value={med.drugName}
+                            onChange={(val) => updateMed(index, 'drugName', val)}
+                            onSelect={(item) => {
+                                // Auto-fill fields if needed
+                                console.log("Selected medicine:", item);
+                            }}
+                            placeholder="Drug Name"
+                            className="text-sm"
+                        />
                     </div>
                     <div>
                         <label className="text-xs font-semibold text-gray-500">Freq.</label>

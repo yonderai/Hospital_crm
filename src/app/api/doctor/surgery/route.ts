@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import ORCase from '@/lib/models/ORCase';
 import Staff from '@/lib/models/Staff';
+import User from '@/lib/models/User';
 import Encounter from '@/lib/models/Encounter';
 
 export async function POST(req: NextRequest) {
@@ -18,13 +19,15 @@ export async function POST(req: NextRequest) {
         const { patientId, procedureName, scheduledDate, startTime, orRoomId, notes } = body;
 
         // Create the OR Case
-        // In a real scenario, we'd assign a surgeonId from the logged-in user session
-        // For now, we'll use a placeholder or look for a doctor
-        const doctor = await Staff.findOne({ role: 'doctor' });
+        // Assign surgeonId from the logged-in user session if they are a doctor,
+        // otherwise find a doctor in the User collection.
+        const currentUser = await User.findOne({ email: session.user?.email });
+        const fallbackDoctor = !currentUser ? await User.findOne({ role: 'doctor' }) : null;
+        const surgeonId = currentUser?._id || fallbackDoctor?._id || "64b0f1a2e4b0f1a2e4b0f1a2";
 
         const newCase = await ORCase.create({
             patientId,
-            surgeonId: doctor?._id || "64b0f1a2e4b0f1a2e4b0f1a2",
+            surgeonId,
             procedureName,
             procedureCode: "SURG-" + Math.floor(Math.random() * 1000).toString().padStart(3, '0'),
             scheduledDate: new Date(scheduledDate),
@@ -38,7 +41,7 @@ export async function POST(req: NextRequest) {
         await Encounter.create({
             encounterId: "ENC-" + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
             patientId,
-            providerId: doctor?._id || "64b0f1a2e4b0f1a2e4b0f1a2",
+            providerId: surgeonId,
             type: "outpatient",
             chiefComplaint: `Surgery Scheduled: ${procedureName}`,
             soapNotes: {

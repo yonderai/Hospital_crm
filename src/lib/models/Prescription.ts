@@ -32,7 +32,7 @@ const PrescriptionSchema = new Schema<IPrescription>(
         medications: [
             {
                 drugName: { type: String, required: true },
-                dosage: { type: String, required: true },
+                dosage: { type: String, required: false }, // Optional as it may be part of drugName
                 frequency: { type: String, required: true },
                 route: { type: String, required: true },
                 duration: { type: String, required: true },

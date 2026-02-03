@@ -9,6 +9,7 @@ import {
     MoreHorizontal,
     Package,
     AlertTriangle,
+    AlertCircle,
     X,
     CheckCircle
 } from "lucide-react";
@@ -26,6 +27,12 @@ interface InventoryItem {
     sellingPrice: number;
     lotNumber: string;
     expiryDate: string;
+    location?: {
+        block: string;
+        shelf: string;
+        drawer?: string;
+        zone: string;
+    };
 }
 
 export default function InventoryPage() {
@@ -35,6 +42,7 @@ export default function InventoryPage() {
     const [showModal, setShowModal] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState({
+        _id: "",
         sku: "",
         name: "",
         category: "medication",
@@ -44,8 +52,36 @@ export default function InventoryPage() {
         unitCost: 0,
         sellingPrice: 0,
         lotNumber: "",
-        expiryDate: ""
+        expiryDate: "",
+        location: {
+            block: "",
+            shelf: "",
+            drawer: "",
+            zone: "Tablet"
+        }
     });
+
+    const resetForm = () => {
+        setFormData({
+            _id: "",
+            sku: "",
+            name: "",
+            category: "medication",
+            unit: "",
+            quantityOnHand: 0,
+            reorderLevel: 10,
+            unitCost: 0,
+            sellingPrice: 0,
+            lotNumber: "",
+            expiryDate: "",
+            location: {
+                block: "",
+                shelf: "",
+                drawer: "",
+                zone: "Tablet"
+            }
+        });
+    };
 
     const fetchInventory = () => {
         setLoading(true);
@@ -67,40 +103,57 @@ export default function InventoryPage() {
         fetchInventory();
     }, []);
 
-    const handleAddItem = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
         try {
+            const isEditing = !!formData._id;
+            // Remove empty _id for new items to avoid Mongoose CastError
+            const payload = { ...formData };
+            if (!isEditing) delete (payload as any)._id;
+
             const res = await fetch("/api/pharmacy/inventory", {
-                method: "POST",
+                method: isEditing ? "PUT" : "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(payload)
             });
             if (res.ok) {
                 setShowModal(false);
-                setFormData({
-                    sku: "",
-                    name: "",
-                    category: "medication",
-                    unit: "",
-                    quantityOnHand: 0,
-                    reorderLevel: 10,
-                    unitCost: 0,
-                    sellingPrice: 0,
-                    lotNumber: "",
-                    expiryDate: ""
-                });
+                resetForm();
                 fetchInventory();
             } else {
                 const err = await res.json();
-                alert(err.error || "Failed to add item");
+                alert(err.error || `Failed to ${isEditing ? 'update' : 'add'} item`);
             }
         } catch (error) {
-            console.error("Error adding item:", error);
-            alert("Error adding item");
+            console.error(`Error saving item:`, error);
+            alert("Error saving item");
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleEditClick = (item: InventoryItem) => {
+        setFormData({
+            _id: item._id,
+            sku: item.sku,
+            name: item.name,
+            category: item.category,
+            unit: item.unit,
+            quantityOnHand: item.quantityOnHand,
+            reorderLevel: item.reorderLevel,
+            unitCost: item.unitCost,
+            sellingPrice: item.sellingPrice,
+            lotNumber: item.lotNumber || "",
+            expiryDate: item.expiryDate ? new Date(item.expiryDate).toISOString().split('T')[0] : "",
+            location: {
+                block: item.location?.block || "",
+                shelf: item.location?.shelf || "",
+                drawer: item.location?.drawer || "",
+                zone: item.location?.zone || "Tablet"
+            }
+        });
+        setShowModal(true);
     };
 
     const filteredItems = items.filter(i =>
@@ -116,7 +169,7 @@ export default function InventoryPage() {
                     <p className="text-slate-500 mt-2 font-medium">Track stock levels, prices, and batches.</p>
                 </div>
                 <button
-                    onClick={() => setShowModal(true)}
+                    onClick={() => { resetForm(); setShowModal(true); }}
                     className="px-6 py-3 bg-olive-600 text-white font-bold rounded-xl shadow-lg shadow-olive-600/20 hover:bg-olive-700 transition-all flex items-center gap-2"
                 >
                     <Plus size={18} />
@@ -177,6 +230,22 @@ export default function InventoryPage() {
                                         <span className="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-bold text-slate-600 uppercase">
                                             {item.category}
                                         </span>
+                                        {item.location?.block ? (
+                                            <div className="mt-2 flex flex-wrap gap-1">
+                                                <span className="text-[9px] font-black text-white bg-olive-600 px-2 py-0.5 rounded-md uppercase tracking-wide flex items-center gap-1">
+                                                    <Package size={10} /> {item.location.zone}
+                                                </span>
+                                                <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md uppercase tracking-wide">
+                                                    Block {item.location.block} | Shelf {item.location.shelf}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <div className="mt-2">
+                                                <span className="text-[9px] font-black text-red-500 bg-red-50 border border-red-100 px-2 py-0.5 rounded-md uppercase tracking-wide flex items-center gap-1">
+                                                    <AlertCircle size={10} /> Location Not Assigned
+                                                </span>
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="p-6 text-center">
                                         <div className="inline-flex items-center gap-2">
@@ -198,7 +267,10 @@ export default function InventoryPage() {
                                         ₹{item.sellingPrice?.toFixed(2)}
                                     </td>
                                     <td className="p-6 text-center">
-                                        <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+                                        <button
+                                            onClick={() => handleEditClick(item)}
+                                            className="p-2 text-slate-400 hover:text-olive-600 hover:bg-olive-50 rounded-lg transition-all"
+                                        >
                                             <MoreHorizontal size={18} />
                                         </button>
                                     </td>
@@ -215,18 +287,20 @@ export default function InventoryPage() {
                     <div className="bg-white w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                             <div>
-                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Add New Inventory Item</h3>
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                                    {formData._id ? "Edit Inventory Item" : "Add New Inventory Item"}
+                                </h3>
                                 <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Pharmacy Node Synchronization</p>
                             </div>
                             <button
-                                onClick={() => setShowModal(false)}
+                                onClick={() => { setShowModal(false); resetForm(); }}
                                 className="w-10 h-10 flex items-center justify-center bg-white hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl border border-slate-100 transition-all"
                             >
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleAddItem} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Item Name *</label>
@@ -287,6 +361,59 @@ export default function InventoryPage() {
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-4 gap-4 pt-4 border-t border-slate-50 relative">
+                                <span className="absolute -top-2 left-4 bg-white px-2 text-[9px] font-black text-slate-300 uppercase tracking-widest">Storage Location (Mandatory)</span>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Block *</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        placeholder="e.g. B1"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-olive-500 uppercase"
+                                        value={formData.location.block}
+                                        onChange={(e) => setFormData({ ...formData, location: { ...formData.location, block: e.target.value } })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Shelf *</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        placeholder="e.g. S2"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-olive-500 uppercase"
+                                        value={formData.location.shelf}
+                                        onChange={(e) => setFormData({ ...formData, location: { ...formData.location, shelf: e.target.value } })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Zone *</label>
+                                    <select
+                                        required
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-olive-500"
+                                        value={formData.location.zone}
+                                        onChange={(e) => setFormData({ ...formData, location: { ...formData.location, zone: e.target.value } })}
+                                    >
+                                        <option value="Tablet">Tablet</option>
+                                        <option value="Syrup">Syrup</option>
+                                        <option value="Injection">Injection</option>
+                                        <option value="Ointment">Ointment</option>
+                                        <option value="Drops">Drops</option>
+                                        <option value="Surgical">Surgical</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Drawer (Opt)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. D1"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-olive-500 uppercase"
+                                        value={formData.location.drawer}
+                                        onChange={(e) => setFormData({ ...formData, location: { ...formData.location, drawer: e.target.value } })}
+                                    />
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-50">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Unit Cost (₹) *</label>
@@ -338,12 +465,13 @@ export default function InventoryPage() {
                                 disabled={submitting}
                                 className="w-full py-5 mt-4 bg-olive-700 text-white rounded-[24px] font-black text-sm uppercase tracking-[0.3em] shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-70"
                             >
-                                {submitting ? "Synchronizing..." : <>Register Item <CheckCircle size={18} /></>}
+                                {submitting ? "Synchronizing..." : formData._id ? <>Update Item <CheckCircle size={18} /></> : <>Register Item <CheckCircle size={18} /></>}
                             </button>
                         </form>
                     </div>
-                </div>
-            )}
-        </DashboardLayout>
+                </div >
+            )
+            }
+        </DashboardLayout >
     );
 }

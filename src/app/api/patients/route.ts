@@ -18,7 +18,7 @@ export async function GET(req: Request) {
         const role = (session.user as any).role;
         const userId = (session.user as any).id;
 
-        if (!['doctor', 'admin', 'nurse'].includes(role)) {
+        if (!['doctor', 'admin', 'nurse', 'pharmacist', 'pharmacy'].includes(role)) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 

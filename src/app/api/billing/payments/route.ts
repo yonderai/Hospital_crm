@@ -75,16 +75,27 @@ export async function GET(req: NextRequest) {
         const payments = await Payment.find(filter)
             .populate("patientId", "firstName lastName mrn")
             .populate("invoiceId", "invoiceNumber")
-            .sort({ paymentDate: -1 });
+            .sort({ paymentDate: -1 })
+            .lean();
 
-        const formattedPayments = payments.map((pay: any) => ({
-            id: pay.transactionReference || pay._id.toString().slice(-6).toUpperCase(),
-            name: pay.patientId ? `${pay.patientId.firstName} ${pay.patientId.lastName}` : "Unknown Patient",
-            status: pay.status.charAt(0).toUpperCase() + pay.status.slice(1),
-            date: new Date(pay.paymentDate).toLocaleDateString(),
-            value: `₹${(pay.amount || 0).toLocaleString()}`,
-            _raw: pay
-        }));
+        const formattedPayments = payments.map((pay: any) => {
+            let displayName = "Walk-in Customer";
+
+            if (pay.patientId && typeof pay.patientId === 'object' && (pay.patientId.firstName || pay.patientId.lastName)) {
+                displayName = `${pay.patientId.firstName || ''} ${pay.patientId.lastName || ''}`.trim();
+            } else if (pay.customerName) {
+                displayName = pay.customerName;
+            }
+
+            return {
+                id: pay.transactionReference || pay._id.toString().slice(-6).toUpperCase(),
+                name: displayName,
+                status: pay.status.charAt(0).toUpperCase() + pay.status.slice(1),
+                date: new Date(pay.paymentDate).toLocaleDateString(),
+                value: `₹${(pay.amount || 0).toLocaleString()}`,
+                _raw: pay
+            };
+        });
 
         return NextResponse.json({
             success: true,

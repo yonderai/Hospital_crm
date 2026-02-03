@@ -18,6 +18,12 @@ export async function POST(req: Request) {
         console.log("Creating prescription with data:", JSON.stringify(data, null, 2));
 
         // 1. Create Prescription
+        // Sanitize medications (ensure dosage is present to satisfy schema if needed)
+        data.medications = data.medications.map((m: any) => ({
+            ...m,
+            dosage: m.dosage || "As Prescribed"
+        }));
+
         const prescription = await Prescription.create({
             ...data,
             providerId: session.user.id,

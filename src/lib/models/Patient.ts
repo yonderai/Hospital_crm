@@ -9,7 +9,7 @@ export interface IPatient extends Document {
     age?: number; // Auto-calculated or stored
     gender: string;
     contact: {
-        phone: string;
+        phone: { type: String, required: true, minlength: 10, maxlength: 10 },
         email: string;
         address: {
             street: string;
@@ -21,7 +21,7 @@ export interface IPatient extends Document {
     };
     emergencyContact: {
         name: string;
-        phone: string;
+        phone: { type: String, minlength: 10, maxlength: 10 },
         relation: string;
     };
     insuranceInfo: {
@@ -99,7 +99,7 @@ const PatientSchema = new Schema<IPatient>(
         age: { type: Number },
         gender: { type: String, required: true },
         contact: {
-            phone: { type: String, required: true },
+            phone: { type: String, required: true, minlength: 10, maxlength: 10 },
             email: { type: String, unique: true, sparse: true },
             address: {
                 street: { type: String },
@@ -111,7 +111,7 @@ const PatientSchema = new Schema<IPatient>(
         },
         emergencyContact: {
             name: { type: String },
-            phone: { type: String },
+            phone: { type: String, minlength: 10, maxlength: 10 },
             relation: { type: String },
         },
         insuranceInfo: {

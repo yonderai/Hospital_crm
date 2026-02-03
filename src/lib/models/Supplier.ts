@@ -17,7 +17,7 @@ const SupplierSchema = new Schema<ISupplier>(
     {
         name: { type: String, required: true },
         contactPerson: { type: String },
-        phone: { type: String },
+        phone: { type: String, minlength: 10, maxlength: 10 },
         email: { type: String },
         address: { type: String },
         taxId: { type: String },

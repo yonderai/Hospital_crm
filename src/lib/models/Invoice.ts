@@ -12,6 +12,10 @@ export interface IInvoiceItem {
 export interface IInvoice extends Document {
     patientId: mongoose.Types.ObjectId;
     encounterId?: mongoose.Types.ObjectId;
+    customerDetails?: {
+        name: string;
+        phone: string;
+    };
     invoiceNumber: string;
     items: IInvoiceItem[];
     totalAmount: number;
@@ -54,8 +58,12 @@ const InvoiceItemSchema = new Schema<IInvoiceItem>({
 
 const InvoiceSchema = new Schema<IInvoice>(
     {
-        patientId: { type: Schema.Types.ObjectId, ref: "Patient", required: true, index: true },
+        patientId: { type: Schema.Types.ObjectId, ref: "Patient", index: true },
         encounterId: { type: Schema.Types.ObjectId, ref: "Encounter", index: true },
+        customerDetails: {
+            name: { type: String },
+            phone: { type: String, minlength: 10, maxlength: 10 }
+        },
         invoiceNumber: { type: String, required: true, unique: true },
         items: [InvoiceItemSchema],
         totalAmount: { type: Number, required: true },

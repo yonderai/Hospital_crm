@@ -3,6 +3,7 @@ import dbConnect from "@/lib/mongoose";
 import Expense from "@/lib/models/Expense";
 import UtilityBill from "@/lib/models/UtilityBill";
 import MedicalAsset from "@/lib/models/MedicalAsset";
+import DispenseLog from "@/lib/models/DispenseLog";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -76,11 +77,54 @@ export async function GET(req: Request) {
         const pendingUtilities = await UtilityBill.countDocuments({ status: "unpaid" });
         const pendingExpenses = await Expense.countDocuments({ status: "pending" });
 
+        // Pharmacy Revenue (Current Month)
+        const pharmacyStats = await DispenseLog.aggregate([
+            {
+                $match: {
+                    dispensedAt: { $gte: startOfMonth, $lt: endOfMonth }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: "$totalAmount" },
+                    patientIds: { $addToSet: "$patientId" },
+                    cashPayments: {
+                        $sum: { $cond: [{ $eq: ["$paymentMode", "cash"] }, "$totalAmount", 0] }
+                    },
+                    upiPayments: {
+                        $sum: { $cond: [{ $eq: ["$paymentMode", "upi"] }, "$totalAmount", 0] }
+                    },
+                    cardPayments: {
+                        $sum: { $cond: [{ $eq: ["$paymentMode", "card"] }, "$totalAmount", 0] }
+                    }
+                }
+            }
+        ]);
+
+        const pharmacyData = pharmacyStats[0] || {
+            totalRevenue: 0,
+            patientIds: [],
+            cashPayments: 0,
+            upiPayments: 0,
+            cardPayments: 0
+        };
+
         return NextResponse.json({
             currentMonth: {
                 totalCost: totalOperationalcost,
                 expenses: expenseStats[0]?.total || 0,
                 utilities: utilityStats[0]?.total || 0,
+                pharmacyRevenue: pharmacyData.totalRevenue,
+            },
+            pharmacy: {
+                totalRevenue: pharmacyData.totalRevenue,
+                paymentBreakdown: {
+                    cash: pharmacyData.cashPayments,
+                    upi: pharmacyData.upiPayments,
+                    card: pharmacyData.cardPayments
+                },
+                patientCount: pharmacyData.patientIds.length
             },
             pendingActions: {
                 utilities: pendingUtilities,

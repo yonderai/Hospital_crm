@@ -18,7 +18,7 @@ interface Bed {
         mrn: string;
         dob: string;
         gender: string;
-        assignedDoctorId?: { name: string };
+        assignedDoctorId?: { firstName: string; lastName: string };
     };
     dailyRate: number;
     updatedAt: string;
@@ -32,13 +32,26 @@ export default function BedManagementDashboard() {
     const fetchBeds = async () => {
         setLoading(true);
         try {
-            await fetch('/api/beds', { method: 'POST' }); // Ensure seeded
+            // Silently try to seed if needed, ignore errors
+            try { await fetch('/api/beds', { method: 'POST' }); } catch (e) { /* ignore */ }
+
             const params = new URLSearchParams(filters);
             const res = await fetch(`/api/beds?${params.toString()}`);
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error || `API Error: ${res.status}`);
+            }
             const data = await res.json();
-            setBeds(data);
+
+            if (Array.isArray(data)) {
+                setBeds(data);
+            } else {
+                console.error("API returned non-array:", data);
+                setBeds([]);
+            }
         } catch (error) {
             console.error("Failed to fetch beds", error);
+            setBeds([]);
         } finally {
             setLoading(false);
         }
@@ -508,7 +521,11 @@ export default function BedManagementDashboard() {
                                         </div>
                                         <div className="p-4 border border-slate-100 rounded-2xl">
                                             <p className="text-xs font-bold text-slate-400 uppercase mb-1">Doctor</p>
-                                            <p className="font-bold text-slate-900">{focusedBed.currentPatientId.assignedDoctorId?.name || "Dr. Unassigned"}</p>
+                                            <p className="font-bold text-slate-900">
+                                                {focusedBed.currentPatientId.assignedDoctorId
+                                                    ? `Dr. ${focusedBed.currentPatientId.assignedDoctorId.firstName} ${focusedBed.currentPatientId.assignedDoctorId.lastName}`
+                                                    : "Dr. Unassigned"}
+                                            </p>
                                         </div>
                                     </div>
 

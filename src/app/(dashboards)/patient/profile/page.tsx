@@ -37,12 +37,12 @@ export default function PatientProfilePage() {
                 setProfile(data);
                 // Initialize edit form with current data
                 setEditForm({
-                    firstName: data.firstName,
-                    lastName: data.lastName,
+                    firstName: data.firstName || "",
+                    lastName: data.lastName || "",
                     dob: data.details.dob ? format(new Date(data.details.dob), 'yyyy-MM-dd') : "",
-                    gender: data.details.gender,
-                    bloodType: data.details.bloodType,
-                    phone: data.details.phone,
+                    gender: data.details.gender || "",
+                    bloodType: data.details.bloodType || "",
+                    phone: data.details.phone || "",
                     address: {
                         street: data.details.address?.street || "",
                         city: data.details.address?.city || "",
@@ -291,8 +291,8 @@ export default function PatientProfilePage() {
             {/* EDIT PROFILE MODAL */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-in fade-in">
-                    <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="bg-slate-900 p-8 flex justify-between items-center">
+                    <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                        <div className="bg-slate-900 p-8 flex justify-between items-center shrink-0">
                             <div>
                                 <h3 className="text-2xl font-black text-white italic uppercase leading-none">Correct registry data</h3>
                                 <p className="text-[10px] font-black text-olive-400 uppercase tracking-[0.3em] mt-2">Update Clinical Identity Node</p>
@@ -305,7 +305,7 @@ export default function PatientProfilePage() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleUpdate} className="p-8 space-y-6">
+                        <form onSubmit={handleUpdate} className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
                             {message.text && (
                                 <div className={`p-4 rounded-2xl font-bold text-sm flex items-center gap-3 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'
                                     }`}>
@@ -379,6 +379,52 @@ export default function PatientProfilePage() {
                                         <option value="O+">O+</option>
                                         <option value="O-">O-</option>
                                     </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Residential Address</h4>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="col-span-2 space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest block ml-2">Street Address</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.address?.street || ""}
+                                            onChange={(e) => setEditForm({ ...editForm, address: { ...editForm.address, street: e.target.value } })}
+                                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 font-bold outline-none focus:ring-2 focus:ring-olive-500 transition-all"
+                                            placeholder="123 Medicore Blvd"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest block ml-2">City</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.address?.city || ""}
+                                            onChange={(e) => setEditForm({ ...editForm, address: { ...editForm.address, city: e.target.value } })}
+                                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 font-bold outline-none focus:ring-2 focus:ring-olive-500 transition-all"
+                                            placeholder="Metropolis"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest block ml-2">State</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.address?.state || ""}
+                                            onChange={(e) => setEditForm({ ...editForm, address: { ...editForm.address, state: e.target.value } })}
+                                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 font-bold outline-none focus:ring-2 focus:ring-olive-500 transition-all"
+                                            placeholder="NY"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-700 uppercase tracking-widest block ml-2">Zip Code</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.address?.zipCode || ""}
+                                            onChange={(e) => setEditForm({ ...editForm, address: { ...editForm.address, zipCode: e.target.value } })}
+                                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 font-bold outline-none focus:ring-2 focus:ring-olive-500 transition-all"
+                                            placeholder="10001"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

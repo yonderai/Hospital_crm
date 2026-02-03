@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
+import dbConnect from "@/lib/mongoose";
 import Bed from "@/lib/models/Bed";
+import Patient from "@/lib/models/Patient"; // Ensure registered
+import User from "@/lib/models/User";       // Ensure registered (for doctor)
 
 export async function GET(req: Request) {
     try {
@@ -18,8 +20,13 @@ export async function GET(req: Request) {
 
         const beds = await Bed.find(query).populate({
             path: "currentPatientId",
+            model: Patient, // Explicit model usage prevents tree-shaking
             select: "firstName lastName mrn dob gender assignedDoctorId",
-            populate: { path: "assignedDoctorId", select: "name" }
+            populate: {
+                path: "assignedDoctorId",
+                model: User,    // Explicit model usage prevents tree-shaking
+                select: "firstName lastName"
+            }
         });
 
         return NextResponse.json(beds);

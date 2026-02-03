@@ -31,6 +31,16 @@ interface FinanceStats {
         totalCost: number;
         expenses: number;
         utilities: number;
+        pharmacyRevenue: number;
+    };
+    pharmacy: {
+        totalRevenue: number;
+        paymentBreakdown: {
+            cash: number;
+            upi: number;
+            card: number;
+        };
+        patientCount: number;
     };
     pendingActions: {
         utilities: number;
@@ -116,29 +126,29 @@ export default function FinanceDashboard() {
             bg: "bg-olive-50"
         },
         {
-            title: "Utility Bills (Pending)",
-            value: data ? data.pendingActions.utilities.toString() : "0",
-            change: "Action Req",
-            icon: Zap,
+            title: "Pharmacy Revenue",
+            value: data ? `₹${data.pharmacy.totalRevenue.toLocaleString()}` : "₹0",
+            change: "Real-time",
+            icon: TrendingUp,
+            color: "text-amber-600",
+            bg: "bg-amber-50"
+        },
+        {
+            title: "Pharmacy Patients",
+            value: data ? data.pharmacy.patientCount.toString() : "0",
+            change: "Footfall",
+            icon: Activity,
             color: "text-blue-600",
             bg: "bg-blue-50"
         },
         {
-            title: "Pending Expenses",
+            title: "Pending Expense",
             value: data ? data.pendingActions.expenses.toString() : "0",
             change: "Needs Approval",
             icon: FileText,
             color: "text-red-500",
             bg: "bg-red-50"
-        },
-        {
-            title: "Total Assets",
-            value: data ? data.assetCount.toString() : "0",
-            change: "Active",
-            icon: ShieldCheck,
-            color: "text-green-600",
-            bg: "bg-green-50"
-        },
+        }
     ];
 
     return (
@@ -272,6 +282,22 @@ export default function FinanceDashboard() {
                         </div>
                     </div>
 
+                    {/* Pharmacy Payment Breakdown */}
+                    <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[
+                            { label: "Cash Collections", value: data?.pharmacy.paymentBreakdown.cash, icon: "💵" },
+                            { label: "UPI Payments", value: data?.pharmacy.paymentBreakdown.upi, icon: "📱" },
+                            { label: "Card Swipes", value: data?.pharmacy.paymentBreakdown.card, icon: "💳" }
+                        ].map((m, i) => (
+                            <div key={i} className="bg-slate-50 p-6 rounded-[28px] border border-slate-100 flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{m.label}</p>
+                                    <p className="text-2xl font-black text-slate-900">₹{m.value?.toLocaleString()}</p>
+                                </div>
+                                <div className="text-2xl">{m.icon}</div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </DashboardLayout>

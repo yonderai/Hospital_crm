@@ -18,6 +18,7 @@ import {
     X
 } from "lucide-react";
 import ReportModal from "@/components/doctor/ReportModal";
+import { format } from "date-fns";
 
 export default function PatientChart() {
     const params = useParams();
@@ -125,7 +126,7 @@ function TimelineView({ patientId }: { patientId: any }) {
                 // Map Labs
                 labs.forEach((l: any) => {
                     allEvents.push({
-                        date: new Date(l.createdAt).toLocaleDateString(),
+                        date: format(new Date(l.createdAt), "MMM dd, yyyy HH:mm"),
                         timestamp: new Date(l.createdAt).getTime(),
                         title: `Lab Order: ${(l.tests || []).join(', ')}`,
                         desc: `Status: ${l.status.toUpperCase()}`,
@@ -136,7 +137,7 @@ function TimelineView({ patientId }: { patientId: any }) {
                 // Map Radiology
                 radiology.forEach((r: any) => {
                     allEvents.push({
-                        date: new Date(r.createdAt).toLocaleDateString(),
+                        date: format(new Date(r.createdAt), "MMM dd, yyyy HH:mm"),
                         timestamp: new Date(r.createdAt).getTime(),
                         title: `Imaging: ${r.imagingType} (${r.bodyPart})`,
                         desc: `Priority: ${r.priority.toUpperCase()} - ${r.status}`,
@@ -147,7 +148,7 @@ function TimelineView({ patientId }: { patientId: any }) {
                 // Map Prescriptions
                 prescriptions.forEach((p: any) => {
                     allEvents.push({
-                        date: new Date(p.prescribedDate).toLocaleDateString(),
+                        date: format(new Date(p.prescribedDate), "MMM dd, yyyy HH:mm"),
                         timestamp: new Date(p.prescribedDate).getTime(),
                         title: `Prescription: ${p.medications.map((m: any) => m.drugName).join(', ')}`,
                         desc: `Status: ${p.status.toUpperCase()}`,

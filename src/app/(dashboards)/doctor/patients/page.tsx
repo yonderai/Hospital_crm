@@ -138,99 +138,100 @@ export default function DoctorPatients() {
                     </div>
                 </div>
 
-                {/* Patient List Table */}
                 <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 bg-slate-50/50">
-                                <th className="px-8 py-6">Patient Identifier</th>
-                                <th className="px-8 py-6">Status</th>
-                                <th className="px-8 py-6">Last Activity</th>
-                                <th className="px-8 py-6">Primary Condition</th>
-                                <th className="px-8 py-6 text-right pr-12">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                            {loading ? (
-                                [...Array(5)].map((_, i) => (
-                                    <tr key={i}>
-                                        <td colSpan={5} className="px-8 py-8 animate-pulse bg-slate-50/20">
-                                            <div className="h-10 bg-slate-100 rounded-xl w-full" />
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : filteredPatients.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="px-8 py-20 text-center text-slate-400 font-bold italic">
-                                        No patients found for this selection.
-                                    </td>
+                    <div className="overflow-x-auto custom-scrollbar">
+                        <table className="w-full text-left min-w-[1000px]">
+                            <thead>
+                                <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 bg-slate-50/50">
+                                    <th className="px-8 py-6">Patient Identifier</th>
+                                    <th className="px-8 py-6">Status</th>
+                                    <th className="px-8 py-6">Last Activity</th>
+                                    <th className="px-8 py-6">Primary Condition</th>
+                                    <th className="px-8 py-6 text-right pr-12">Actions</th>
                                 </tr>
-                            ) : (
-                                filteredPatients.map((p, idx) => (
-                                    <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 font-black text-xs border border-slate-200 group-hover:bg-white group-hover:border-olive-200 transition-all">
-                                                    {(p.firstName?.[0] || "")}{(p.lastName?.[0] || "")}
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-sm font-black text-slate-900 tracking-tight">{p.firstName} {p.lastName}</p>
-                                                        {p.appointmentCount > 1 && (
-                                                            <span className="text-[8px] font-black px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-100 uppercase tracking-tighter">
-                                                                {p.appointmentCount} Schedules
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">MRN-{p.mrn}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-2">
-                                                <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${p.status === 'Treatment Done' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                    p.status === 'Awaiting Tx' ? 'bg-orange-50 text-orange-600 border-orange-100' :
-                                                        p.status === 'Admitted' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                            p.status === 'Cancelled' ? 'bg-red-50 text-red-600 border-red-100' :
-                                                                'bg-slate-50 text-slate-600 border-slate-100'
-                                                    }`}>
-                                                    {p.status}
-                                                </span>
-                                                {p.hasPrescription && (
-                                                    <span className="text-[8px] font-black px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase tracking-tighter">Rx Done</span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
-                                                <Calendar size={14} className="text-slate-400" />
-                                                {p.lastVisit}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${p.severity === 'High' ? 'bg-red-500' : 'bg-olive-500'}`} />
-                                                {p.condition}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6 text-right pr-8">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                                <Link href={`/doctor/patients/${p._id}`} className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-olive-600 rounded-xl shadow-sm transition-all" title="View Details">
-                                                    <FileText size={18} />
-                                                </Link>
-                                                <Link href={`/doctor/patients/${p._id}/clinical`} className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-olive-600 rounded-xl shadow-sm transition-all" title="Clinical Summary">
-                                                    <Activity size={18} />
-                                                </Link>
-                                                <Link href={`/doctor/patients/${p._id}/chart`} className="p-2.5 bg-olive-700 text-white rounded-xl shadow-lg shadow-olive-600/20 hover:bg-olive-800 transition-all ml-2" title="Full Chart">
-                                                    <ChevronRight size={18} />
-                                                </Link>
-                                            </div>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {loading ? (
+                                    [...Array(5)].map((_, i) => (
+                                        <tr key={i}>
+                                            <td colSpan={5} className="px-8 py-8 animate-pulse bg-slate-50/20">
+                                                <div className="h-10 bg-slate-100 rounded-xl w-full" />
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : filteredPatients.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="px-8 py-20 text-center text-slate-400 font-bold italic">
+                                            No patients found for this selection.
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                ) : (
+                                    filteredPatients.map((p, idx) => (
+                                        <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 font-black text-xs border border-slate-200 group-hover:bg-white group-hover:border-olive-200 transition-all">
+                                                        {(p.firstName?.[0] || "")}{(p.lastName?.[0] || "")}
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-sm font-black text-slate-900 tracking-tight">{p.firstName} {p.lastName}</p>
+                                                            {p.appointmentCount > 1 && (
+                                                                <span className="text-[8px] font-black px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-100 uppercase tracking-tighter">
+                                                                    {p.appointmentCount} Schedules
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">MRN-{p.mrn}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border ${p.status === 'Treatment Done' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                        p.status === 'Awaiting Tx' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                                                            p.status === 'Admitted' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                                p.status === 'Cancelled' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                                    'bg-slate-50 text-slate-600 border-slate-100'
+                                                        }`}>
+                                                        {p.status}
+                                                    </span>
+                                                    {p.hasPrescription && (
+                                                        <span className="text-[8px] font-black px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase tracking-tighter">Rx Done</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                                                    <Calendar size={14} className="text-slate-400" />
+                                                    {p.lastVisit}
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${p.severity === 'High' ? 'bg-red-500' : 'bg-olive-500'}`} />
+                                                    {p.condition}
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6 text-right pr-12">
+                                                <div className="flex items-center justify-end gap-2 ml-4"> {/* Removed opacity-0 to make always visible if preferred, or kept if just clipping was issue. User said 'ache se dikh nhi rhe', could mean hard to see. Removing opacity-0 is safer. */}
+                                                    <Link href={`/doctor/patients/${p._id}`} className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-olive-600 rounded-xl shadow-sm transition-all" title="View Details">
+                                                        <FileText size={18} />
+                                                    </Link>
+                                                    <Link href={`/doctor/patients/${p._id}/clinical`} className="p-2.5 bg-white border border-slate-100 text-slate-400 hover:text-olive-600 rounded-xl shadow-sm transition-all" title="Clinical Summary">
+                                                        <Activity size={18} />
+                                                    </Link>
+                                                    <Link href={`/doctor/patients/${p._id}/chart`} className="p-2.5 bg-olive-700 text-white rounded-xl shadow-lg shadow-olive-600/20 hover:bg-olive-800 transition-all ml-2" title="Full Chart">
+                                                        <ChevronRight size={18} />
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </DashboardLayout>

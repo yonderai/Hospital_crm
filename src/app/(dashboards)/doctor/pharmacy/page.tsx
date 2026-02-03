@@ -59,7 +59,7 @@ export default function DoctorPharmacy() {
                         { label: 'Active Orders', value: prescriptions.length, icon: Database, color: 'text-olive-600', bg: 'bg-olive-50' },
                         { label: 'Validated', value: prescriptions.filter(r => r.status === 'validated').length, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
                         { label: 'Pending', value: prescriptions.filter(r => r.status === 'pending').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'In Transit', value: prescriptions.filter(r => r.status === 'dispensed').length, icon: Truck, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Paid & Dispensed', value: prescriptions.filter(r => r.status === 'dispensed').length, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-5 hover:scale-105 transition-transform cursor-default">
                             <div className={`w-14 h-14 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center shadow-inner`}>
@@ -109,10 +109,10 @@ export default function DoctorPharmacy() {
                                         <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
                                             <td className="px-8 py-6">
                                                 <span className={`text-[9px] font-black px-3 py-1 rounded-full border uppercase tracking-widest ${rx.status === 'validated' ? 'bg-green-50 text-green-600 border-green-100' :
-                                                        rx.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse' :
-                                                            'bg-blue-50 text-blue-600 border-blue-100'
+                                                    rx.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse' :
+                                                        'bg-emerald-50 text-emerald-600 border-emerald-100'
                                                     }`}>
-                                                    {rx.status}
+                                                    {rx.status === 'dispensed' ? 'PAID' : rx.status}
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6">

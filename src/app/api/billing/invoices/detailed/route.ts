@@ -29,7 +29,11 @@ export async function GET(req: NextRequest) {
                 firstName: inv.patientId.firstName,
                 lastName: inv.patientId.lastName,
                 mrn: inv.patientId.mrn
-            } : { firstName: "Unknown", lastName: "Patient", mrn: "N/A" },
+            } : (inv.customerDetails && inv.customerDetails.name ? {
+                firstName: inv.customerDetails.name,
+                lastName: "",
+                mrn: "N/A"
+            } : { firstName: "Unknown", lastName: "Patient", mrn: "N/A" }),
             totalAmount: inv.totalAmount || 0,
             amountPaid: inv.amountPaid || 0,
             balanceDue: inv.balanceDue || 0,

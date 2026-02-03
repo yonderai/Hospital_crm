@@ -16,8 +16,11 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 
+import { useRouter } from "next/navigation";
+
 export default function NurseDashboard() {
     const { data: session } = useSession();
+    const router = useRouter();
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -63,10 +66,16 @@ export default function NurseDashboard() {
                         </p>
                     </div>
                     <div className="flex gap-4">
-                        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm">
+                        <button
+                            onClick={() => router.push('/nurse/clinical-updates')}
+                            className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
+                        >
                             Handover Notes
                         </button>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all active:scale-95">
+                        <button
+                            onClick={() => router.push('/nurse/clinical')}
+                            className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all active:scale-95"
+                        >
                             <Plus size={16} /> New Record
                         </button>
                     </div>
@@ -193,10 +202,10 @@ export default function NurseDashboard() {
 
                         <div className="bg-white rounded-[48px] border border-slate-100 p-10 shadow-sm space-y-4">
                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Protocol Shortcuts</h4>
-                            <NurseAction icon={Activity} label="Record Vitals" />
-                            <NurseAction icon={Droplets} label="Administer Med" />
-                            <NurseAction icon={FileText} label="Clinical Note" />
-                            <NurseAction icon={Thermometer} label="Update Chart" />
+                            <NurseAction icon={Activity} label="Record Vitals" href="/nurse/icu-monitor" />
+                            <NurseAction icon={Droplets} label="Administer Med" href="/nurse/clinical" />
+                            <NurseAction icon={FileText} label="Clinical Note" href="/nurse/clinical-updates" />
+                            <NurseAction icon={Thermometer} label="Update Chart" href="/nurse/assigned-patients" />
                         </div>
                     </div>
                 </div>
@@ -205,9 +214,13 @@ export default function NurseDashboard() {
     );
 }
 
-function NurseAction({ icon: Icon, label }: any) {
+function NurseAction({ icon: Icon, label, href }: any) {
+    const router = useRouter();
     return (
-        <button className="w-full flex items-center gap-4 p-5 bg-slate-50/50 rounded-3xl border border-slate-100 hover:border-olive-400 hover:bg-white transition-all group shadow-sm active:scale-98">
+        <button
+            onClick={() => router.push(href)}
+            className="w-full flex items-center gap-4 p-5 bg-slate-50/50 rounded-3xl border border-slate-100 hover:border-olive-400 hover:bg-white transition-all group shadow-sm active:scale-98"
+        >
             <div className="p-3 bg-white rounded-xl text-olive-600 shadow-sm border border-slate-100 group-hover:bg-olive-600 group-hover:text-white transition-all">
                 <Icon size={18} />
             </div>

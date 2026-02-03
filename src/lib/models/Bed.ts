@@ -35,4 +35,4 @@ const BedSchema = new Schema<IBed>(
     { timestamps: true }
 );
 
-export default mongoose.models.Bed || mongoose.model<IBed>("Bed", BedSchema);
+export default mongoose.models.HospitalBed || mongoose.model<IBed>("HospitalBed", BedSchema);

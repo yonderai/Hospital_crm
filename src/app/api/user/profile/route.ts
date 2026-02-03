@@ -19,15 +19,22 @@ export async function GET() {
 
         let profileData = null;
 
-        if (userRole === "patient") {
-            const patient = await Patient.findOne({ "contact.email": userEmail }).lean();
+        if (userRole === "patient" || userRole === "finance") {
+            // Modified to allow case-insensitive email match
+            const patient = await Patient.findOne({
+                $or: [
+                    { "contact.email": userEmail },
+                    { "contact.email": userEmail?.toLowerCase() }
+                ]
+            }).lean();
+
             if (patient) {
                 profileData = {
                     name: `${patient.firstName} ${patient.lastName}`,
                     firstName: patient.firstName,
                     lastName: patient.lastName,
                     email: userEmail,
-                    role: "patient",
+                    role: "patient", // Force role to patient for frontend compatibility on this page
                     details: {
                         mrn: patient.mrn,
                         dob: patient.dob,
@@ -60,7 +67,10 @@ export async function GET() {
                     createdAt: patient.createdAt
                 };
             }
-        } else {
+        }
+
+        // If no patient profile found (or role is not patient/finance), try staff profile
+        if (!profileData) {
             const staff = await User.findOne({ email: userEmail }).lean();
             if (staff) {
                 profileData = {
@@ -108,7 +118,7 @@ export async function PUT(request: Request) {
         const userRole = session.user.role;
         const userEmail = session.user.email;
 
-        if (userRole === "patient") {
+        if (userRole === "patient" || userRole === "finance") {
             const updateData: any = {};
             if (data.firstName) updateData.firstName = data.firstName;
             if (data.lastName) updateData.lastName = data.lastName;
@@ -124,14 +134,51 @@ export async function PUT(request: Request) {
                 if (data.address.zipCode) updateData["contact.address.zipCode"] = data.address.zipCode;
             }
 
-            const patient = await Patient.findOneAndUpdate(
-                { "contact.email": userEmail },
-                { $set: updateData },
-                { new: true, runValidators: true }
-            );
+            let patient = await Patient.findOne({
+                $or: [
+                    { "contact.email": userEmail },
+                    { "contact.email": userEmail?.toLowerCase() }
+                ]
+            });
 
-            if (!patient) return NextResponse.json({ error: "Patient record not found" }, { status: 404 });
-            return NextResponse.json({ success: true, message: "Profile updated successfully" });
+            if (!patient) {
+                // LAZY CREATION: Create new patient record
+                const mrn = `MRN-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+                try {
+                    patient = await Patient.create({
+                        mrn,
+                        firstName: updateData.firstName || data.firstName || "Unknown",
+                        lastName: updateData.lastName || data.lastName || "Unknown",
+                        dob: updateData.dob || new Date(),
+                        gender: updateData.gender || "other",
+                        contact: {
+                            email: userEmail,
+                            phone: updateData["contact.phone"] || data.phone || "N/A",
+                            address: {
+                                street: updateData["contact.address.street"] || "",
+                                city: updateData["contact.address.city"] || "",
+                                state: updateData["contact.address.state"] || "",
+                                zipCode: updateData["contact.address.zipCode"] || ""
+                            }
+                        },
+                        medicalHistory: { allergies: [], chronicConditions: [], pastSurgeries: [], currentMedications: [] },
+                        insuranceInfo: { hasInsurance: false },
+                        registrationSource: "self-profile-update"
+                    });
+                } catch (createErr: any) {
+                    console.error("Lazy Creation Failed:", createErr);
+                    return NextResponse.json({ error: "Failed to create new patient record: " + createErr.message }, { status: 500 });
+                }
+            } else {
+                patient = await Patient.findOneAndUpdate(
+                    { _id: patient._id },
+                    { $set: updateData },
+                    { new: true, runValidators: true }
+                );
+            }
+
+            return NextResponse.json({ success: true, message: "Profile updated successfully", patientId: patient._id });
 
         } else {
             const updateData: any = {};
