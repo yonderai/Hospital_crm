@@ -128,7 +128,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Purchase Orders"], // Unified Pharmacy & Inventory
         labtech: ["Overview", "Pending Lab Orders", "Radiology", "Test Scheduling", "Sample Tracking", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
-        nurse: ["Overview", "Duty Roster", "Assigned Patients", "Ward Management", "ICU Monitor", "Clinical Updates"], // Nurse Portal
+        nurse: ["Overview", "Duty Roster", "Assigned Patients", "Ward Management", "ICU Monitor", "Clinical Updates", "Surgery Tasks"], // Nurse Portal
         billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
 
         finance: ["Overview", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
@@ -176,6 +176,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Ward Management", href: `/${urlRole}/ward-management`, icon: Activity },
         { name: "ICU Monitor", href: `/${urlRole}/icu-monitor`, icon: Activity },
         { name: "Clinical Updates", href: `/${urlRole}/clinical-updates`, icon: FileText },
+        { name: "Surgery Tasks", href: `/${urlRole}/surgery-tasks`, icon: Scissors },
         // Revenue Office
         { name: "Cash Payments", href: `/${urlRole}/cash-payments`, icon: DollarSign },
         { name: "Card/UPI", href: `/${urlRole}/digital-payments`, icon: DollarSign },

@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import PatientReportsModal from "@/components/doctor/PatientReportsModal";
+import PreSurgeryOrderForm from "@/components/doctor/PreSurgeryOrderForm";
+import PostSurgeryInstructionForm from "@/components/doctor/PostSurgeryInstructionForm";
 import {
     Activity,
     Calendar,
@@ -14,7 +17,10 @@ import {
     AlertCircle,
     CheckCircle2,
     MousePointer2,
-    Timer
+    Timer,
+    ClipboardList,
+    Heart,
+    FileText
 } from "lucide-react";
 
 export default function ORDashboard() {
@@ -32,6 +38,12 @@ export default function ORDashboard() {
         postOpNotes: ""
     });
     const [submitting, setSubmitting] = useState(false);
+
+    // New state for patient reports and surgery orders
+    const [isPatientReportsOpen, setIsPatientReportsOpen] = useState(false);
+    const [isPreOrdersOpen, setIsPreOrdersOpen] = useState(false);
+    const [isPostInstructionsOpen, setIsPostInstructionsOpen] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
 
     useEffect(() => {
         const fetchCases = async () => {
@@ -210,13 +222,23 @@ export default function ORDashboard() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+                                            <div
+                                                className="flex items-center gap-3 cursor-pointer hover:bg-olive-50/30 -mx-3 px-3 py-2 rounded-2xl transition-all group"
+                                                onClick={() => {
+                                                    setSelectedPatient(cs.patientId);
+                                                    setSelectedCase(cs);
+                                                    setIsPatientReportsOpen(true);
+                                                }}
+                                            >
+                                                <div className="w-10 h-10 bg-slate-100 group-hover:bg-olive-100 rounded-full flex items-center justify-center text-slate-400 group-hover:text-olive-600 transition-all">
                                                     <User size={18} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-slate-900">{cs.patientId?.firstName} {cs.patientId?.lastName}</p>
+                                                    <p className="text-sm font-bold text-slate-900 group-hover:text-olive-700">{cs.patientId?.firstName} {cs.patientId?.lastName}</p>
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase">{cs.patientId?.mrn}</p>
+                                                </div>
+                                                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <FileText size={16} className="text-olive-600" />
                                                 </div>
                                             </div>
                                         </td>
@@ -233,23 +255,55 @@ export default function ORDashboard() {
                                                 {cs.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-right flex items-center gap-2">
-                                            {cs.status === 'completed' ? (
-                                                <span className="text-[10px] font-black text-emerald-600 uppercase bg-emerald-50 px-3 py-1 rounded-lg">Reported</span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedCase(cs);
-                                                        setIsReportModalOpen(true);
-                                                    }}
-                                                    className="px-4 py-2 bg-olive-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-olive-700 transition-all shadow-sm"
-                                                >
-                                                    Add Report
-                                                </button>
-                                            )}
-                                            <button className="p-2 hover:bg-white rounded-lg transition-colors group">
-                                                <ChevronRight size={18} className="text-slate-300 group-hover:text-olive-600" />
-                                            </button>
+                                        <td className="px-6 py-5 text-right">
+                                            <div className="flex items-center gap-2 justify-end">
+                                                {/* Pre-Surgery Orders Button */}
+                                                {cs.status === 'scheduled' && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedCase(cs);
+                                                            setSelectedPatient(cs.patientId);
+                                                            setIsPreOrdersOpen(true);
+                                                        }}
+                                                        className="px-3 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
+                                                        title="Pre-Surgery Orders"
+                                                    >
+                                                        <ClipboardList size={14} />
+                                                        Pre-Op
+                                                    </button>
+                                                )}
+
+                                                {/* Post-Surgery Instructions Button */}
+                                                {(cs.status === 'in-progress' || cs.status === 'completed') && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedCase(cs);
+                                                            setSelectedPatient(cs.patientId);
+                                                            setIsPostInstructionsOpen(true);
+                                                        }}
+                                                        className="px-3 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
+                                                        title="Post-Surgery Instructions"
+                                                    >
+                                                        <Heart size={14} />
+                                                        Post-Op
+                                                    </button>
+                                                )}
+
+                                                {/* Surgery Report Button */}
+                                                {cs.status === 'completed' ? (
+                                                    <span className="text-[10px] font-black text-olive-600 uppercase bg-olive-50 px-3 py-1 rounded-lg">Reported</span>
+                                                ) : cs.status === 'in-progress' && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedCase(cs);
+                                                            setIsReportModalOpen(true);
+                                                        }}
+                                                        className="px-4 py-2 bg-olive-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-olive-700 transition-all shadow-sm"
+                                                    >
+                                                        Add Report
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -424,6 +478,54 @@ export default function ORDashboard() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Patient Reports Modal */}
+            {isPatientReportsOpen && selectedPatient && (
+                <PatientReportsModal
+                    patientId={selectedPatient._id}
+                    patientName={`${selectedPatient.firstName} ${selectedPatient.lastName}`}
+                    onClose={() => {
+                        setIsPatientReportsOpen(false);
+                        setSelectedPatient(null);
+                    }}
+                />
+            )}
+
+            {/* Pre-Surgery Orders Form */}
+            {isPreOrdersOpen && selectedCase && selectedPatient && (
+                <PreSurgeryOrderForm
+                    caseId={selectedCase._id}
+                    patientId={selectedPatient._id}
+                    patientName={`${selectedPatient.firstName} ${selectedPatient.lastName}`}
+                    procedureName={selectedCase.procedureName}
+                    onClose={() => {
+                        setIsPreOrdersOpen(false);
+                        setSelectedCase(null);
+                        setSelectedPatient(null);
+                    }}
+                    onSuccess={() => {
+                        alert('Pre-surgery orders created successfully!');
+                    }}
+                />
+            )}
+
+            {/* Post-Surgery Instructions Form */}
+            {isPostInstructionsOpen && selectedCase && selectedPatient && (
+                <PostSurgeryInstructionForm
+                    caseId={selectedCase._id}
+                    patientId={selectedPatient._id}
+                    patientName={`${selectedPatient.firstName} ${selectedPatient.lastName}`}
+                    procedureName={selectedCase.procedureName}
+                    onClose={() => {
+                        setIsPostInstructionsOpen(false);
+                        setSelectedCase(null);
+                        setSelectedPatient(null);
+                    }}
+                    onSuccess={() => {
+                        alert('Post-surgery instructions created successfully!');
+                    }}
+                />
             )}
         </DashboardLayout>
     );
