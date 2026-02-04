@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
-    DollarSign,
+    IndianRupee,
     CreditCard,
     Receipt,
     ShieldCheck,
@@ -94,8 +94,8 @@ export default function PatientBillingPage() {
                         </div>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Total Expenditure</p>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-4xl font-black text-slate-900">${data.stats.totalSpent.toLocaleString()}</span>
-                            <span className="text-slate-400 font-bold">USD</span>
+                            <span className="text-4xl font-black text-slate-900">₹{data.stats.totalSpent.toLocaleString()}</span>
+                            <span className="text-slate-400 font-bold">INR</span>
                         </div>
                         <div className="mt-6 flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 w-fit px-3 py-1.5 rounded-full">
                             <ArrowUpRight size={14} /> +12% from last month
@@ -108,8 +108,8 @@ export default function PatientBillingPage() {
                         </div>
                         <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-4">Balance Due</p>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-4xl font-black text-white">${data.stats.balanceDue.toLocaleString()}</span>
-                            <span className="text-slate-500 font-bold">USD</span>
+                            <span className="text-4xl font-black text-white">₹{data.stats.balanceDue.toLocaleString()}</span>
+                            <span className="text-slate-500 font-bold">INR</span>
                         </div>
                         <p className="mt-6 text-slate-400 text-xs font-medium">Due by next billing cycle (15th of the month)</p>
                     </div>
@@ -120,8 +120,8 @@ export default function PatientBillingPage() {
                         </div>
                         <p className="text-[10px] font-black text-olive-600 uppercase tracking-widest mb-4">Insurance Covered</p>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-4xl font-black text-olive-900">${data.stats.insuranceCovered.toLocaleString()}</span>
-                            <span className="text-olive-600/50 font-bold">USD</span>
+                            <span className="text-4xl font-black text-olive-900">₹{data.stats.insuranceCovered.toLocaleString()}</span>
+                            <span className="text-olive-600/50 font-bold">INR</span>
                         </div>
                         <p className="mt-6 text-olive-700/60 text-xs font-medium italic">Estimated based on current policy (approx. 60%)</p>
                     </div>
@@ -142,7 +142,7 @@ export default function PatientBillingPage() {
                                 <div key={idx} className="space-y-2">
                                     <div className="flex justify-between items-center text-sm font-bold">
                                         <span className="text-slate-600">{item.label}</span>
-                                        <span className="text-slate-900">${item.value.toLocaleString()}</span>
+                                        <span className="text-slate-900">₹{item.value.toLocaleString()}</span>
                                     </div>
                                     <div className="h-3 bg-slate-50 rounded-full overflow-hidden">
                                         <div
@@ -187,7 +187,7 @@ export default function PatientBillingPage() {
                                             <td className="py-6">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400">
-                                                        <DollarSign size={20} />
+                                                        <IndianRupee size={20} />
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-black text-slate-900">{inv.id}</p>
@@ -199,12 +199,12 @@ export default function PatientBillingPage() {
                                                 <span className="text-sm font-black text-slate-700">{inv.date}</span>
                                             </td>
                                             <td className="py-6">
-                                                <span className="text-sm font-black text-slate-900">${inv.amount.toLocaleString()}</span>
+                                                <span className="text-sm font-black text-slate-900">₹{inv.amount.toLocaleString()}</span>
                                             </td>
                                             <td className="py-6">
                                                 <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${inv.status === 'paid' ? 'bg-green-100 text-green-700' :
-                                                        inv.status === 'draft' ? 'bg-slate-100 text-slate-600' :
-                                                            'bg-yellow-100 text-yellow-700'
+                                                    inv.status === 'draft' ? 'bg-slate-100 text-slate-600' :
+                                                        'bg-yellow-100 text-yellow-700'
                                                     }`}>
                                                     {inv.status}
                                                 </span>

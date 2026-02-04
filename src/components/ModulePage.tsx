@@ -1,7 +1,7 @@
 "use client";
 
 import DashboardLayout from "@/components/DashboardLayout";
-import { Activity, LayoutGrid, Search, Filter, Plus, ArrowUpRight, DollarSign, Users, Calendar, Beaker, FileText, CheckCircle, Package, AlertCircle, Ticket } from "lucide-react";
+import { Activity, LayoutGrid, Search, Filter, Plus, ArrowUpRight, IndianRupee, Users, Calendar, Beaker, FileText, CheckCircle, Package, AlertCircle, Ticket } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface ModulePageProps {
@@ -89,7 +89,7 @@ export default function GenericModulePage({ title, subtitle, description, icon: 
         if (iconName === 'CheckCircle') return CheckCircle;
         if (iconName === 'LayoutGrid') return LayoutGrid;
         if (iconName === 'Package') return Package;
-        if (iconName === 'DollarSign') return DollarSign;
+        if (iconName === 'DollarSign' || iconName === 'IndianRupee') return IndianRupee;
         if (iconName === 'AlertCircle') return AlertCircle;
         if (iconName === 'Ticket') return Ticket;
         return Activity;

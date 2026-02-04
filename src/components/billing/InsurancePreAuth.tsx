@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, ShieldCheck, AlertCircle, CheckCircle2, Building2, UserCircle, Calendar, DollarSign, ArrowRight, Loader2 } from "lucide-react";
+import { Search, ShieldCheck, AlertCircle, CheckCircle2, Building2, UserCircle, Calendar, IndianRupee, ArrowRight, Loader2 } from "lucide-react";
 
 export default function InsurancePreAuth() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -211,7 +211,7 @@ export default function InsurancePreAuth() {
                             <div>
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Estimated Cost (₹)</label>
                                 <div className="relative">
-                                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                    <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                     <input
                                         type="number"
                                         placeholder="0.00"
@@ -303,8 +303,8 @@ export default function InsurancePreAuth() {
                                         onClick={handleSubmit}
                                         disabled={!validity?.valid || isSubmitting}
                                         className={`w-full py-4 rounded-[32px] font-black text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg ${validity?.valid
-                                                ? 'bg-olive-600 text-white hover:bg-olive-700 shadow-olive-600/20 active:scale-95'
-                                                : 'bg-slate-100 text-slate-300 cursor-not-allowed'
+                                            ? 'bg-olive-600 text-white hover:bg-olive-700 shadow-olive-600/20 active:scale-95'
+                                            : 'bg-slate-100 text-slate-300 cursor-not-allowed'
                                             }`}
                                     >
                                         {isSubmitting ? (

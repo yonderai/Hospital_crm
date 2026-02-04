@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FileText, User, DollarSign, Calendar, ChevronDown, ChevronUp, CreditCard, Receipt, AlertCircle } from "lucide-react";
+import { FileText, User, IndianRupee, Calendar, ChevronDown, ChevronUp, CreditCard, Receipt, AlertCircle } from "lucide-react";
 
 interface InvoiceItem {
     description: string;

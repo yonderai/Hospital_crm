@@ -1,6 +1,6 @@
 "use client";
 
-import { DollarSign, FileText, CheckCircle, Clock } from "lucide-react";
+import { IndianRupee, FileText, CheckCircle, Clock } from "lucide-react";
 
 interface SummaryCardsProps {
     totalSales: number;
@@ -14,7 +14,7 @@ export default function SummaryCards({ totalSales, billsGenerated, totalPaid, to
         {
             title: "Total Sales",
             value: `₹${totalSales.toLocaleString()}`,
-            icon: DollarSign,
+            icon: IndianRupee,
             color: "emerald",
             bgColor: "bg-emerald-50",
             textColor: "text-emerald-600",

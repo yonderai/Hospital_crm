@@ -130,7 +130,7 @@ export default function PatientDashboard() {
                         <PatientWidget title="Health Records" value="SYNC" sub="Verified Repository" icon={FileText} color="text-purple-500" bg="bg-purple-50" />
                     </Link>
                     <Link href="/patient/billing" className="block">
-                        <PatientWidget title="Balance" value={`$${balance.toLocaleString()}`} sub={balance > 0 ? "Outstanding" : "Clear Account"} icon={Wallet} color="text-emerald-500" bg="bg-emerald-50" />
+                        <PatientWidget title="Balance" value={`₹${balance.toLocaleString()}`} sub={balance > 0 ? "Outstanding" : "Clear Account"} icon={Wallet} color="text-emerald-500" bg="bg-emerald-50" />
                     </Link>
                     <Link href="/patient/prescriptions" className="block">
                         <PatientWidget title="Prescriptions" value="Live" sub="My Medications" icon={Stethoscope} color="text-olive-600" bg="bg-olive-50" />

@@ -2,7 +2,7 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useEffect } from "react";
-import { DollarSign, FileText, Download, PieChart, Activity, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { IndianRupee, FileText, Download, PieChart, Activity, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 export default function PatientBillingHistoryPage() {
     const [loading, setLoading] = useState(true);
@@ -50,15 +50,15 @@ export default function PatientBillingHistoryPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <StatCard
                                 label="Total Billing"
-                                value={`$${data.stats.totalSpent.toLocaleString()}`}
-                                icon={DollarSign}
+                                value={`₹${data.stats.totalSpent.toLocaleString()}`}
+                                icon={IndianRupee}
                                 bg="bg-slate-900"
                                 color="text-white"
                                 trend="Gross Amount"
                             />
                             <StatCard
                                 label="Insurance Credits"
-                                value={`$${data.stats.insuranceCovered.toLocaleString()}`}
+                                value={`₹${data.stats.insuranceCovered.toLocaleString()}`}
                                 icon={ShieldCheck}
                                 bg="bg-olive-500"
                                 color="text-white"
@@ -66,7 +66,7 @@ export default function PatientBillingHistoryPage() {
                             />
                             <StatCard
                                 label="Patient Payable"
-                                value={`$${data.stats.balanceDue.toLocaleString()}`}
+                                value={`₹${data.stats.balanceDue.toLocaleString()}`}
                                 icon={FileText}
                                 bg="bg-red-50"
                                 color="text-red-600"
@@ -89,7 +89,7 @@ export default function PatientBillingHistoryPage() {
                                             <div key={idx}>
                                                 <div className="flex justify-between text-xs font-black text-slate-500 uppercase tracking-widest mb-3">
                                                     <span>{item.label}</span>
-                                                    <span className="text-slate-900">${item.value.toLocaleString()}</span>
+                                                    <span className="text-slate-900">₹{item.value.toLocaleString()}</span>
                                                 </div>
                                                 <div className="h-2 bg-slate-50 rounded-full overflow-hidden">
                                                     <div
@@ -138,13 +138,13 @@ export default function PatientBillingHistoryPage() {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-6 text-right">
-                                                        <span className="text-sm font-bold text-slate-600">${inv.totalAmount.toLocaleString()}</span>
+                                                        <span className="text-sm font-bold text-slate-600">₹{inv.totalAmount.toLocaleString()}</span>
                                                     </td>
                                                     <td className="px-6 py-6 text-right">
-                                                        <span className="text-sm font-black text-olive-600">-${inv.insuranceCoverage.toLocaleString()}</span>
+                                                        <span className="text-sm font-black text-olive-600">-₹{inv.insuranceCoverage.toLocaleString()}</span>
                                                     </td>
                                                     <td className="px-6 py-6 text-right">
-                                                        <span className="text-sm font-black text-slate-900">${inv.patientPayable.toLocaleString()}</span>
+                                                        <span className="text-sm font-black text-slate-900">₹{inv.patientPayable.toLocaleString()}</span>
                                                     </td>
                                                     <td className="px-10 py-6 text-right">
                                                         <button
@@ -201,7 +201,7 @@ export default function PatientBillingHistoryPage() {
                                     <div className="p-8 space-y-4">
                                         <div className="flex justify-between items-center text-sm font-bold text-slate-700">
                                             <span>{viewingInvoice.description || "Clinical Services"}</span>
-                                            <span>${viewingInvoice.totalAmount.toLocaleString()}</span>
+                                            <span>₹{viewingInvoice.totalAmount.toLocaleString()}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -209,18 +209,18 @@ export default function PatientBillingHistoryPage() {
                                 <div className="space-y-4 pt-4 border-t border-slate-100">
                                     <div className="flex justify-between items-center text-sm font-medium text-slate-500">
                                         <span>Gross Subtotal</span>
-                                        <span>${viewingInvoice.totalAmount.toLocaleString()}</span>
+                                        <span>₹{viewingInvoice.totalAmount.toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm font-black text-olive-600">
                                         <span className="flex items-center gap-2">
                                             <ShieldCheck size={14} />
                                             Insurance Paid
                                         </span>
-                                        <span>-${viewingInvoice.insuranceCoverage.toLocaleString()}</span>
+                                        <span>-₹{viewingInvoice.insuranceCoverage.toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center pt-4 border-t-2 border-slate-900">
                                         <span className="text-lg font-black text-slate-900 uppercase tracking-tight">Net Payable</span>
-                                        <span className="text-2xl font-black text-slate-900">${viewingInvoice.patientPayable.toLocaleString()}</span>
+                                        <span className="text-2xl font-black text-slate-900">₹{viewingInvoice.patientPayable.toLocaleString()}</span>
                                     </div>
                                 </div>
 
