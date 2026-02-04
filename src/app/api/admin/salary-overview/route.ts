@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import Payroll from "@/lib/models/Payroll";
 import Staff from "@/lib/models/Staff"; // Needed for populate
 import { Activity, FileText, LayoutGrid, CheckCircle } from "lucide-react";

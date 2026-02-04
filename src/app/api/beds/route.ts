@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import Bed from "@/lib/models/Bed";
 import Patient from "@/lib/models/Patient"; // Ensure registered
 import User from "@/lib/models/User";       // Ensure registered (for doctor)

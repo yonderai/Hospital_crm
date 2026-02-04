@@ -1,6 +1,6 @@
 
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
+import dbConnect from '@/lib/db';
 import User, { UserRole } from "@/lib/models/User";
 import Patient from "@/lib/models/Patient";
 import bcrypt from "bcryptjs";

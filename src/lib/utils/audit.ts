@@ -1,4 +1,4 @@
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import AuditLog from "@/lib/models/AuditLog";
 
 export const logClinicalAccess = async (

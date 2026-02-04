@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/db";
+import dbConnect from '@/lib/db';
 import Appointment from "@/lib/models/Appointment";
 import User from "@/lib/models/User"; // For Doctor details
 import Patient from "@/lib/models/Patient"; // For Patient details

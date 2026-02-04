@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import Invoice from "@/lib/models/Invoice";
 import "@/lib/models/Patient"; // Ensure Patient model is registered for populate
 import "@/lib/models/Encounter"; // Ensure Encounter model is registered

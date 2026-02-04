@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import EmergencyCase from "@/lib/models/EmergencyCase";
 
 export async function PUT(req: Request) {

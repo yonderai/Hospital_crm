@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import Staff from "@/lib/models/Staff";
 import Invoice from "@/lib/models/Invoice";
 import Expense from "@/lib/models/Expense";

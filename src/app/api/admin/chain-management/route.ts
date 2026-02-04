@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import { Ward } from "@/lib/models/Facility"; // Named export
 import { Activity, LayoutGrid, CheckCircle, Ticket } from "lucide-react";
 

@@ -1,6 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import User from "@/lib/models/User";
 import bcrypt from "bcryptjs";
 

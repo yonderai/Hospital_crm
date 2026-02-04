@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import MedicalDocument from "@/lib/models/MedicalDocument";
 import Patient from "@/lib/models/Patient";
 import { writeFile } from "fs/promises";

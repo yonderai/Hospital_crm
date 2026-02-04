@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import Expense from "@/lib/models/Expense";
 import { DollarSign, FileText, CheckCircle, Activity } from "lucide-react";
 

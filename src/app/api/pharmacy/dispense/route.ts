@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import Prescription from "@/lib/models/Prescription";
 import Invoice from "@/lib/models/Invoice";
 import DispenseLog from "@/lib/models/DispenseLog";

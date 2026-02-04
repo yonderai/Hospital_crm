@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import { Bed } from "@/lib/models/Facility";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

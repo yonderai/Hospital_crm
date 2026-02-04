@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/db";
+import dbConnect from '@/lib/db';
 import Patient from "@/lib/models/Patient";
 import User, { UserRole } from "@/lib/models/User";
 import Invoice from "@/lib/models/Invoice";

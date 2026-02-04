@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongoose';
+import dbConnect from '@/lib/db';
 import ORCase from '@/lib/models/ORCase';
 
 export async function GET(

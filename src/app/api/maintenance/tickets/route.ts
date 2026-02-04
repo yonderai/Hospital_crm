@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import dbConnect from "@/lib/mongoose";
+import dbConnect from '@/lib/db';
 import MaintenanceTicket from "@/lib/models/MaintenanceTicket";
 
 import { SessionUser } from "@/lib/types";

@@ -4,7 +4,7 @@ A comprehensive Full-Stack Hospital Customer Relationship Management (CRM) syste
 
 ## 🚀 Tech Stack
 
-- **Frontend**: Next.js 14 (App Router), React, TypeScript, Tailwind CSS
+- **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4
 - **Backend**: Next.js API Routes (Serverless)
 - **Database**: MongoDB (Mongoose ORM)
 - **Authentication**: NextAuth.js with Credentials Provider
@@ -136,7 +136,7 @@ Hospital_crm/
 │   ├── lib/
 │   │   ├── models/           # Mongoose schemas
 │   │   ├── auth.ts           # NextAuth configuration
-│   │   └── mongoose.ts       # Database connection
+│   │   └── db.ts             # Database connection
 │   └── middleware.ts         # Route protection
 ├── scripts/                   # Database seeding scripts
 ├── public/
