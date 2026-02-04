@@ -29,15 +29,16 @@ export async function GET(req: Request) {
             const patient = await Patient.findOne({ "contact.email": session.user?.email });
             if (!patient) return NextResponse.json([]); // No profile, no appointments
             query = { patientId: patient._id };
-        } else if (role === 'admin') {
+        } else if (['admin', 'frontdesk', 'finance'].includes(role)) {
             if (searchParams.get('doctorId')) query = { ...query, providerId: searchParams.get('doctorId') };
             if (searchParams.get('patientId')) query = { ...query, patientId: searchParams.get('patientId') };
         } else {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        // AUTO-CLEANUP: Mark past scheduled appointments as completed
-        // This ensures historical data reflects "Done" status as requested
+        // AUTO-CLEANUP: Mark past scheduled appointments as no-show
+        // If an appointment ended in the past and is still "scheduled" or "checked-in",
+        // it means the consultation didn't happen (no prescription given).
         const now = new Date();
         await Appointment.updateMany(
             {
@@ -45,7 +46,7 @@ export async function GET(req: Request) {
                 endTime: { $lt: now },
                 status: { $in: ["scheduled", "checked-in", "in-progress"] }
             },
-            { $set: { status: "completed" } }
+            { $set: { status: "no-show" } }
         );
 
         // Date Filtering (YYYY-MM-DD)
@@ -129,6 +130,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Invalid provider" }, { status: 400 });
         }
 
+        const now = new Date();
+        const start = new Date(startTime);
+
+        // STRICTOR VALIDATION: Cannot book for past time
+        if (start < new Date(now.getTime() - 5 * 60000)) { // 5 min grace
+            return NextResponse.json({
+                error: "Cannot book appointments for past times.",
+                code: "PAST_TIME"
+            }, { status: 400 });
+        }
+
         // Determine targeted Patient ID
         let targetPatientId = body.patientId;
 
@@ -166,7 +178,6 @@ export async function POST(req: Request) {
         }
 
         // Calculate endTime (default 30 mins)
-        const start = new Date(startTime);
         const end = new Date(start.getTime() + 30 * 60000);
 
         // Generate ID
@@ -176,8 +187,11 @@ export async function POST(req: Request) {
         const overlappingAppointment = await Appointment.findOne({
             providerId,
             status: { $nin: ["cancelled", "no-show"] },
-            startTime: { $lt: end },
-            endTime: { $gt: start }
+            $or: [
+                { startTime: { $lt: end, $gte: start } },
+                { endTime: { $gt: start, $lte: end } },
+                { startTime: { $lte: start }, endTime: { $gte: end } }
+            ]
         });
 
         if (overlappingAppointment) {

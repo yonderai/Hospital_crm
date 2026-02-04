@@ -26,12 +26,13 @@ export async function POST(req: Request) {
         const defaultPassword = generateDefaultPassword();
 
         // 3. Prepare Patient Data
+        const userEmail = body.email || `${mrn.toLowerCase()}@patient.medicore.com`;
         const patientData = {
             ...body,
             mrn,
             contact: {
                 phone: body.phone,
-                email: body.email,
+                email: userEmail,
                 address: [body.address, body.city, body.state, body.zip, body.country].filter(Boolean).join(', '),
             },
             emergencyContact: {
@@ -97,45 +98,33 @@ export async function POST(req: Request) {
         const qrCodeUrl = await QRCode.toDataURL(qrCodeData);
 
         // Update Patient with QR Code
-        newPatient.qrCodeUrl = qrCodeUrl; // Assuming schema allows extra fields or I need to add it? 
-        // Note: Patient Schema might not have 'qrCodeUrl'. I might need to add it or store it elsewhere. 
-        // User request: "Update patient with QR code". 
-        // I should check schema again. The schema I modified earlier didn't explicit have qrCodeUrl.
-        // I will add it via Mongoose 'set' and save, assuming schema allows flexible strict:false, OR I should add it to schema first.
-        // For now, I'll attempt to save it. If schema is strict, it will be dropped.
-        // Let's assume Mongoose is strict. I will add it to the return object at least. 
-        // Actually, best practice is to update schema. I will update schema in next step if needed. 
-        // Wait, Mongoose schema is strict by default. I should add `qrCodeUrl` to schema. 
-        // I will do that in a separate step or just ignore persistence if strict.
-        // Actually, I can just return it in the response for now.
+        newPatient.qrCodeUrl = qrCodeUrl;
+        await newPatient.save();
 
         // 6. Create User Account
         // Check if email already exists
-        const userEmail = body.email || `${mrn.toLowerCase()}@patient.medicore.com`;
-        const existingUser = await User.findOne({ email: userEmail });
+        const existingUser = await User.findOne({ email: userEmail.toLowerCase() });
 
         let credentials;
 
         if (!existingUser) {
             const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-            const newUser = await User.create({
-                email: userEmail,
+            await User.create({
+                email: userEmail.toLowerCase(),
                 password: hashedPassword,
                 role: 'patient',
                 firstName: body.firstName,
                 lastName: body.lastName,
-                phone: body.phone,
-                isActive: true, // Auto-active
-                // Link to patient ? User model doesn't have 'patientId' field in my view from before?
-                // Let's check User model again.
+                mobile: body.phone,
+                isActive: true,
             });
             credentials = {
                 username: userEmail,
                 password: defaultPassword
             };
         } else {
-            // User exists? Maybe updating role? 
-            // For now, skip user creation if exists.
+            // If user exists, we link it but don't error? 
+            // Actually, for a new MRN, the email should be unique.
             credentials = { username: userEmail, password: "Existing Account" };
         }
 

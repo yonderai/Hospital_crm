@@ -31,19 +31,28 @@ export async function POST(req: Request) {
         const appointmentId = `APT-${new Date().getFullYear()}-${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
 
         // Construct Start/End Time
-        // Assuming date is "YYYY-MM-DD" and timeSlot is "HH:mm"
         const startTime = new Date(`${date}T${timeSlot}:00`);
         const endTime = new Date(startTime.getTime() + 30 * 60000); // Default 30 min duration
 
-        // Check for double booking
+        const now = new Date();
+        // Validation: Cannot book in the past
+        if (startTime < new Date(now.getTime() - 5 * 60000)) { // 5 min grace
+            return NextResponse.json({ error: "Cannot book appointments in the past." }, { status: 400 });
+        }
+
+        // Check for double booking / overlaps
         const conflict = await Appointment.findOne({
             providerId: doctorId,
             status: { $nin: ["cancelled", "no-show"] },
-            startTime: startTime
+            $or: [
+                { startTime: { $lt: endTime, $gte: startTime } },
+                { endTime: { $gt: startTime, $lte: endTime } },
+                { startTime: { $lte: startTime }, endTime: { $gte: endTime } }
+            ]
         });
 
         if (conflict) {
-            return NextResponse.json({ error: "Slot already booked" }, { status: 409 });
+            return NextResponse.json({ error: "Doctor is not available at this time slot." }, { status: 409 });
         }
 
         // Generate Receipt No if paid

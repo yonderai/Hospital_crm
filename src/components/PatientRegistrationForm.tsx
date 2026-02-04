@@ -12,7 +12,7 @@ export default function PatientRegistrationForm({ onSuccess }: { onSuccess?: () 
         // Basic
         firstName: "", lastName: "", dob: "", gender: "Male", bloodType: "",
         // Contact
-        phone: "", email: "",
+        phone: "", email: "", password: "",
         address: "", city: "", state: "", zip: "", country: "India",
         // Emergency
         emergencyName: "", emergencyRelation: "", emergencyPhone: "",
@@ -261,7 +261,7 @@ export default function PatientRegistrationForm({ onSuccess }: { onSuccess?: () 
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">Email (Optional)</label>
-                        <input name="email" type="email" className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:border-olive-500 outline-none transition-all font-medium text-slate-900" onChange={handleChange} />
+                        <input name="email" type="email" className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:border-olive-500 outline-none transition-all font-medium text-slate-900" placeholder="patient@example.com" onChange={handleChange} />
                     </div>
                     <div className="col-span-2">
                         <label className="block text-xs font-bold text-slate-700 mb-1">Address</label>

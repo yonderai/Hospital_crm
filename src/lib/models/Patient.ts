@@ -9,8 +9,8 @@ export interface IPatient extends Document {
     age?: number; // Auto-calculated or stored
     gender: string;
     contact: {
-        phone: { type: String, required: true, minlength: 10, maxlength: 10 },
-        email: string;
+        phone: string;
+        email?: string;
         address: {
             street: string;
             city: string;
@@ -21,7 +21,7 @@ export interface IPatient extends Document {
     };
     emergencyContact: {
         name: string;
-        phone: { type: String, minlength: 10, maxlength: 10 },
+        phone?: string;
         relation: string;
     };
     insuranceInfo: {

@@ -331,23 +331,20 @@ function MedicationsView({ patientId }: { patientId: any }) {
 }
 
 function LabsImagingView({ patientId, onSelectReport, patient }: { patientId: any, onSelectReport: (report: any) => void, patient: any }) {
-    const [labs, setLabs] = useState<any[]>([]);
-    const [radiology, setRadiology] = useState<any[]>([]);
+    const [reports, setReports] = useState<any>({ results: [], radiologyReports: [], labResults: [] });
     const [loading, setLoading] = useState(true);
-    const [scanSize, setScanSize] = useState(256);
+    const [activeFilter, setActiveFilter] = useState<'all' | 'lab' | 'radiology' | 'surgery'>('all');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [labsRes, radRes] = await Promise.all([
-                    fetch(`/api/patients/${patientId}/labs`),
-                    fetch(`/api/patients/${patientId}/radiology`)
-                ]);
-
-                if (labsRes.ok) setLabs(await labsRes.json());
-                if (radRes.ok) setRadiology(await radRes.json());
+                const res = await fetch(`/api/doctor/surgery/patient-reports?patientId=${patientId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setReports(data);
+                }
             } catch (e) {
-                console.error(e);
+                console.error("Failed to fetch reports:", e);
             } finally {
                 setLoading(false);
             }
@@ -355,167 +352,150 @@ function LabsImagingView({ patientId, onSelectReport, patient }: { patientId: an
         fetchData();
     }, [patientId]);
 
-    if (loading) return <div className="p-8 text-center text-slate-400 italic animate-pulse tracking-widest uppercase text-xs font-bold">Synchronizing Clinical Diagnostics...</div>;
-
-    const flatResults = labs.flatMap((order: any) =>
-        (order.results || []).map((r: any) => ({
-            testName: r.testName,
-            date: new Date(order.resultDate || order.createdAt).toLocaleDateString(),
-            result: order.status,
-            value: r.value,
-            unit: r.unit,
-            referenceRange: r.referenceRange,
-            abnormalFlag: r.abnormalFlag,
-            abnormal: r.abnormalFlag
-        }))
+    const filteredResults = (reports.results || []).filter((item: any) =>
+        activeFilter === 'all' || item.type === activeFilter
     );
 
-    const displayLabs = flatResults.length > 0 ? flatResults : labs.map(order => ({
-        testName: (order.tests || []).join(', '),
-        date: new Date(order.createdAt).toLocaleDateString(),
-        result: order.status,
-        value: 'Pending',
-        unit: '',
-        referenceRange: '',
-        abnormal: false,
-        abnormalFlag: false
-    }));
+    if (loading) return <div className="p-12 text-center text-slate-400 italic animate-pulse tracking-widest uppercase text-xs font-bold">Synchronizing Clinical Diagnostics...</div>;
+
+    const formatDate = (date: string) => {
+        return new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
 
     return (
         <div className="space-y-8">
-            {radiology.length > 0 && (
-                <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm">
-                    <div className="flex justify-between items-center mb-10">
-                        <div>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">Diagnostic Imaging</h3>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Radiology Archive</p>
+            {/* Header & Filters */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Diagnostic Archive</h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Official Certified Reports</p>
+                </div>
+
+                <div className="flex items-center gap-2 p-1.5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    {(['all', 'lab', 'radiology', 'surgery'] as const).map((filter) => (
+                        <button
+                            key={filter}
+                            onClick={() => setActiveFilter(filter)}
+                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === filter
+                                ? 'bg-olive-600 text-white shadow-md'
+                                : 'text-slate-400 hover:text-slate-600'
+                                }`}
+                        >
+                            {filter}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Reports Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredResults.length === 0 ? (
+                    <div className="col-span-full py-20 text-center bg-white rounded-[40px] border border-slate-100 shadow-sm">
+                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-50">
+                            <Microscope size={32} className="text-slate-200" />
                         </div>
-                        <div className="flex items-center gap-4 bg-slate-50 px-5 py-3 rounded-2xl border border-slate-100">
-                            <Sliders size={14} className="text-slate-400" />
-                            <input
-                                type="range"
-                                min="160"
-                                max="480"
-                                value={scanSize}
-                                onChange={(e) => setScanSize(Number(e.target.value))}
-                                className="w-32 accent-olive-600"
-                            />
-                            <span className="text-[9px] font-black text-slate-400 w-10 text-right">{scanSize}px</span>
-                        </div>
+                        <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No matching reports found</p>
                     </div>
-                    <div className="flex flex-wrap gap-10">
-                        {radiology.map((item, i) => (
-                            <div key={i} className="group relative cursor-pointer" onClick={() => onSelectReport({
-                                title: `Imaging Report: ${item.imagingType}`,
-                                data: {
-                                    type: 'radiology',
-                                    patientName: `${patient.firstName} ${patient.lastName}`,
-                                    mrn: patient.mrn,
-                                    date: new Date(item.createdAt).toLocaleDateString(),
-                                    radiology: {
-                                        findings: item.report?.findings || "Findings pending interpretation.",
-                                        impression: item.report?.impression || "Impression pending.",
-                                        recommendations: item.report?.recommendations
-                                    }
+                ) : (
+                    filteredResults.map((item: any) => (
+                        <div
+                            key={item.id}
+                            onClick={() => {
+                                let title = '';
+                                let data = {};
+
+                                if (item.type === 'lab') {
+                                    title = `Lab Report: ${item.title}`;
+                                    data = {
+                                        type: item.type,
+                                        patientName: `${patient.firstName} ${patient.lastName}`,
+                                        mrn: patient.mrn,
+                                        date: formatDate(item.date),
+                                        testName: item.title,
+                                        results: item.details?.results
+                                    };
+                                } else if (item.type === 'radiology') {
+                                    title = `Imaging Report: ${item.title}`;
+                                    data = {
+                                        type: item.type,
+                                        patientName: `${patient.firstName} ${patient.lastName}`,
+                                        mrn: patient.mrn,
+                                        date: formatDate(item.date),
+                                        testName: item.title,
+                                        radiology: {
+                                            findings: item.details?.report?.findings || 'No findings available',
+                                            impression: item.details?.report?.impression || 'No impression available',
+                                            recommendations: item.details?.report?.recommendations
+                                        }
+                                    };
+                                } else {
+                                    title = `${item.type === 'surgery' ? 'Pre-Op' : 'Post-Op'} Report: ${item.title}`;
+                                    data = {
+                                        type: 'surgery',
+                                        patientName: `${patient.firstName} ${patient.lastName}`,
+                                        mrn: patient.mrn,
+                                        date: formatDate(item.date),
+                                        testName: item.title,
+                                        radiology: { // Reusing radiology structure for generic text report
+                                            findings: item.details?.instructions || 'No instructions provided',
+                                            impression: item.details?.nurseNotes || 'Action pending',
+                                            recommendations: `Completed by: ${item.details?.completedBy?.firstName || 'N/A'} ${item.details?.completedBy?.lastName || ''}`
+                                        }
+                                    };
                                 }
-                            })}>
-                                <div
-                                    className="bg-slate-900 rounded-[32px] overflow-hidden shadow-2xl transition-all border-8 border-slate-900 group-hover:border-olive-500 relative"
-                                    style={{ width: `${scanSize}px`, height: `${scanSize}px` }}
-                                >
-                                    <img
-                                        src={`https://placehold.co/600x600/101010/FFF?text=${item.imagingType}+${item.bodyPart}`}
-                                        alt={item.imagingType}
-                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 group-hover:opacity-0 transition-opacity flex flex-col justify-end p-6">
-                                        <p className="text-white text-xs font-black uppercase tracking-widest">{item.bodyPart}</p>
-                                        <p className="text-slate-400 text-[9px] font-bold mt-1">{new Date(item.createdAt).toLocaleDateString()}</p>
+
+                                onSelectReport({ title, data });
+                            }}
+                            className="group bg-white rounded-[40px] border border-slate-100 shadow-sm hover:shadow-2xl hover:border-olive-200 transition-all p-8 flex flex-col justify-between cursor-pointer"
+                        >
+                            <div>
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform ${item.type === 'lab' ? 'bg-gradient-to-br from-blue-500 to-indigo-600' :
+                                        item.type === 'radiology' ? 'bg-gradient-to-br from-purple-500 to-pink-600' :
+                                            'bg-gradient-to-br from-orange-400 to-amber-600'
+                                        }`}>
+                                        <Activity className="text-white" size={24} />
                                     </div>
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none transition-all scale-75 group-hover:scale-100">
-                                        <div className="bg-white/10 backdrop-blur-md p-4 rounded-full border border-white/20">
-                                            <ImageIcon className="text-white" size={32} />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mt-5 text-center px-4">
-                                    <h4 className="text-sm font-black text-slate-900 tracking-tight uppercase italic">{item.imagingType}</h4>
-                                    <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest mt-2 inline-block ${item.status === 'completed' ? 'bg-olive-50 text-olive-600 border border-olive-100' : 'bg-slate-50 text-slate-400 border border-slate-100'
+                                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${item.status === 'final' || item.status === 'completed'
+                                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                                        : 'bg-amber-50 text-amber-600 border border-amber-100'
                                         }`}>
                                         {item.status}
                                     </span>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
 
-            <div className="bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden">
-                <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Laboratory Results</h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Biochemical Analysis Archive</p>
-                    </div>
-                    <Microscope size={24} className="text-olive-500 opacity-30" />
-                </div>
-                <table className="w-full text-left">
-                    <thead className="bg-slate-50/50">
-                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            <th className="px-10 py-5">Test Parameter</th>
-                            <th className="px-10 py-5">Date</th>
-                            <th className="px-10 py-5">Status</th>
-                            <th className="px-10 py-5">Result Value</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                        {displayLabs.length === 0 ? (
-                            <tr><td colSpan={4} className="p-10 text-center text-slate-400 italic">No lab history recorded</td></tr>
-                        ) : displayLabs.map((l, i) => (
-                            <tr key={i} className="hover:bg-slate-50/30 transition-colors cursor-pointer" onClick={() => onSelectReport({
-                                title: `Diagnostic Report: ${l.testName}`,
-                                data: {
-                                    type: 'lab',
-                                    patientName: `${patient.firstName} ${patient.lastName}`,
-                                    mrn: patient.mrn,
-                                    date: l.date,
-                                    testName: l.testName,
-                                    results: [{
-                                        testName: l.testName,
-                                        value: l.value,
-                                        unit: l.unit || '',
-                                        referenceRange: l.referenceRange || 'N/A',
-                                        abnormalFlag: l.abnormalFlag
-                                    }]
-                                }
-                            })}>
-                                <td className="px-10 py-6">
-                                    <p className="font-black text-slate-900 text-sm italic tracking-tight uppercase">{l.testName}</p>
-                                </td>
-                                <td className="px-10 py-6 text-xs font-bold text-slate-500 uppercase tracking-tight">{l.date}</td>
-                                <td className="px-10 py-6">
-                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${l.result === 'completed' ? 'bg-olive-50 text-olive-600 border-olive-100' : 'bg-slate-50 text-slate-400 border-slate-100'
-                                        }`}>
-                                        {l.result}
-                                    </span>
-                                </td>
-                                <td className="px-10 py-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex flex-col">
-                                            <p className={`text-lg font-black italic tracking-tighter ${l.abnormal ? 'text-red-600 underline decoration-2 underline-offset-4' : 'text-slate-900'}`}>
-                                                {l.value} <span className="text-xs opacity-50 not-italic font-bold tracking-normal">{l.unit}</span>
-                                            </p>
-                                            {l.referenceRange && (
-                                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Range: {l.referenceRange}</p>
-                                            )}
-                                        </div>
-                                        {l.abnormal && <AlertCircle size={14} className="text-red-500" />}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                <h4 className="text-xl font-black text-slate-900 leading-tight mb-2 group-hover:text-olive-700 transition-colors uppercase italic tracking-tight">
+                                    {item.title}
+                                </h4>
+                                <p className="text-sm font-medium text-slate-500 line-clamp-2 mb-4 italic">
+                                    {item.summary}
+                                </p>
+
+                                <div className="flex items-center gap-3 text-xs font-bold text-slate-400 capitalize">
+                                    <Calendar size={14} className="text-slate-300" />
+                                    {formatDate(item.date)}
+                                </div>
+                            </div>
+
+                            <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between group-hover:text-olive-600">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-olive-600 transition-colors">
+                                    {item.type === 'lab' ? 'Laboratory Analysis' :
+                                        item.type === 'radiology' ? 'Diagnostic Imaging' :
+                                            item.type === 'surgery' ? 'Pre-Op Order' : 'Post-Op Instruction'}
+                                </span>
+                                <div className="w-8 h-8 rounded-full bg-slate-50 group-hover:bg-olive-600 flex items-center justify-center transition-all">
+                                    <Activity size={14} className="text-slate-400 group-hover:text-white" />
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

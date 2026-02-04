@@ -16,6 +16,10 @@ export default function AppointmentBookingWizard() {
     const [payment, setPayment] = useState({ amount: 800, method: "upi" });
     const [successData, setSuccessData] = useState<any>(null);
 
+    // Availability State
+    const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+    const [checkingAvailability, setCheckingAvailability] = useState(false);
+
     // Mock Data for UI
 
 
@@ -80,6 +84,33 @@ export default function AppointmentBookingWizard() {
         };
         fetchDoctors();
     }, []);
+
+    // --- FETCH BOOKED SLOTS ---
+    useEffect(() => {
+        const fetchAvailability = async () => {
+            if (!selectedDoctor || !selectedDate) return;
+            setCheckingAvailability(true);
+            try {
+                const res = await fetch(`/api/appointments?doctorId=${selectedDoctor.id}&date=${selectedDate}`);
+                const apps = await res.json();
+                if (Array.isArray(apps)) {
+                    const booked = apps
+                        .filter(a => a.status !== 'cancelled' && a.status !== 'no-show')
+                        .map(a => {
+                            const d = new Date(a.startTime);
+                            return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                        });
+                    setBookedSlots(booked);
+                }
+            } catch (e) {
+                console.error("Availability fetch error:", e);
+            } finally {
+                setCheckingAvailability(false);
+            }
+        };
+
+        if (step === 3) fetchAvailability();
+    }, [selectedDoctor, selectedDate, step]);
 
     // --- STEP 5: FINAL SUBMISSION ---
     const handleBookAppointment = async () => {
@@ -251,7 +282,7 @@ export default function AppointmentBookingWizard() {
                                     <input
                                         value={walkInDetails.phone}
                                         onChange={e => setWalkInDetails({ ...walkInDetails, phone: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm"
                                         placeholder="9876543210"
                                     />
                                 </div>
@@ -337,16 +368,39 @@ export default function AppointmentBookingWizard() {
                         />
 
                         <div>
-                            <p className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest">Available Slots</p>
+                            <p className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest flex justify-between items-center">
+                                Available Slots
+                                {checkingAvailability && <span className="text-[10px] animate-pulse">Refreshing...</span>}
+                            </p>
                             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                                {slots.map(slot => (
-                                    <button key={slot}
-                                        onClick={() => setSelectedSlot(slot)}
-                                        className={`py-2 rounded-lg text-sm font-bold border ${selectedSlot === slot ? 'bg-olive-600 text-white border-olive-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                                    >
-                                        {slot}
-                                    </button>
-                                ))}
+                                {slots
+                                    .filter(slot => {
+                                        // 1. Check if booked
+                                        if (bookedSlots.includes(slot)) return false;
+
+                                        // 2. Check if past (if today)
+                                        const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+                                        if (selectedDate === today) {
+                                            const now = new Date();
+                                            const [h, m] = slot.split(':').map(Number);
+                                            const slotTime = new Date();
+                                            slotTime.setHours(h, m, 0, 0);
+                                            if (slotTime < now) return false;
+                                        }
+
+                                        return true;
+                                    })
+                                    .map(slot => (
+                                        <button key={slot}
+                                            onClick={() => setSelectedSlot(slot)}
+                                            className={`py-2 rounded-lg text-sm font-bold border transition-all
+                                                ${selectedSlot === slot ? 'bg-olive-600 text-white border-olive-600 shadow-md transform scale-105' :
+                                                    'bg-white border-slate-200 text-slate-600 hover:border-olive-300 hover:bg-olive-50/30'}
+                                            `}
+                                        >
+                                            {slot}
+                                        </button>
+                                    ))}
                             </div>
                         </div>
                     </div>

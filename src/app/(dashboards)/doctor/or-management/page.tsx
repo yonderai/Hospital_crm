@@ -70,6 +70,34 @@ export default function ORDashboard() {
     const occupiedSuites = new Set(allCases.filter(c => c.status === "in-progress").map(c => c.orRoomId)).size;
     const pendingAnalytics = allCases.filter(c => c.status === "scheduled").length;
 
+    // Helper function to check if surgery time has passed
+    const isSurgeryTimePassed = (scheduledDate: string, startTime: string) => {
+        const now = new Date();
+        const surgeryDate = new Date(scheduledDate);
+
+        // Parse the time (format: "HH:MM")
+        const [hours, minutes] = startTime.split(':').map(Number);
+        surgeryDate.setHours(hours, minutes, 0, 0);
+
+        return now > surgeryDate;
+    };
+
+    // Helper function to get effective status
+    const getEffectiveStatus = (caseItem: any) => {
+        // If already completed or cancelled, return as is
+        if (caseItem.status === 'completed' || caseItem.status === 'cancelled') {
+            return caseItem.status;
+        }
+
+        // If scheduled and time has passed, mark as cancelled
+        if (caseItem.status === 'scheduled' && caseItem.startTime &&
+            isSurgeryTimePassed(caseItem.scheduledDate, caseItem.startTime)) {
+            return 'cancelled';
+        }
+
+        return caseItem.status;
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case "in-progress": return "text-blue-600 bg-blue-50 border-blue-100";
@@ -213,100 +241,104 @@ export default function ORDashboard() {
                                             </div>
                                         </td>
                                     </tr>
-                                ) : allCases.map((cs: any) => (
-                                    <tr key={cs._id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-6 py-5">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-black text-slate-900">{cs.startTime}</span>
-                                                <span className="text-[10px] font-bold text-olive-600 uppercase mt-1 px-2 py-0.5 bg-olive-50 rounded w-fit">{cs.orRoomId}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div
-                                                className="flex items-center gap-3 cursor-pointer hover:bg-olive-50/30 -mx-3 px-3 py-2 rounded-2xl transition-all group"
-                                                onClick={() => {
-                                                    setSelectedPatient(cs.patientId);
-                                                    setSelectedCase(cs);
-                                                    setIsPatientReportsOpen(true);
-                                                }}
-                                            >
-                                                <div className="w-10 h-10 bg-slate-100 group-hover:bg-olive-100 rounded-full flex items-center justify-center text-slate-400 group-hover:text-olive-600 transition-all">
-                                                    <User size={18} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-slate-900 group-hover:text-olive-700">{cs.patientId?.firstName} {cs.patientId?.lastName}</p>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">{cs.patientId?.mrn}</p>
-                                                </div>
-                                                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <FileText size={16} className="text-olive-600" />
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <p className="text-sm font-semibold text-slate-700">{cs.procedureName}</p>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <span className="text-sm font-medium text-slate-600">
-                                                {cs.surgeonId ? `${cs.surgeonId.firstName} ${cs.surgeonId.lastName}` : "TBD"}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${getStatusColor(cs.status)}`}>
-                                                {cs.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-5 text-right">
-                                            <div className="flex items-center gap-2 justify-end">
-                                                {/* Pre-Surgery Orders Button */}
-                                                {cs.status === 'scheduled' && (
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedCase(cs);
-                                                            setSelectedPatient(cs.patientId);
-                                                            setIsPreOrdersOpen(true);
-                                                        }}
-                                                        className="px-3 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
-                                                        title="Pre-Surgery Orders"
-                                                    >
-                                                        <ClipboardList size={14} />
-                                                        Pre-Op
-                                                    </button>
-                                                )}
+                                ) : allCases.map((cs: any) => {
+                                    const effectiveStatus = getEffectiveStatus(cs);
 
-                                                {/* Post-Surgery Instructions Button */}
-                                                {(cs.status === 'in-progress' || cs.status === 'completed') && (
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedCase(cs);
-                                                            setSelectedPatient(cs.patientId);
-                                                            setIsPostInstructionsOpen(true);
-                                                        }}
-                                                        className="px-3 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
-                                                        title="Post-Surgery Instructions"
-                                                    >
-                                                        <Heart size={14} />
-                                                        Post-Op
-                                                    </button>
-                                                )}
+                                    return (
+                                        <tr key={cs._id} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-6 py-5">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-black text-slate-900">{cs.startTime}</span>
+                                                    <span className="text-[10px] font-bold text-olive-600 uppercase mt-1 px-2 py-0.5 bg-olive-50 rounded w-fit">{cs.orRoomId}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div
+                                                    className="flex items-center gap-3 cursor-pointer hover:bg-olive-50/30 -mx-3 px-3 py-2 rounded-2xl transition-all group"
+                                                    onClick={() => {
+                                                        setSelectedPatient(cs.patientId);
+                                                        setSelectedCase(cs);
+                                                        setIsPatientReportsOpen(true);
+                                                    }}
+                                                >
+                                                    <div className="w-10 h-10 bg-slate-100 group-hover:bg-olive-100 rounded-full flex items-center justify-center text-slate-400 group-hover:text-olive-600 transition-all">
+                                                        <User size={18} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-slate-900 group-hover:text-olive-700">{cs.patientId?.firstName} {cs.patientId?.lastName}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">{cs.patientId?.mrn}</p>
+                                                    </div>
+                                                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <FileText size={16} className="text-olive-600" />
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <p className="text-sm font-semibold text-slate-700">{cs.procedureName}</p>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <span className="text-sm font-medium text-slate-600">
+                                                    {cs.surgeonId ? `${cs.surgeonId.firstName} ${cs.surgeonId.lastName}` : "TBD"}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${getStatusColor(effectiveStatus)}`}>
+                                                    {effectiveStatus}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-5 text-right">
+                                                <div className="flex items-center gap-2 justify-end">
+                                                    {/* Show Pre-Op for scheduled or cancelled surgeries */}
+                                                    {(effectiveStatus === 'scheduled' || effectiveStatus === 'cancelled') && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedCase(cs);
+                                                                setSelectedPatient(cs.patientId);
+                                                                setIsPreOrdersOpen(true);
+                                                            }}
+                                                            className="px-3 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
+                                                            title="Pre-Surgery Orders"
+                                                        >
+                                                            <ClipboardList size={14} />
+                                                            Pre-Op
+                                                        </button>
+                                                    )}
 
-                                                {/* Surgery Report Button */}
-                                                {cs.status === 'completed' ? (
-                                                    <span className="text-[10px] font-black text-olive-600 uppercase bg-olive-50 px-3 py-1 rounded-lg">Reported</span>
-                                                ) : cs.status === 'in-progress' && (
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedCase(cs);
-                                                            setIsReportModalOpen(true);
-                                                        }}
-                                                        className="px-4 py-2 bg-olive-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-olive-700 transition-all shadow-sm"
-                                                    >
-                                                        Add Report
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                                    {/* Show Post-Op only for completed surgeries */}
+                                                    {effectiveStatus === 'completed' && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedCase(cs);
+                                                                setSelectedPatient(cs.patientId);
+                                                                setIsPostInstructionsOpen(true);
+                                                            }}
+                                                            className="px-3 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
+                                                            title="Post-Surgery Instructions"
+                                                        >
+                                                            <Heart size={14} />
+                                                            Post-Op
+                                                        </button>
+                                                    )}
+
+                                                    {/* Surgery Report Button - only for in-progress */}
+                                                    {cs.status === 'completed' && cs.surgeryReport ? (
+                                                        <span className="text-[10px] font-black text-olive-600 uppercase bg-olive-50 px-3 py-1 rounded-lg">Reported</span>
+                                                    ) : cs.status === 'in-progress' && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedCase(cs);
+                                                                setIsReportModalOpen(true);
+                                                            }}
+                                                            className="px-4 py-2 bg-olive-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-olive-700 transition-all shadow-sm"
+                                                        >
+                                                            Add Report
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
