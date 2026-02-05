@@ -231,6 +231,39 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                 );
                             })()}
 
+                            {/* AI Clinical Insights Section */}
+                            {patient.latestAiInsight && (
+                                <div className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden mb-8 border-4 border-white/20">
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.15),transparent_60%)]" />
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-4 mb-6">
+                                            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
+                                                <Activity size={28} className="text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-100/80 drop-shadow-sm">Advanced Clinical Preview</p>
+                                                <h3 className="text-2xl font-black italic tracking-tight text-white drop-shadow-md">AI Clinical Insights</h3>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white/10 backdrop-blur-md rounded-[32px] p-8 border border-white/20 shadow-inner">
+                                            <div className="prose prose-invert max-w-none">
+                                                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-indigo-50 font-medium bg-transparent border-0 p-0 m-0">
+                                                    {patient.latestAiInsight}
+                                                </pre>
+                                            </div>
+                                            <div className="mt-8 flex items-center gap-3 pt-6 border-t border-white/10">
+                                                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-indigo-200">
+                                                    Generated from recent chief complaints & history • Non-Diagnostic Reference
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white/5 blur-3xl rounded-full" />
+                                    <div className="absolute bottom-[-20px] left-[-20px] w-60 h-60 bg-indigo-900/20 blur-3xl rounded-full" />
+                                </div>
+                            )}
+
                             {/* Patient Quick Info Card */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm space-y-4">

@@ -85,6 +85,7 @@ export interface IPatient extends Document {
     assignedDoctorId?: mongoose.Types.ObjectId;
     registeredBy?: mongoose.Types.ObjectId; // null if self-registered
     registrationSource?: string; // e.g., 'self-registration', 'front-desk'
+    latestAiInsight?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -172,6 +173,7 @@ const PatientSchema = new Schema<IPatient>(
         photoUrl: { type: String },
         notes: { type: String },
         qrCodeUrl: { type: String },
+        latestAiInsight: { type: String },
         facilityId: { type: Schema.Types.ObjectId, ref: "Facility" },
         assignedDoctorId: { type: Schema.Types.ObjectId, ref: "User" },
         registeredBy: { type: Schema.Types.ObjectId, ref: "User" },

@@ -20,8 +20,10 @@ def create_app():
 
     # Register Blueprints
     from .routes.system import system_bp
+    from .routes.ai import ai_bp
     # Prefix /api means routes in system_bp will be /api/health, etc.
     app.register_blueprint(system_bp, url_prefix="/api")
+    app.register_blueprint(ai_bp, url_prefix="/api")
     
     @app.route("/")
     def index():

@@ -10,17 +10,7 @@ export interface IAppointment extends Document {
     status: "scheduled" | "checked-in" | "in-progress" | "completed" | "cancelled" | "no-show";
     type: "consultation" | "follow-up" | "procedure" | "emergency";
     reason: string;
-    chiefComplaint?: string; // New field
-    notes?: string;
-    payment?: {
-        totalAmount: number;
-        paidAmount: number;
-        dueAmount: number;
-        method: "cash" | "card" | "upi" | "insurance";
-        status: "pending" | "partial" | "paid" | "failed";
-        transactionId?: string;
-        receiptNo?: string;
-    };
+    aiInsight?: string; // AI generated analysis
     createdBy: "patient" | "staff";
     createdAt: Date;
     updatedAt: Date;
@@ -45,17 +35,7 @@ const AppointmentSchema = new Schema<IAppointment>(
             enum: ["consultation", "follow-up", "procedure", "emergency"]
         },
         reason: { type: String, required: true },
-        chiefComplaint: { type: String },
-        notes: { type: String },
-        payment: {
-            totalAmount: { type: Number },
-            paidAmount: { type: Number },
-            dueAmount: { type: Number },
-            method: { type: String, enum: ["cash", "card", "upi", "insurance"] },
-            status: { type: String, enum: ["pending", "partial", "paid", "failed"], default: "pending" },
-            transactionId: { type: String },
-            receiptNo: { type: String }
-        },
+        aiInsight: { type: String },
         createdBy: {
             type: String,
             required: true,

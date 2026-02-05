@@ -90,7 +90,7 @@ export async function GET(req: Request) {
 
         // Populate patient and provider details for display
         const appointments = await Appointment.find(query)
-            .populate('patientId', 'firstName lastName mrn dob gender contact bloodType allergies chronicConditions emergencyContact insuranceInfo')
+            .populate('patientId', 'firstName lastName mrn dob gender contact bloodType allergies chronicConditions emergencyContact insuranceInfo latestAiInsight')
             .populate('providerId', 'firstName lastName department')
             .sort({ startTime: 1 });
 
@@ -101,6 +101,8 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+
+import { getAiInsight } from "@/lib/ai";
 
 // POST: Create a new appointment
 export async function POST(req: Request) {
@@ -118,7 +120,7 @@ export async function POST(req: Request) {
 
         await dbConnect();
         const body = await req.json();
-        const { providerId, startTime, reason, type } = body;
+        const { providerId, startTime, reason, type, chiefComplaint } = body;
 
         if (!providerId || !startTime || !reason || !type) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -143,11 +145,12 @@ export async function POST(req: Request) {
 
         // Determine targeted Patient ID
         let targetPatientId = body.patientId;
+        let patientProfile: any = null;
 
         // Self-booking for Patient OR Finance (Employee)
         if (role === 'patient' || role === 'finance') {
             // Try lenient search first
-            let patientProfile = await Patient.findOne({
+            patientProfile = await Patient.findOne({
                 $or: [
                     { "contact.email": session.user?.email },
                     { "contact.email": session.user?.email?.toLowerCase() }
@@ -164,17 +167,12 @@ export async function POST(req: Request) {
             if (role === 'patient' && patientProfile.assignedDoctorId && patientProfile.assignedDoctorId.toString() !== providerId) {
                 return NextResponse.json({ error: "You can only book appointments with your assigned doctor." }, { status: 403 });
             }
+        } else {
+            patientProfile = await Patient.findById(targetPatientId);
         }
 
-        // Front Desk can book for anyone (targetPatientId is passed in body)
-        if (role === 'frontdesk') {
-            if (!targetPatientId) {
-                return NextResponse.json({ error: "Patient Selection is required." }, { status: 400 });
-            }
-        }
-
-        if (!targetPatientId) {
-            return NextResponse.json({ error: "Patient ID is required" }, { status: 400 });
+        if (!targetPatientId || !patientProfile) {
+            return NextResponse.json({ error: "Patient Selection is required." }, { status: 400 });
         }
 
         // Calculate endTime (default 30 mins)
@@ -203,6 +201,22 @@ export async function POST(req: Request) {
 
         const creatorRole = role === 'patient' ? 'patient' : 'staff';
 
+        // --- AI Insight Logic ---
+        const historyStr = [
+            ...(patientProfile.medicalHistory?.chronicConditions || []),
+            ...(patientProfile.medicalHistory?.allergies || []).map((a: string) => `Allergy: ${a}`)
+        ].join(", ") || "None";
+
+        const medsStr = (patientProfile.medicalHistory?.currentMedications || [])
+            .map((m: any) => `${m.name} (${m.dosage})`)
+            .join(", ") || "None";
+
+        const insight = await getAiInsight(
+            chiefComplaint || reason || "Consultation",
+            historyStr,
+            medsStr
+        );
+
         const newAppointment = await Appointment.create({
             appointmentId,
             patientId: targetPatientId,
@@ -210,10 +224,17 @@ export async function POST(req: Request) {
             startTime: start,
             endTime: end,
             reason,
+            chiefComplaint,
             type,
+            aiInsight: insight || undefined,
             status: "scheduled",
             createdBy: creatorRole
         });
+
+        // Update Patient's latestAiInsight
+        if (insight) {
+            await Patient.findByIdAndUpdate(targetPatientId, { latestAiInsight: insight });
+        }
 
         return NextResponse.json(newAppointment, { status: 201 });
 

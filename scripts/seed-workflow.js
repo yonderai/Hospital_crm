@@ -2,8 +2,9 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const util = require('util');
+require('dotenv').config();
 
-const MONGODB_URI = "mongodb+srv://yuvrajsingh02608_db_user:yuvrajsingh@yondermedicareai.b6dwyv5.mongodb.net/yonder_medicare?retryWrites=true&w=majority";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/hospital-crm";
 
 async function seedWorkflow() {
     try {

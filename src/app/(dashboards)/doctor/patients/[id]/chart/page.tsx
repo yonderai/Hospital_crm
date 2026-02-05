@@ -140,7 +140,7 @@ function TimelineView({ patientId }: { patientId: any }) {
                         date: format(new Date(r.createdAt), "MMM dd, yyyy HH:mm"),
                         timestamp: new Date(r.createdAt).getTime(),
                         title: `Imaging: ${r.imagingType} (${r.bodyPart})`,
-                        desc: `Priority: ${r.priority.toUpperCase()} - ${r.status}`,
+                        desc: `Priority: ${(r.priority || 'Normal').toUpperCase()} - ${r.status}`,
                         icon: ImageIcon
                     });
                 });

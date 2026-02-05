@@ -6,6 +6,8 @@ import Appointment from "@/lib/models/Appointment";
 import Patient from "@/lib/models/Patient";
 import User from "@/lib/models/User";
 
+import { getAiInsight } from "@/lib/ai";
+
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -66,6 +68,22 @@ export async function POST(req: Request) {
             receiptNo = `RCP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(5, '0')}`;
         }
 
+        // --- AI Insight Logic ---
+        const historyStr = [
+            ...(patient.medicalHistory?.chronicConditions || []),
+            ...(patient.medicalHistory?.allergies || []).map((a: string) => `Allergy: ${a}`)
+        ].join(", ") || "None";
+
+        const medsStr = (patient.medicalHistory?.currentMedications || [])
+            .map((m: any) => `${m.name} (${m.dosage})`)
+            .join(", ") || "None";
+
+        const insight = await getAiInsight(
+            chiefComplaint || reason || "Consultation",
+            historyStr,
+            medsStr
+        );
+
         // Create Appointment
         const appointment = await Appointment.create({
             appointmentId,
@@ -77,6 +95,7 @@ export async function POST(req: Request) {
             type: type || "consultation",
             reason: reason || "Consultation",
             chiefComplaint: chiefComplaint,
+            aiInsight: insight || undefined,
             notes: body.notes,
             payment: {
                 totalAmount: payment?.totalAmount || 0,
@@ -88,6 +107,11 @@ export async function POST(req: Request) {
             },
             createdBy: "staff"
         });
+
+        // Update Patient's latestAiInsight
+        if (insight) {
+            await Patient.findByIdAndUpdate(patient._id, { latestAiInsight: insight });
+        }
 
         return NextResponse.json({
             success: true,
