@@ -1,4 +1,5 @@
 import os
+import certifi
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from flask import g, current_app
@@ -14,10 +15,17 @@ def get_db():
             # Fallback for development matches user's local setup
             mongo_uri = "mongodb://127.0.0.1:27017/hospital_crm"
             
+        # DEBUG: Print loaded URI to confirm
+        masked_uri = mongo_uri.split('@')[-1] if '@' in mongo_uri else mongo_uri
+        print(f"----- ATTEMPTING CONNECTION TO: ...@{masked_uri} -----")
+            
         try:
             # Create a client
             # serverSelectionTimeoutMS=3000 ensures we don't hang efficiently if DB is down
-            client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+            # tlsCAFile=certifi.where() fixes SSL issues on macOS
+            client = MongoClient(mongo_uri, 
+                               serverSelectionTimeoutMS=3000,
+                               tlsCAFile=certifi.where())
             
             # Trigger a connection check immediately
             client.admin.command('ping')
@@ -32,6 +40,7 @@ def get_db():
             current_app.logger.debug(f"MongoDB connected: {db_name}")
 
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+            print(f"!!!!! MONGODB CONNECTION ERROR: {e} !!!!!")
             current_app.logger.error(f"MongoDB connection failed: {e}")
             g.db = None
             g.client = None
