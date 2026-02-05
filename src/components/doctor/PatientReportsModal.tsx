@@ -14,7 +14,7 @@ interface PatientReportsModalProps {
 
 export default function PatientReportsModal({ patientId, patientName, onClose }: PatientReportsModalProps) {
     const [loading, setLoading] = useState(true);
-    const [reports, setReports] = useState<any>({ results: [], radiologyReports: [], labResults: [], preSurgeryOrders: [], postSurgeryInstructions: [] });
+    const [reports, setReports] = useState<any>({ results: [], radiologyReports: [], labResults: [], preSurgeryOrders: [], postSurgeryInstructions: [], surgeryCases: [] });
     const [activeTab, setActiveTab] = useState<'all' | 'radiology' | 'lab' | 'surgery'>('all');
 
     useEffect(() => {
@@ -131,7 +131,7 @@ export default function PatientReportsModal({ patientId, patientName, onClose }:
                             }`}
                     >
                         <Scissors size={14} className="inline mr-2" />
-                        Surgery Orders ({reports.preSurgeryOrders.length + reports.postSurgeryInstructions.length})
+                        Surgery Reports ({reports.preSurgeryOrders.length + reports.postSurgeryInstructions.length + (reports.surgeryCases?.length || 0)})
                         {activeTab === 'surgery' && (
                             <div className="absolute bottom-0 left-0 right-0 h-1 bg-olive-600 rounded-t-full" />
                         )}
@@ -163,7 +163,12 @@ export default function PatientReportsModal({ patientId, patientName, onClose }:
                                         reports.results?.map((item: any) => (
                                             <div
                                                 key={item.id}
-                                                className="group bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:border-olive-200 transition-all p-6 flex flex-col justify-between"
+                                                onClick={() => {
+                                                    if (item.type === 'lab') setActiveTab('lab');
+                                                    else if (item.type === 'radiology') setActiveTab('radiology');
+                                                    else if (item.type === 'surgery' || item.type === 'surgery_report') setActiveTab('surgery');
+                                                }}
+                                                className="group bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl hover:border-olive-200 transition-all p-6 flex flex-col justify-between cursor-pointer"
                                             >
                                                 <div>
                                                     <div className="flex justify-between items-start mb-4">
@@ -171,11 +176,14 @@ export default function PatientReportsModal({ patientId, patientName, onClose }:
                                                             ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
                                                             : item.type === 'radiology'
                                                                 ? 'bg-gradient-to-br from-purple-500 to-pink-600'
-                                                                : 'bg-gradient-to-br from-orange-400 to-amber-600'
+                                                                : item.type === 'surgery_report'
+                                                                    ? 'bg-gradient-to-br from-olive-500 to-emerald-600'
+                                                                    : 'bg-gradient-to-br from-orange-400 to-amber-600'
                                                             }`}>
                                                             {item.type === 'lab' ? <Activity className="text-white" size={20} /> :
                                                                 item.type === 'radiology' ? <FileText className="text-white" size={20} /> :
-                                                                    <ClipboardList className="text-white" size={20} />}
+                                                                    item.type === 'surgery_report' ? <Scissors className="text-white" size={20} /> :
+                                                                        <ClipboardList className="text-white" size={20} />}
                                                         </div>
                                                         <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${item.status === 'final' || item.status === 'completed'
                                                             ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
@@ -202,7 +210,8 @@ export default function PatientReportsModal({ patientId, patientName, onClose }:
                                                     <div className="w-full bg-slate-50 group-hover:bg-olive-600 group-hover:text-white border border-slate-100 group-hover:border-olive-500 p-3 rounded-2xl flex items-center justify-center text-slate-600 font-black text-xs uppercase tracking-widest transition-all">
                                                         {item.type === 'lab' ? 'Lab Report' :
                                                             item.type === 'radiology' ? 'Radiology Report' :
-                                                                item.type === 'surgery' ? 'Surgery Order' : 'Post-Op Instruction'}
+                                                                item.type === 'surgery' ? 'Surgery Order' :
+                                                                    item.type === 'surgery_report' ? 'Operative Report' : 'Post-Op Instruction'}
                                                     </div>
                                                 </div>
                                             </div>
@@ -396,15 +405,77 @@ export default function PatientReportsModal({ patientId, patientName, onClose }:
                             {/* Surgery Orders */}
                             {activeTab === 'surgery' && (
                                 <div className="space-y-6">
-                                    {reports.preSurgeryOrders.length === 0 && reports.postSurgeryInstructions.length === 0 ? (
+                                    {reports.preSurgeryOrders.length === 0 && reports.postSurgeryInstructions.length === 0 && (!reports.surgeryCases || reports.surgeryCases.length === 0) ? (
                                         <div className="text-center py-20">
                                             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                                 <Scissors size={32} className="text-slate-300" />
                                             </div>
-                                            <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No Surgery Orders</p>
+                                            <p className="text-sm font-black text-slate-400 uppercase tracking-widest">No Surgery Reports found</p>
                                         </div>
                                     ) : (
                                         <>
+                                            {/* Operative Reports */}
+                                            {reports.surgeryCases && reports.surgeryCases.length > 0 && (
+                                                <div className="space-y-4">
+                                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                                                        <div className="w-8 h-8 bg-olive-50 rounded-xl flex items-center justify-center text-olive-600">
+                                                            <FileText size={16} />
+                                                        </div>
+                                                        Operative Reports ({reports.surgeryCases.length})
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 gap-4">
+                                                        {reports.surgeryCases.map((surgery: any) => (
+                                                            <div key={surgery._id} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-4">
+                                                                <div className="flex items-start justify-between">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-olive-50 text-olive-600">
+                                                                            <Scissors size={20} />
+                                                                        </div>
+                                                                        <div>
+                                                                            <h5 className="text-base font-black text-slate-900 capitalize">
+                                                                                {surgery.procedureName}
+                                                                            </h5>
+                                                                            <p className="text-xs text-slate-500 font-medium mt-1">
+                                                                                Surgeon: {surgery.surgeonId?.firstName} {surgery.surgeonId?.lastName} • {formatDate(surgery.surgeryReport?.reportDate || surgery.updatedAt)}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-50 text-emerald-600">
+                                                                        Completed
+                                                                    </span>
+                                                                </div>
+
+                                                                {/* Findings Section */}
+                                                                {surgery.surgeryReport?.findings && (
+                                                                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Operative Findings</label>
+                                                                        <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                                                                            {surgery.surgeryReport.findings}
+                                                                        </p>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Diagnosis */}
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    {surgery.surgeryReport?.preOpDiagnosis && (
+                                                                        <div className="space-y-1">
+                                                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pre-Op Diagnosis</label>
+                                                                            <p className="text-xs font-bold text-slate-800">{surgery.surgeryReport.preOpDiagnosis}</p>
+                                                                        </div>
+                                                                    )}
+                                                                    {surgery.surgeryReport?.postOpDiagnosis && (
+                                                                        <div className="space-y-1">
+                                                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Post-Op Diagnosis</label>
+                                                                            <p className="text-xs font-bold text-slate-800">{surgery.surgeryReport.postOpDiagnosis}</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Pre-Surgery Orders */}
                                             {reports.preSurgeryOrders.length > 0 && (
                                                 <div className="space-y-4">

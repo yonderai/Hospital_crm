@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
     Activity,
@@ -16,6 +17,7 @@ import { useSession } from "next-auth/react";
 
 export default function AssignedPatients() {
     const { data: session } = useSession();
+    const router = useRouter();
     const [patients, setPatients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -27,14 +29,19 @@ export default function AssignedPatients() {
                 const res = await fetch("/api/nurse/dashboard-data");
                 if (res.ok) {
                     const json = await res.json();
-                    const list = json.vitalsFlow?.map((vf: any, idx: number) => ({
-                        name: vf.patient,
-                        mrn: `MRN-${1000 + idx}`,
-                        room: `Room 40${idx + 1}-A`,
-                        vitalsStatus: vf.status,
-                        priority: vf.status === 'Due Now' ? 'High' : 'Normal',
-                        treatment: idx % 2 === 0 ? "Post-Op Recovery" : "Observation"
-                    })) || [];
+
+                    // Map allocatedBeds to the display format
+                    const list = (json.allocatedBeds || []).map((bed: any, idx: number) => ({
+                        name: bed.currentPatientId ? `${bed.currentPatientId.firstName} ${bed.currentPatientId.lastName}` : "Unknown Patient",
+                        mrn: bed.currentPatientId?.mrn || `MRN-${1000 + idx}`,
+                        room: `Room ${bed.roomNumber}`,
+                        vitalsStatus: "Stable", // Default for now
+                        priority: "Normal", // Default for now
+                        treatment: bed.ward || "General Care",
+                        age: bed.currentPatientId?.age,
+                        gender: bed.currentPatientId?.gender,
+                        id: bed.currentPatientId?._id
+                    }));
                     setPatients(list);
                 }
             } catch (error) {
@@ -89,11 +96,11 @@ export default function AssignedPatients() {
                                 <div className="space-y-4 mb-8">
                                     <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
                                         <MapPin size={16} className="text-slate-300" />
-                                        {p.room}
+                                        {p.room} • {p.treatment}
                                     </div>
                                     <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
                                         <Activity size={16} className="text-slate-300" />
-                                        {p.treatment}
+                                        {p.gender} • {p.age} Yrs
                                     </div>
                                 </div>
 
@@ -106,7 +113,10 @@ export default function AssignedPatients() {
                                             <Droplets size={18} />
                                         </button>
                                     </div>
-                                    <button className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-[20px] font-black text-[10px] uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all active:scale-95">
+                                    <button
+                                        onClick={() => router.push(`/nurse/patients/${p.id}`)}
+                                        className="flex items-center gap-2 px-6 py-3 bg-olive-700 text-white rounded-[20px] font-black text-[10px] uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all active:scale-95"
+                                    >
                                         Clinical Chart <ChevronRight size={14} />
                                     </button>
                                 </div>
@@ -115,6 +125,6 @@ export default function AssignedPatients() {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+        </DashboardLayout >
     );
 }

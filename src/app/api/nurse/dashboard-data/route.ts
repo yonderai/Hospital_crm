@@ -5,6 +5,7 @@ import dbConnect from '@/lib/db';
 import Encounter from "@/lib/models/Encounter";
 import Prescription from "@/lib/models/Prescription";
 import Patient from "@/lib/models/Patient";
+import Bed from "@/lib/models/Bed";
 
 export async function GET() {
     try {
@@ -66,7 +67,10 @@ export async function GET() {
                 patient: `${(e.patientId as any)?.firstName} ${(e.patientId as any)?.lastName}`,
                 status: e.vitals.bloodPressure ? "Updated" : "Due Now",
                 color: e.vitals.bloodPressure ? "border-olive-500" : "border-red-500"
-            }))
+            })),
+            allocatedBeds: await Bed.find({ status: "occupied" })
+                .populate("currentPatientId", "firstName lastName mrn age gender")
+                .select("bedNumber roomNumber floor ward nurse currentPatientId")
         });
 
     } catch (error) {

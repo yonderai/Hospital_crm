@@ -71,3 +71,34 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+
+export async function PATCH(req: NextRequest) {
+    await dbConnect();
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session || session.user?.role !== "doctor") {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const body = await req.json();
+        const { caseId, status } = body;
+
+        if (!caseId || !status) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        const updatedCase = await ORCase.findByIdAndUpdate(
+            caseId,
+            { status },
+            { new: true }
+        );
+
+        if (!updatedCase) {
+            return NextResponse.json({ error: "Case not found" }, { status: 404 });
+        }
+
+        return NextResponse.json(updatedCase);
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}

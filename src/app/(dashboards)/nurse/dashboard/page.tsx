@@ -181,6 +181,8 @@ export default function NurseDashboard() {
                         </div>
                     </div>
 
+
+
                     {/* Sidebar: Tasks & Procedures */}
                     <div className="space-y-10">
                         <div className="bg-slate-900 rounded-[48px] p-10 text-white shadow-2xl relative overflow-hidden group">

@@ -96,10 +96,10 @@ export async function GET(req: NextRequest) {
 
         console.log(`✅ Lab results: ${normalizedLabs.length}`);
 
-        // 3. SURGERY ORDERS - Only show COMPLETED orders (nurse has filled details)
+        // 3. SURGERY ORDERS - Only show COMPLETED orders
         const preSurgeryOrders = await SurgeryOrder.find({
             patientId,
-            status: 'completed' // Only show orders completed by nurses
+            status: 'completed'
         })
             .populate('caseId', 'procedureName scheduledDate startTime orRoomId')
             .populate('prescribedBy', 'firstName lastName')
@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
 
         const postSurgeryInstructions = await PostSurgeryInstruction.find({
             patientId,
-            status: 'completed' // Only show completed instructions
+            status: 'completed'
         })
             .populate('caseId', 'procedureName scheduledDate startTime orRoomId')
             .populate('prescribedBy', 'firstName lastName')
@@ -147,30 +147,46 @@ export async function GET(req: NextRequest) {
             }
         }));
 
-        console.log(`✅ Surgery Reports: ${normalizedSurgery.length + normalizedInstructions.length}`);
+        // 4. SURGERY REPORTS (OR Cases with reports)
+        const surgeryCases = await ORCase.find({
+            patientId,
+            status: 'completed',
+            'surgeryReport.findings': { $exists: true }
+        })
+            .populate('surgeonId', 'firstName lastName')
+            .sort({ 'surgeryReport.reportDate': -1 })
+            .lean();
+
+        const normalizedCases = surgeryCases.map((item: any) => ({
+            id: item._id,
+            type: 'surgery_report',
+            title: `Surgery: ${item.procedureName}`,
+            date: item.surgeryReport?.reportDate || item.updatedAt,
+            status: 'completed',
+            summary: item.surgeryReport?.findings || 'Operative Report Available',
+            details: {
+                ...item,
+                procedureName: item.procedureName,
+                report: item.surgeryReport
+            }
+        }));
+
+        console.log(`✅ Reports: Rad=${normalizedRadiology.length}, Lab=${normalizedLabs.length}, SurgOrders=${normalizedSurgery.length}, Instr=${normalizedInstructions.length}, Cases=${normalizedCases.length}`);
 
         // Combine and sort all results by date
-        const combinedResults = [...normalizedRadiology, ...normalizedLabs, ...normalizedSurgery, ...normalizedInstructions].sort((a, b) => {
+        const combinedResults = [...normalizedRadiology, ...normalizedLabs, ...normalizedSurgery, ...normalizedInstructions, ...normalizedCases].sort((a, b) => {
             const dateA = a?.date ? new Date(a.date).getTime() : 0;
             const dateB = b?.date ? new Date(b.date).getTime() : 0;
             return dateB - dateA;
         });
 
-        console.log('📊 Patient Reports Summary:', {
-            patientId,
-            radiologyReports: normalizedRadiology.length,
-            labResults: normalizedLabs.length,
-            surgeryOrders: normalizedSurgery.length,
-            postInstructions: normalizedInstructions.length,
-            totalReports: combinedResults.length
-        });
-
         return NextResponse.json({
-            results: combinedResults, // For the Report Viewer style display
+            results: combinedResults,
             radiologyReports: normalizedRadiology,
             labResults: normalizedLabs,
             preSurgeryOrders,
-            postSurgeryInstructions
+            postSurgeryInstructions,
+            surgeryCases
         });
     } catch (error: any) {
         console.error('Error fetching patient reports:', error);

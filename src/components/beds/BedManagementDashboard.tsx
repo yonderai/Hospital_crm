@@ -100,20 +100,60 @@ export default function BedManagementDashboard() {
         notes: ""
     });
 
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [nurses, setNurses] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchNurses = async () => {
+            try {
+                const res = await fetch('/api/staff?role=nurse');
+                if (res.ok) {
+                    const data = await res.json();
+                    setNurses(data);
+                }
+            } catch (e) {
+                console.error("Failed to fetch nurses", e);
+            }
+        };
+        fetchNurses();
+    }, []);
+
     // --- HANDLERS ---
-    const handlePatientSearch = () => {
-        if (patientQuery.toLowerCase().includes("rajesh")) {
-            setFoundPatient({
-                _id: "pat_123",
-                name: "Rajesh Kumar",
-                mrn: "MRN-2025-000123",
-                age: 45,
-                gender: "Male",
-                doctor: "Dr. Amit Sharma"
-            });
-        } else {
-            alert("Patient not found (Try 'Rajesh')");
+    const handlePatientSearch = async () => {
+        if (!patientQuery || patientQuery.length < 2) return;
+        setIsSearching(true);
+        try {
+            const res = await fetch(`/api/front-desk/patients/search?q=${patientQuery}`);
+            const data = await res.json();
+            if (data.patients) {
+                setSearchResults(data.patients);
+            } else {
+                setSearchResults([]);
+            }
+        } catch (error) {
+            console.error("Search error", error);
+        } finally {
+            setIsSearching(false);
         }
+    };
+
+    const selectPatient = (patient: any) => {
+        const dob = new Date(patient.dateOfBirth);
+        const ageDiffMs = Date.now() - dob.getTime();
+        const ageDate = new Date(ageDiffMs);
+        const calculatedAge = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+        setFoundPatient({
+            _id: patient._id,
+            name: `${patient.firstName} ${patient.lastName}`,
+            mrn: patient.mrn,
+            age: patient.age || calculatedAge,
+            gender: patient.gender,
+            doctor: "Unassigned" // API doesn't return doctor yet
+        });
+        setSearchResults([]); // Clear results
+        setPatientQuery(""); // Clear query or keep it? Maybe clear to show the selected card.
     };
 
     const handleAllocate = async () => {
@@ -162,6 +202,7 @@ export default function BedManagementDashboard() {
         setSelectedBed(null);
         setFoundPatient(null);
         setPatientQuery("");
+        setSearchResults([]);
         setSuccessData(null);
         setAllocationDetails({
             admissionType: "Planned Admission",
@@ -301,12 +342,31 @@ export default function BedManagementDashboard() {
                                                     <input
                                                         value={patientQuery}
                                                         onChange={e => setPatientQuery(e.target.value)}
+                                                        onKeyDown={e => e.key === 'Enter' && handlePatientSearch()}
                                                         placeholder="Name, MRN, or Phone"
                                                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-700 focus:ring-2 focus:ring-slate-200 transition-all"
                                                     />
                                                 </div>
-                                                <button onClick={handlePatientSearch} className="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors">Search</button>
+                                                <button onClick={handlePatientSearch} disabled={isSearching} className="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors">
+                                                    {isSearching ? "..." : "Search"}
+                                                </button>
                                             </div>
+
+                                            {/* Search Results Dropdown */}
+                                            {searchResults.length > 0 && (
+                                                <div className="bg-white border border-slate-200 rounded-xl shadow-lg max-h-40 overflow-y-auto">
+                                                    {searchResults.map((p: any) => (
+                                                        <div
+                                                            key={p._id}
+                                                            onClick={() => selectPatient(p)}
+                                                            className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0"
+                                                        >
+                                                            <p className="font-bold text-slate-900 text-sm">{p.firstName} {p.lastName}</p>
+                                                            <p className="text-xs text-slate-500">{p.mrn} • {p.phone}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                             <div className="flex items-center gap-3">
                                                 <div className="h-px bg-slate-100 flex-1"></div>
                                                 <span className="text-xs font-bold text-slate-400">OR</span>
@@ -402,9 +462,12 @@ export default function BedManagementDashboard() {
                                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none"
                                         >
                                             <option value="">Select Primary Nurse</option>
-                                            <option>Nurse Kavita</option>
-                                            <option>Nurse Sarah</option>
-                                            <option>Nurse John</option>
+                                            {nurses.map(nurse => (
+                                                <option key={nurse._id} value={`${nurse.firstName} ${nurse.lastName}`}>
+                                                    {nurse.firstName} {nurse.lastName} ({nurse.department || 'General'})
+                                                </option>
+                                            ))}
+                                            {nurses.length === 0 && <option disabled>Loading nurses...</option>}
                                         </select>
                                     </div>
                                 </div>

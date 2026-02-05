@@ -345,10 +345,15 @@ export default function PatientProfilePage() {
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-2">Phone</label>
                                     <input
-                                        type="text"
+                                        type="tel"
+                                        maxLength={10}
                                         value={editForm.phone}
-                                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 font-bold outline-none focus:ring-2 focus:ring-olive-500 transition-all"
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            setEditForm({ ...editForm, phone: val });
+                                        }}
+                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-slate-900 font-bold outline-none focus:ring-2 focus:ring-olive-500 transition-all font-mono tracking-widest"
+                                        placeholder="XXXXXXXXXX"
                                     />
                                 </div>
                                 <div className="space-y-2">

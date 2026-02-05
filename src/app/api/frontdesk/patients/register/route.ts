@@ -33,7 +33,13 @@ export async function POST(req: Request) {
             contact: {
                 phone: body.phone,
                 email: userEmail,
-                address: [body.address, body.city, body.state, body.zip, body.country].filter(Boolean).join(', '),
+                address: {
+                    street: body.address,
+                    city: body.city,
+                    state: body.state,
+                    zipCode: body.zip,
+                    country: body.country,
+                },
             },
             emergencyContact: {
                 name: body.emergencyName,
@@ -80,7 +86,7 @@ export async function POST(req: Request) {
                 totalAmount: regFee,
                 amountPaid: 0,
                 balanceDue: regFee,
-                status: "pending", // Initially pending for collection at desk
+                status: "sent", // Initially sent/billed for collection at desk
                 dueDate: new Date(),
                 insuranceCalculation: {
                     claimStatus: "not_initiated",

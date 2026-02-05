@@ -21,15 +21,17 @@ export default function PatientDashboard() {
     const [appointments, setAppointments] = useState<any[]>([]);
     const [billing, setBilling] = useState<any>(null);
     const [todayAlert, setTodayAlert] = useState<any>(null);
+    const [admission, setAdmission] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [apptRes, billRes, queueRes] = await Promise.all([
+                const [apptRes, billRes, queueRes, admRes] = await Promise.all([
                     fetch('/api/appointments'),
                     fetch('/api/patient/billing'),
-                    fetch('/api/patient/queue')
+                    fetch('/api/patient/queue'),
+                    fetch('/api/patient/admission')
                 ]);
 
                 if (apptRes.ok) {
@@ -45,13 +47,17 @@ export default function PatientDashboard() {
                 if (queueRes.ok) {
                     const json = await queueRes.json();
                     const queueData = json.data || [];
-                    // Find the most relevant today's appointment (upcoming)
                     const now = new Date();
                     const nextToday = queueData.find((a: any) => {
                         const time = new Date(a.startTime);
                         return time > now && a.status !== 'completed' && a.status !== 'cancelled';
                     });
                     setTodayAlert(nextToday || null);
+                }
+
+                if (admRes && admRes.ok) {
+                    const data = await admRes.json();
+                    setAdmission(data);
                 }
             } catch (err) {
                 console.error(err);
@@ -69,6 +75,28 @@ export default function PatientDashboard() {
     return (
         <DashboardLayout>
             <div className="space-y-12 pb-20">
+                {/* ADMISSION CARD */}
+                {admission && admission.admitted && (
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[40px] p-8 text-white shadow-xl shadow-indigo-200 animate-in fade-in slide-in-from-top-4">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                        <Activity size={20} className="text-white" />
+                                    </div>
+                                    <span className="text-xs font-black uppercase tracking-widest bg-white/10 px-3 py-1 rounded-full border border-white/20">Active Admission</span>
+                                </div>
+                                <h3 className="text-3xl font-black mb-1">Room {admission.bed.roomNumber}</h3>
+                                <p className="text-indigo-100 font-medium text-lg">Bed {admission.bed.bedNumber} • {admission.bed.floor}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xs font-bold text-indigo-200 uppercase tracking-widest mb-1">Ward</p>
+                                <p className="font-bold text-xl">{admission.bed.ward}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* ALERT SECTION */}
                 {todayAlert && (
                     <div className="bg-red-50 border border-red-100 p-8 rounded-[40px] flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-1000">

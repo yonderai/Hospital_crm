@@ -39,6 +39,18 @@ export default function ORDashboard() {
     });
     const [submitting, setSubmitting] = useState(false);
 
+    // New Case State
+    const [isNewCaseModalOpen, setIsNewCaseModalOpen] = useState(false);
+    const [patients, setPatients] = useState<any[]>([]);
+    const [newCaseForm, setNewCaseForm] = useState({
+        patientId: "",
+        procedureName: "",
+        scheduledDate: "",
+        startTime: "",
+        orRoomId: "",
+        notes: ""
+    });
+
     // New state for patient reports and surgery orders
     const [isPatientReportsOpen, setIsPatientReportsOpen] = useState(false);
     const [isPreOrdersOpen, setIsPreOrdersOpen] = useState(false);
@@ -61,6 +73,24 @@ export default function ORDashboard() {
         };
         fetchCases();
     }, []);
+
+    // Fetch patients for the dropdown
+    useEffect(() => {
+        if (isNewCaseModalOpen) {
+            const fetchPatients = async () => {
+                try {
+                    const res = await fetch("/api/doctor/patients");
+                    if (res.ok) {
+                        const data = await res.json();
+                        setPatients(data);
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch patients:", err);
+                }
+            };
+            fetchPatients();
+        }
+    }, [isNewCaseModalOpen]);
 
     const activeCases = allCases.filter(c => c.status === "in-progress").length;
     const today = new Date().toISOString().split('T')[0];
@@ -149,6 +179,64 @@ export default function ORDashboard() {
         }
     };
 
+    const handleUpdateStatus = async (caseId: string, newStatus: string) => {
+        try {
+            const res = await fetch("/api/doctor/surgery", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ caseId, status: newStatus })
+            });
+
+            if (res.ok) {
+                // Re-fetch cases
+                const updRes = await fetch("/api/doctor/surgery");
+                const updData = await updRes.json();
+                setAllCases(updData);
+            } else {
+                alert("Failed to update status");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error updating status");
+        }
+    };
+
+    const handleCreateCase = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            const res = await fetch("/api/doctor/surgery", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newCaseForm)
+            });
+
+            if (res.ok) {
+                setIsNewCaseModalOpen(false);
+                setNewCaseForm({
+                    patientId: "",
+                    procedureName: "",
+                    scheduledDate: "",
+                    startTime: "",
+                    orRoomId: "",
+                    notes: ""
+                });
+                // Re-fetch cases
+                const updRes = await fetch("/api/doctor/surgery");
+                const updData = await updRes.json();
+                setAllCases(updData);
+                alert("Surgery scheduled successfully!");
+            } else {
+                alert("Failed to schedule surgery");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error scheduling surgery");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
         <DashboardLayout>
             <div className="p-8 space-y-8 bg-zinc-50/50 min-h-screen font-sans">
@@ -166,7 +254,10 @@ export default function ORDashboard() {
                         <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-black uppercase tracking-widest shadow-sm hover:shadow-md transition-all">
                             <Filter size={14} /> Filter
                         </button>
-                        <button className="flex items-center gap-2 px-6 py-2.5 bg-olive-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-olive-600/20 hover:bg-olive-700 transition-all">
+                        <button
+                            onClick={() => setIsNewCaseModalOpen(true)}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-olive-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-olive-600/20 hover:bg-olive-700 transition-all"
+                        >
                             <Plus size={14} /> New Case
                         </button>
                     </div>
@@ -301,6 +392,18 @@ export default function ORDashboard() {
                                                         >
                                                             <ClipboardList size={14} />
                                                             Pre-Op
+                                                        </button>
+                                                    )}
+
+                                                    {/* Start Surgery Button (for Scheduled or Cancelled) */}
+                                                    {(effectiveStatus === 'scheduled' || effectiveStatus === 'cancelled') && (
+                                                        <button
+                                                            onClick={() => handleUpdateStatus(cs._id, 'in-progress')}
+                                                            className="px-3 py-2 bg-purple-50 text-purple-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all shadow-sm flex items-center gap-1"
+                                                            title="Start Surgery Now"
+                                                        >
+                                                            <Activity size={14} />
+                                                            Start Case
                                                         </button>
                                                     )}
 
@@ -542,7 +645,136 @@ export default function ORDashboard() {
                 />
             )}
 
-            {/* Post-Surgery Instructions Form */}
+            {/* NEW CASE MODAL */}
+            {isNewCaseModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+                    <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-[48px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                        {/* Header */}
+                        <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 bg-olive-50 rounded-3xl flex items-center justify-center text-olive-600 shadow-sm">
+                                    <Plus size={28} />
+                                </div>
+                                <div>
+                                    <h4 className="text-2xl font-black text-slate-900 tracking-tight italic uppercase">Schedule Surgery</h4>
+                                    <p className="text-[10px] text-olive-600 font-bold uppercase tracking-widest mt-1">
+                                        Create New Surgical Case
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsNewCaseModalOpen(false)}
+                                className="w-14 h-14 flex items-center justify-center bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-2xl transition-all shadow-sm"
+                            >
+                                <Plus size={24} className="rotate-45" />
+                            </button>
+                        </div>
+
+                        {/* Form Body */}
+                        <div className="flex-1 overflow-y-auto p-10 bg-slate-50/30">
+                            <form id="newCaseForm" onSubmit={handleCreateCase} className="grid grid-cols-2 gap-8">
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Patient</label>
+                                    <select
+                                        required
+                                        className="w-full bg-white border border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-900 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm appearance-none"
+                                        value={newCaseForm.patientId}
+                                        onChange={(e) => setNewCaseForm({ ...newCaseForm, patientId: e.target.value })}
+                                    >
+                                        <option value="">-- Select Patient --</option>
+                                        {patients.map((p) => (
+                                            <option key={p._id} value={p._id}>
+                                                {p.firstName} {p.lastName} (MRN: {p.mrn})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Procedure Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full bg-white border border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-900 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm"
+                                        placeholder="e.g. Appendectomy, Knee Replacement"
+                                        value={newCaseForm.procedureName}
+                                        onChange={(e) => setNewCaseForm({ ...newCaseForm, procedureName: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Scheduled Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        className="w-full bg-white border border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-900 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm"
+                                        value={newCaseForm.scheduledDate}
+                                        onChange={(e) => setNewCaseForm({ ...newCaseForm, scheduledDate: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Start Time</label>
+                                    <input
+                                        type="time"
+                                        required
+                                        className="w-full bg-white border border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-900 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm"
+                                        value={newCaseForm.startTime}
+                                        onChange={(e) => setNewCaseForm({ ...newCaseForm, startTime: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">OR Suite</label>
+                                    <select
+                                        required
+                                        className="w-full bg-white border border-slate-100 rounded-2xl p-4 text-sm font-bold text-slate-900 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm"
+                                        value={newCaseForm.orRoomId}
+                                        onChange={(e) => setNewCaseForm({ ...newCaseForm, orRoomId: e.target.value })}
+                                    >
+                                        <option value="">-- Select Suite --</option>
+                                        <option value="OR-01">OR Suite 01 (General)</option>
+                                        <option value="OR-02">OR Suite 02 (Orthopedic)</option>
+                                        <option value="OR-03">OR Suite 03 (Cardiac)</option>
+                                        <option value="OR-04">OR Suite 04 (Neuro)</option>
+                                        <option value="OR-05">OR Suite 05 (Trauma)</option>
+                                    </select>
+                                </div>
+
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Notes / Special Requirements</label>
+                                    <textarea
+                                        rows={3}
+                                        className="w-full bg-white border border-slate-100 rounded-3xl p-6 text-sm font-medium text-slate-800 outline-none focus:ring-4 ring-olive-100/50 transition-all shadow-sm"
+                                        placeholder="Any specific equipment or staff needed..."
+                                        value={newCaseForm.notes}
+                                        onChange={(e) => setNewCaseForm({ ...newCaseForm, notes: e.target.value })}
+                                    />
+                                </div>
+                            </form>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-10 border-t border-slate-100 bg-white flex justify-end gap-4 shrink-0">
+                            <button
+                                onClick={() => setIsNewCaseModalOpen(false)}
+                                className="px-10 py-5 bg-slate-100 text-slate-600 rounded-3xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all shadow-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                form="newCaseForm"
+                                type="submit"
+                                disabled={submitting}
+                                className="px-12 py-5 bg-olive-600 text-white rounded-3xl font-black text-[10px] uppercase tracking-widest hover:bg-olive-700 transition-all shadow-lg shadow-olive-600/20 disabled:opacity-50"
+                            >
+                                {submitting ? "Scheduling..." : "Schedule Surgery"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {isPostInstructionsOpen && selectedCase && selectedPatient && (
                 <PostSurgeryInstructionForm
                     caseId={selectedCase._id}

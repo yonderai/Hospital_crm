@@ -281,7 +281,11 @@ export default function AppointmentBookingWizard() {
                                     <label className="block text-xs font-bold text-slate-500 mb-1">Mobile Number</label>
                                     <input
                                         value={walkInDetails.phone}
-                                        onChange={e => setWalkInDetails({ ...walkInDetails, phone: e.target.value })}
+                                        maxLength={10}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            setWalkInDetails({ ...walkInDetails, phone: val });
+                                        }}
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm"
                                         placeholder="9876543210"
                                     />

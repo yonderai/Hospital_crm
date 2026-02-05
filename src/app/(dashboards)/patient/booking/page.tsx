@@ -128,7 +128,7 @@ export default function BookingPage() {
                                     <option value="">-- Choose a Doctor --</option>
                                     {doctors.map((doctor) => (
                                         <option key={doctor._id} value={doctor._id}>
-                                            Dr. {doctor.firstName} {doctor.lastName} ({doctor.department})
+                                            Dr. {doctor.firstName} {doctor.lastName} ({doctor.department || "General"})
                                         </option>
                                     ))}
                                 </select>

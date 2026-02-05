@@ -8,16 +8,18 @@ import Prescription from "@/lib/models/Prescription";
 export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || !['doctor', 'admin', 'pharmacist'].includes((session.user as any).role)) {
+        if (!session || !['doctor', 'admin', 'pharmacist', 'nurse'].includes((session.user as any).role)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         await dbConnect();
         const { searchParams } = new URL(req.url);
         const status = searchParams.get('status');
+        const patientId = searchParams.get('patientId');
 
         let query: any = {};
         if (status) query.status = status;
+        if (patientId) query.patientId = patientId;
 
         const prescriptions = await Prescription.find(query)
             .populate('patientId', 'firstName lastName mrn')
