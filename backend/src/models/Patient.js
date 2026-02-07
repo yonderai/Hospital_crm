@@ -1,25 +1,27 @@
 import mongoose from 'mongoose';
 
 const patientSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, unique: true, sparse: true },
-    phone: { type: String, required: true },
+    mrn: { type: String, required: true, unique: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    name: String, // Keep for legacy if needed
     dob: { type: Date, required: true },
-    gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
-    address: { type: String },
-    kycVerified: { type: Boolean, default: false },
-    medicalHistory: [{
-        diagnosis: String,
-        treatment: String,
-        date: Date,
-        doctor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-    }],
-    ongoingTreatment: { type: String },
-    bloodGroup: { type: String },
+    gender: { type: String, required: true },
+    contact: {
+        phone: { type: String, required: true },
+        email: { type: String, unique: true, sparse: true },
+        address: {
+            street: String,
+            city: String,
+            state: String,
+            zipCode: String,
+            country: String
+        }
+    },
     emergencyContact: {
         name: String,
         phone: String,
-        relationship: String
+        relation: String
     },
     bedAllocated: {
         ward: String,

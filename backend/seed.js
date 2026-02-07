@@ -11,11 +11,12 @@ import Ambulance from './src/models/Ambulance.js';
 
 dotenv.config();
 
-const MONGODB_URI = "mongodb+srv://yuvrajsingh02608_db_user:yuvrajsingh@yondermedicareai.b6dwyv5.mongodb.net/yonder_medicare?retryWrites=true&w=majority";
-
 const connectDB = async () => {
     try {
-        await mongoose.connect(MONGODB_URI);
+        if (!process.env.MONGODB_URI) {
+            throw new Error("MONGODB_URI is not defined in .env");
+        }
+        await mongoose.connect(process.env.MONGODB_URI);
         console.log('MongoDB Connected');
     } catch (error) {
         console.error(`Error: ${error.message}`);
@@ -27,8 +28,15 @@ const seedData = async () => {
     await connectDB();
 
     console.log('Clearing old data...');
+    try {
+        await Patient.collection.dropIndexes();
+    } catch (e) { console.log('No indexes to drop'); }
+
     await User.deleteMany({});
     await Patient.deleteMany({});
+    try {
+        await Appointment.collection.dropIndexes();
+    } catch (e) { console.log('No appointment indexes to drop'); }
     await Appointment.deleteMany({});
     await Billing.deleteMany({});
 
@@ -39,18 +47,23 @@ const seedData = async () => {
     const doctorSpecialties = ['Cardiology', 'Neurology', 'Oncology', 'Pediatrics', 'Orthopedics'];
 
     for (let i = 0; i < 5; i++) {
+        const lname = ['Smith', 'Patel', 'Jones', 'Wang', 'Garcia'][i];
         doctors.push(await User.create({
-            name: `Dr. ${['Smith', 'Patel', 'Jones', 'Wang', 'Garcia'][i]}`,
+            firstName: 'Dr.',
+            lastName: lname,
             email: `doctor${i + 1}@hospital.com`,
             password: 'password123',
-            role: ROLES.DOCTOR
+            role: ROLES.DOCTOR,
+            specialization: doctorSpecialties[i]
         }));
     }
 
     // Create Nurses
     for (let i = 0; i < 10; i++) {
+        const fname = ['Sarah', 'Mike', 'Emily', 'David', 'Jessica', 'Tom', 'Laura', 'Chris', 'Anna', 'James'][i];
         await User.create({
-            name: `Nurse ${['Sarah', 'Mike', 'Emily', 'David', 'Jessica', 'Tom', 'Laura', 'Chris', 'Anna', 'James'][i]}`,
+            firstName: fname,
+            lastName: 'Nurse',
             email: `nurse${i + 1}@hospital.com`,
             password: 'password123',
             role: ROLES.NURSE
@@ -58,26 +71,39 @@ const seedData = async () => {
     }
 
     // Create Finance/Admin
-    await User.create({ name: 'Finance Manager', email: 'finance@hospital.com', password: 'password123', role: ROLES.REVENUE_OFFICE || 'finance' });
+    await User.create({ firstName: 'Finance', lastName: 'Manager', email: 'finance@hospital.com', password: 'password123', role: ROLES.REVENUE_OFFICE || 'finance' });
     await User.create({ firstName: 'Maintenance', lastName: 'Staff', email: 'maintenance@hospital.com', password: 'a', role: 'maintenance', department: 'Maintenance', employeeId: 'maintenance' });
-    await User.create({ name: 'Emergency Manager', email: 'emergency@hospital.com', password: 'emergency123', role: 'emergency' });
-    await User.create({ name: 'Admin User', email: 'admin@hospital.com', password: 'password123', role: ROLES.ADMIN });
-    await User.create({ name: 'HR Manager', email: 'hr@hospital.com', password: 'password123', role: ROLES.HR });
-    await User.create({ name: 'Pharmacy Manager', email: 'pharmacy@hospital.com', password: 'password123', role: ROLES.PHARMACY_INVENTORY });
+    await User.create({ firstName: 'Emergency', lastName: 'Manager', email: 'emergency@hospital.com', password: 'emergency123', role: 'emergency' });
+    await User.create({ firstName: 'Admin', lastName: 'User', email: 'admin@hospital.com', password: 'password123', role: ROLES.ADMIN });
+    await User.create({ firstName: 'HR', lastName: 'Manager', email: 'hr@hospital.com', password: 'password123', role: ROLES.HR });
+    await User.create({ firstName: 'Pharmacy', lastName: 'Manager', email: 'pharmacy@hospital.com', password: 'password123', role: ROLES.PHARMACY_INVENTORY });
 
-    console.log('Creating Patients...');i
+    console.log('Creating Patients...');
     const patients = [];
     const patientNames = ['Alice Cooper', 'Bob Marley', 'Charlie Brown', 'David Bowie', 'Elvis Presley', 'Freddie Mercury', 'George Michael', 'Harry Styles', 'Iggy Pop', 'John Lennon'];
 
     for (let i = 0; i < 20; i++) {
-        const name = patientNames[i % patientNames.length] + (i > 9 ? ` ${i}` : '');
+        const fullName = patientNames[i % patientNames.length] + (i > 9 ? ` ${i}` : '');
+        const [pFirst, pLast] = fullName.split(' ');
         patients.push(await Patient.create({
-            name: name,
-            email: `patient${i + 1}@example.com`,
-            phone: `555-01${i.toString().padStart(2, '0')}`,
+            firstName: pFirst,
+            lastName: pLast || 'Doe',
+            name: fullName,
+            mrn: `MRN-${2024000 + i}`,
+            contact: {
+                phone: `555-01${i.toString().padStart(2, '0')}`,
+                email: `patient${i + 1}@example.com`,
+                address: {
+                    street: '123 Hospital Way',
+                    city: 'New York',
+                    state: 'NY',
+                    zipCode: '10001',
+                    country: 'USA'
+                }
+            },
             dob: new Date(1980, 0, 1),
             gender: i % 2 === 0 ? 'Male' : 'Female',
-            address: '123 Hospital Way',
+            // address: '123 Hospital Way', // Removed root address
             kycVerified: true,
             bloodGroup: ['A+', 'B+', 'O+', 'AB+'][i % 4],
             insuranceDetails: {
@@ -98,9 +124,14 @@ const seedData = async () => {
         appointmentDate.setHours(9 + i, 0); // 9 AM onwards
 
         await Appointment.create({
+            appointmentId: `APT-SEED-${1000 + i}`,
             patient: patients[i]._id,
-            doctor: doctors[i % doctors.length]._id,
-            dateTime: appointmentDate,
+            patientId: patients[i]._id, // Redundancy for schema compatibility
+            providerId: doctors[i % doctors.length]._id, // Schema uses providerId
+            startTime: appointmentDate,
+            endTime: new Date(appointmentDate.getTime() + 30 * 60000),
+            type: 'consultation',
+            createdBy: 'staff',
             status: i < 5 ? 'Completed' : (i < 8 ? 'Checked-in' : 'Scheduled'),
             reason: ['Regular Checkup', 'Fever', 'Back Pain', 'Headache', 'Follow-up'][i % 5],
             queueNumber: i + 1,

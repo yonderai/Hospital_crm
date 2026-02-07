@@ -50,7 +50,7 @@ cd ..
 Populate the database with initial data (Users, Patients, Inventory, etc.):
 ```bash
 # Run from the root directory
-node backend/src/utils/seeder.js
+npm run seed
 ```
 
 ### 4. Run the Application

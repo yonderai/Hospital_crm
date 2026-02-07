@@ -3,12 +3,9 @@ import bcrypt from 'bcryptjs';
 import { ROLES } from '../config/roles.js';
 
 const userSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        // required: [true, 'Please add a name'], // Made optional as we use firstName/lastName
-    },
-    firstName: { type: String },
-    lastName: { type: String },
+    firstName: { type: String, required: [true, 'Please add a first name'] },
+    lastName: { type: String, required: [true, 'Please add a last name'] },
+    name: { type: String }, // Optional/Legacy
     department: { type: String },
     employeeId: { type: String },
     email: {

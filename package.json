@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "seed": "node --env-file=.env seed_fix.js",
+    "seed": "node backend/seed.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
