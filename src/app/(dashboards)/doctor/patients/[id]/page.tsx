@@ -22,6 +22,7 @@ export default function PatientDetails() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
     const [previewDoc, setPreviewDoc] = useState<any | null>(null);
+    const [currentAppointment, setCurrentAppointment] = useState<any | null>(null);
 
     // Modals
     const [showRxModal, setShowRxModal] = useState(false);
@@ -37,10 +38,11 @@ export default function PatientDetails() {
     const fetchData = async () => {
         if (!params.id) return;
         try {
-            const [patientRes, rxRes, labRes] = await Promise.all([
+            const [patientRes, rxRes, labRes, apptsRes] = await Promise.all([
                 fetch(`/api/patients/${params.id}`),
                 fetch(`/api/patients/${params.id}/prescriptions`),
-                fetch(`/api/patients/${params.id}/labs`)
+                fetch(`/api/patients/${params.id}/labs`),
+                fetch(`/api/appointments?patientId=${params.id}`)
             ]);
 
             if (patientRes.ok) {
@@ -55,6 +57,13 @@ export default function PatientDetails() {
             }
             if (rxRes.ok) setPrescriptions(await rxRes.json());
             if (labRes.ok) setLabs(await labRes.json());
+            if (apptsRes.ok) {
+                const appts = await apptsRes.json();
+                const latest = appts.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                const withInsight = latest.find((a: any) => a.aiInsights);
+                if (withInsight) setCurrentAppointment(withInsight);
+                else setCurrentAppointment(latest[0]);
+            }
         } catch (error) {
             console.error("Failed to fetch clinical data:", error);
         } finally {
@@ -180,6 +189,83 @@ export default function PatientDetails() {
                     {activeTab === 'overview' && (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <div className="lg:col-span-2 space-y-10">
+                                {currentAppointment?.aiInsights && (
+                                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-700">
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent_70%)]" />
+                                        <div className="relative z-10 space-y-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-inner">
+                                                    <div className="relative">
+                                                        <div className="absolute inset-0 bg-white blur-lg opacity-40"></div>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-white relative z-10 w-8 h-8"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" /></svg>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200 flex items-center gap-2">
+                                                        <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" /> AI Clinical Analysis
+                                                    </p>
+                                                    <h3 className="text-2xl font-black italic tracking-tight mt-1">Pre-Visit Symptom Intelligence</h3>
+                                                </div>
+                                            </div>
+
+                                            <div className="p-8 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 relative group">
+                                                <div className="space-y-4">
+                                                    {currentAppointment.aiInsights
+                                                        .replace(/["']?🧠 AI Clinical Insights[\s\S]*?-{3,}/, '') // Remove Header
+                                                        .replace(/-{2,}/g, '') // Remove garbage dashes
+                                                        .replace(/([•*–-])/g, '\n$1') // Force newlines
+                                                        .split('\n')
+                                                        .map((line: string, i: number) => {
+                                                            const cleanLine = line.trim();
+                                                            if (!cleanLine || cleanLine.includes('---') || cleanLine.includes('AI Clinical Insights')) return null;
+
+                                                            // Headers (lines ending with :)
+                                                            if (cleanLine.endsWith(':')) {
+                                                                return (
+                                                                    <h4 key={i} className="text-sm font-black uppercase tracking-widest text-indigo-200 mt-6 first:mt-0 border-b border-white/10 pb-2">
+                                                                        {cleanLine.replace('•', '').trim()}
+                                                                    </h4>
+                                                                );
+                                                            }
+
+                                                            // Bullet points
+                                                            if (cleanLine.startsWith('•') || cleanLine.startsWith('-') || cleanLine.startsWith('–')) {
+                                                                return (
+                                                                    <div key={i} className="flex items-start gap-3 pl-2">
+                                                                        <div className="w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2 flex-shrink-0" />
+                                                                        <p className="text-base font-medium text-indigo-50 leading-relaxed">
+                                                                            {cleanLine.replace(/^[•\-–]\s*/, '')}
+                                                                        </p>
+                                                                    </div>
+                                                                );
+                                                            }
+
+                                                            // Regular text
+                                                            return (
+                                                                <p key={i} className="text-base font-medium text-indigo-50 leading-relaxed pl-2">
+                                                                    {cleanLine}
+                                                                </p>
+                                                            );
+                                                        })}
+                                                </div>
+
+                                                <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="px-2 py-1 rounded bg-indigo-500/20 border border-indigo-400/30 text-[9px] font-bold uppercase tracking-widest text-indigo-200">
+                                                            Model: Llama 3.3
+                                                        </div>
+                                                        <div className="px-2 py-1 rounded bg-indigo-500/20 border border-indigo-400/30 text-[9px] font-bold uppercase tracking-widest text-indigo-200">
+                                                            Confidence: High
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-[9px] uppercase tracking-widest text-indigo-300 font-bold opacity-70">
+                                                        For clinical reference only
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-sm space-y-8">
                                     <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
                                         <History size={24} className="text-olive-600" /> Medical History

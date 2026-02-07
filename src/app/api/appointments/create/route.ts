@@ -46,7 +46,41 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Time slot already booked" }, { status: 409 });
         }
 
-        // 3. Create Appointment
+        // 3. Generate AI Insight
+        let aiInsight = undefined;
+        // Temporary Debug Logging
+        const fs = require('fs');
+        const logPath = require('path').join(process.cwd(), 'debug_ai_log.txt');
+
+        try {
+            fs.appendFileSync(logPath, `[CREATE] Attempting AI Gen for: ${reason}\n`);
+
+            const insightRes = await fetch("http://127.0.0.1:5001/api/clinical-insight", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    symptoms: reason,
+                    history: "Not available",
+                    medications: "Not available"
+                }),
+            });
+
+            fs.appendFileSync(logPath, `[CREATE] AI Status: ${insightRes.status}\n`);
+
+            if (insightRes.ok) {
+                const insightData = await insightRes.json();
+                aiInsight = insightData.insight;
+                fs.appendFileSync(logPath, `[CREATE] AI Success. Length: ${aiInsight?.length}\n`);
+            } else {
+                const text = await insightRes.text();
+                fs.appendFileSync(logPath, `[CREATE] AI Failed: ${text}\n`);
+            }
+        } catch (e: any) {
+            console.error("AI Gen Failed", e);
+            fs.appendFileSync(logPath, `[CREATE] AI Exception: ${e.message}\n`);
+        }
+
+        // 4. Create Appointment
         const newAppointment = await Appointment.create({
             appointmentId: `APT-${Date.now()}`,
             patientId,
@@ -56,6 +90,7 @@ export async function POST(request: Request) {
             status: "scheduled",
             type,
             reason,
+            aiInsights: aiInsight,
             createdBy: (session.user as any).role === 'patient' ? 'patient' : 'staff'
         });
 

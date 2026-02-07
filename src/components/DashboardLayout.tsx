@@ -37,7 +37,8 @@ import {
     Siren,
     AlertTriangle,
     Hammer,
-    ChevronLeft
+    ChevronLeft,
+    Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -124,7 +125,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Role-based navigation mapping - Strictly separated as per requirements
     const navConfig: Record<string, string[]> = {
-        doctor: ["Overview", "Patients", "Schedule", "Surgery", "ICU Tracking", "Support"],
+        doctor: ["Overview", "Patients", "Schedule", "Clinical Insight", "Surgery", "ICU Tracking", "Support"],
         pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Purchase Orders"], // Unified Pharmacy & Inventory
         labtech: ["Overview", "Pending Lab Orders", "Radiology", "Test Scheduling", "Sample Tracking", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
@@ -144,7 +145,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // Doctor
         { name: "Patients", href: `/${urlRole}/patients`, icon: Users },
         { name: "Schedule", href: `/${urlRole}/schedule`, icon: Calendar },
-        { name: "Clinical", href: `/${urlRole}/clinical`, icon: FileText },
+        { name: "Clinical Insight", href: `/${urlRole}/clinical-insight`, icon: Sparkles },
         { name: "Surgery", href: `/${urlRole}/or-management`, icon: Scissors },
         { name: "ICU Tracking", href: `/${urlRole}/icu-tracking`, icon: Activity },
         { name: "Laboratory", href: `/${urlRole}/laboratory`, icon: Microscope },

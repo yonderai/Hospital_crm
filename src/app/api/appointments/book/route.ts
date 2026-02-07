@@ -68,21 +68,33 @@ export async function POST(req: Request) {
             receiptNo = `RCP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(5, '0')}`;
         }
 
-        // --- AI Insight Logic ---
-        const historyStr = [
-            ...(patient.medicalHistory?.chronicConditions || []),
-            ...(patient.medicalHistory?.allergies || []).map((a: string) => `Allergy: ${a}`)
-        ].join(", ") || "None";
+        // Generate AI Insight (Non-blocking preference, but awaiting for simplicity in V1)
+        let aiInsight = undefined;
 
-        const medsStr = (patient.medicalHistory?.currentMedications || [])
-            .map((m: any) => `${m.name} (${m.dosage})`)
-            .join(", ") || "None";
+        try {
+            console.log(`[BOOK] Attempting AI Gen for: ${chiefComplaint || reason}`);
 
-        const insight = await getAiInsight(
-            chiefComplaint || reason || "Consultation",
-            historyStr,
-            medsStr
-        );
+            const insightRes = await fetch("http://127.0.0.1:5001/api/clinical-insight", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    symptoms: chiefComplaint || reason,
+                    history: "Not available during booking",
+                    medications: "Not available during booking"
+                }),
+            });
+
+            if (insightRes.ok) {
+                const insightData = await insightRes.json();
+                aiInsight = insightData.insight;
+            } else {
+                const text = await insightRes.text();
+                console.error(`[BOOK] AI Failed: ${text}`);
+            }
+        } catch (error: any) {
+            console.error("AI Insight Generation Failed:", error);
+            // We do not block booking if AI fails
+        }
 
         // Create Appointment
         const appointment = await Appointment.create({
@@ -95,8 +107,9 @@ export async function POST(req: Request) {
             type: type || "consultation",
             reason: reason || "Consultation",
             chiefComplaint: chiefComplaint,
-            aiInsight: insight || undefined,
+            aiInsight: aiInsight || undefined,
             notes: body.notes,
+            aiInsights: aiInsight, // Save the generated insight
             payment: {
                 totalAmount: payment?.totalAmount || 0,
                 paidAmount: payment?.paidAmount || 0,
@@ -109,8 +122,8 @@ export async function POST(req: Request) {
         });
 
         // Update Patient's latestAiInsight
-        if (insight) {
-            await Patient.findByIdAndUpdate(patient._id, { latestAiInsight: insight });
+        if (aiInsight) {
+            await Patient.findByIdAndUpdate(patient._id, { latestAiInsight: aiInsight });
         }
 
         return NextResponse.json({

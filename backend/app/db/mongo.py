@@ -23,9 +23,16 @@ def get_db():
             # Create a client
             # serverSelectionTimeoutMS=3000 ensures we don't hang efficiently if DB is down
             # tlsCAFile=certifi.where() fixes SSL issues on macOS
-            client = MongoClient(mongo_uri, 
-                               serverSelectionTimeoutMS=3000,
-                               tlsCAFile=certifi.where())
+            client_kwargs = {
+                "serverSelectionTimeoutMS": 3000
+            }
+            
+            # Only use certifi for remote/SRV connections (Atlas)
+            # Local connections typically don't need/support this TLS config
+            if "mongodb+srv://" in mongo_uri or "ssl=true" in mongo_uri.lower():
+                client_kwargs["tlsCAFile"] = certifi.where()
+                
+            client = MongoClient(mongo_uri, **client_kwargs)
             
             # Trigger a connection check immediately
             client.admin.command('ping')

@@ -4,6 +4,31 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import Appointment from "@/lib/models/Appointment";
 
+export async function GET(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { id } = await params;
+        await dbConnect();
+
+        const appointment = await Appointment.findById(id).populate('patientId');
+        if (!appointment) {
+            return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+        }
+
+        return NextResponse.json(appointment);
+    } catch (error: any) {
+        console.error("Fetch Appointment Error:", error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
 export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ id: string }> }

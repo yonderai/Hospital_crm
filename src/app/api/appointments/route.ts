@@ -24,6 +24,7 @@ export async function GET(req: Request) {
 
         if (role === 'doctor') {
             query = { providerId: userId };
+            if (searchParams.get('patientId')) query.patientId = searchParams.get('patientId');
         } else if (role === 'patient') {
             // Find the clinical patient profile for this user
             const patient = await Patient.findOne({ "contact.email": session.user?.email });
@@ -201,21 +202,33 @@ export async function POST(req: Request) {
 
         const creatorRole = role === 'patient' ? 'patient' : 'staff';
 
-        // --- AI Insight Logic ---
-        const historyStr = [
-            ...(patientProfile.medicalHistory?.chronicConditions || []),
-            ...(patientProfile.medicalHistory?.allergies || []).map((a: string) => `Allergy: ${a}`)
-        ].join(", ") || "None";
+        // --- AI INSIGHT GENERATION START ---
+        let aiInsight = undefined;
 
-        const medsStr = (patientProfile.medicalHistory?.currentMedications || [])
-            .map((m: any) => `${m.name} (${m.dosage})`)
-            .join(", ") || "None";
+        try {
+            // console.log(`[MAIN-POST] Attempting AI Gen for: ${reason}`);
 
-        const insight = await getAiInsight(
-            chiefComplaint || reason || "Consultation",
-            historyStr,
-            medsStr
-        );
+            const insightRes = await fetch("http://127.0.0.1:5001/api/clinical-insight", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    symptoms: reason,
+                    history: "Not available",
+                    medications: "Not available"
+                }),
+            });
+
+            if (insightRes.ok) {
+                const insightData = await insightRes.json();
+                aiInsight = insightData.insight;
+            } else {
+                const text = await insightRes.text();
+                // console.error(`[MAIN-POST] AI Failed: ${text}`);
+            }
+        } catch (e: any) {
+            console.error("AI Gen Failed", e);
+        }
+        // --- AI INSIGHT GENERATION END ---
 
         const newAppointment = await Appointment.create({
             appointmentId,
@@ -226,14 +239,15 @@ export async function POST(req: Request) {
             reason,
             chiefComplaint,
             type,
-            aiInsight: insight || undefined,
+            aiInsight: aiInsight || undefined,
             status: "scheduled",
+            aiInsights: aiInsight,
             createdBy: creatorRole
         });
 
         // Update Patient's latestAiInsight
-        if (insight) {
-            await Patient.findByIdAndUpdate(targetPatientId, { latestAiInsight: insight });
+        if (aiInsight) {
+            await Patient.findByIdAndUpdate(targetPatientId, { latestAiInsight: aiInsight });
         }
 
         return NextResponse.json(newAppointment, { status: 201 });

@@ -11,6 +11,7 @@ import {
     ChevronRight, ExternalLink, ZoomIn, Scissors, Scan, Download, X
 } from "lucide-react";
 import ReportModal from "./ReportModal";
+import Link from "next/link";
 import { format } from "date-fns";
 
 export default function ClinicalProfile(props: { patient: any; onBack: () => void; initialTab?: string; appointmentId?: string; encounterId?: string }) {
@@ -26,26 +27,44 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
         loading: true
     });
     const [selectedReport, setSelectedReport] = useState<any | null>(null);
+
     const [previewDoc, setPreviewDoc] = useState<any | null>(null);
+    const [currentAppointment, setCurrentAppointment] = useState<any | null>(null);
 
     const fetchHistory = async () => {
         if (!patient?._id) return;
         setHistory((prev: any) => ({ ...prev, loading: true }));
         try {
-            const [consultations, prescriptions, labs, radiology, surgeries, documents] = await Promise.all([
+            const [consultations, prescriptions, labs, radiology, surgeries, documents, apptRes] = await Promise.all([
                 fetch(`/api/patients/${patient._id}/consultations`).then(res => res.ok ? res.json() : []),
                 fetch(`/api/patients/${patient._id}/prescriptions`).then(res => res.ok ? res.json() : []),
                 fetch(`/api/patients/${patient._id}/labs`).then(res => res.ok ? res.json() : []),
                 fetch(`/api/patients/${patient._id}/radiology`).then(res => res.ok ? res.json() : []),
                 fetch(`/api/patients/${patient._id}/surgery`).then(res => res.ok ? res.json() : []),
-                fetch(`/api/patient/documents?patientId=${patient._id}`).then(res => res.ok ? res.json() : { documents: [] })
+                fetch(`/api/patient/documents?patientId=${patient._id}`).then(res => res.ok ? res.json() : { documents: [] }),
+                fetch(`/api/appointments?patientId=${patient._id}`).then(res => res.ok ? res.json() : [])
             ]);
+
+            let activeAppt = null;
+            if (appointmentId) {
+                activeAppt = apptRes.find((a: any) => a._id === appointmentId || a.appointmentId === appointmentId);
+            }
+
+            if (!activeAppt && apptRes.length > 0) {
+                // Sort by createdAt desc to get latest
+                const sorted = [...apptRes].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                // Prefer one with AI insights
+                activeAppt = sorted.find((a: any) => a.aiInsights) || sorted[0];
+            }
+
+            if (activeAppt) {
+                setCurrentAppointment(activeAppt);
+            }
 
             console.log("ClinicalProfile: History Fetched", {
                 encounterId,
                 appointmentId,
-                rxCount: prescriptions.length,
-                linkedRxs: prescriptions.filter((r: any) => r.encounterId || r.appointmentId).length
+                insight: activeAppt?.aiInsights ? "Present" : "None"
             });
 
             setHistory({
@@ -67,18 +86,13 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
         if (patient?._id) {
             fetchHistory();
         }
-    }, [patient?._id]);
+    }, [patient?._id, appointmentId]); // Added appointmentId dependency
 
-    // Handle initial tab for deep links - Only if explicitly passed
-    useEffect(() => {
-        if (initialTab) {
-            setActiveTab(initialTab);
-        }
-    }, [initialTab]);
+    // ... (rest of useEffects)
 
     return (
         <div className="h-full flex flex-col bg-slate-50">
-            {/* Header */}
+            {/* ... (Header - no changes) ... */}
             <div className="bg-white border-b border-slate-200 p-6 flex justify-between items-center shadow-sm">
                 <div className="flex items-center space-x-6">
                     <button onClick={onBack} className="text-slate-400 hover:text-slate-900 font-black text-[10px] uppercase tracking-widest flex items-center gap-2 transition-all">
@@ -99,6 +113,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                         </div>
                     </div>
                 </div>
+                {/* ... (Status - no changes) ... */}
                 <div className="text-right">
                     <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Global Status</div>
                     {(() => {
@@ -119,7 +134,7 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                 </div>
             </div>
 
-            {/* Report Modal Integration */}
+            {/* ... (Report Modal/Tabs - no changes) ... */}
             {selectedReport && (
                 <ReportModal
                     imageUrl={selectedReport.url}
@@ -160,7 +175,45 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
 
                     {activeTab === "overview" && (
                         <div className="space-y-8">
-                            {/* Surgery Alert - Shows 1 hour before scheduled surgery */}
+                            {/* AI Clinical Insight Block (New) */}
+                            {currentAppointment?.aiInsights && (
+                                <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-700">
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent_70%)]" />
+                                    <div className="relative z-10 space-y-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-inner">
+                                                <div className="relative">
+                                                    <div className="absolute inset-0 bg-white blur-lg opacity-40"></div>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-white relative z-10 w-8 h-8"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" /></svg>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200 flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" /> AI Clinical Analysis
+                                                </p>
+                                                <h3 className="text-2xl font-black italic tracking-tight mt-1">Pre-Visit Symptom Intelligence</h3>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-6 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 relative group">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-quote absolute top-6 right-6 text-white/10 w-12 h-12 rotate-180"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" /><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" /></svg>
+                                            <div className="prose prose-invert prose-sm">
+                                                <p className="text-lg font-medium leading-relaxed italic text-indigo-50">
+                                                    "{currentAppointment.aiInsights}"
+                                                </p>
+                                            </div>
+                                            <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
+                                                <p className="text-[10px] uppercase tracking-widest text-indigo-300 font-bold">Analysis based on reported complaints</p>
+                                                <Link href={`/doctor/clinical/${currentAppointment._id}/ai-report`} className="text-[10px] uppercase tracking-widest text-white font-black hover:underline decoration-indigo-300 underline-offset-4 opacity-50 cursor-not-allowed" title="Detailed Report Coming Soon">
+                                                    View Full Analysis &rarr;
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Surgery Alert ... (rest of the file)
                             {(() => {
                                 const now = new Date();
                                 const upcomingSurgeries = history.surgeries?.filter((surgery: any) => {

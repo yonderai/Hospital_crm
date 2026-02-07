@@ -7,7 +7,7 @@ def create_app():
     # Load environment variables from the root .env file
     # We go up two levels: app -> backend -> root
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-    load_dotenv(os.path.join(root_dir, '.env'))
+    load_dotenv(os.path.join(root_dir, '.env'), override=True)
 
     app = Flask(__name__)
     
