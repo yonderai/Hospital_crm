@@ -246,7 +246,7 @@ export default function PharmacyDispensing() {
                                 key={rx._id}
                                 onClick={() => {
                                     setSelectedRx(rx);
-                                    setDispenseItems(rx.medications.map(m => ({ ...m, originalQuantity: m.quantity })));
+                                    setDispenseItems(rx.medications.map(m => ({ ...m, quantity: m.quantity || 0, originalQuantity: m.quantity || 0 })));
                                     setError(null);
                                     fetchPaymentDetails(rx._id);
                                 }}
@@ -420,7 +420,7 @@ export default function PharmacyDispensing() {
                                                         min="0"
                                                         max={med.originalQuantity}
                                                         className="w-20 px-3 py-2 bg-white border border-slate-200 rounded-xl text-center font-black text-slate-900 outline-none focus:ring-2 focus:ring-teal-500"
-                                                        value={med.quantity}
+                                                        value={med.quantity ?? 0}
                                                         onChange={(e) => {
                                                             const newItems = [...dispenseItems];
                                                             newItems[idx].quantity = Number(e.target.value);

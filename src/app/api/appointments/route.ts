@@ -204,27 +204,8 @@ export async function POST(req: Request) {
 
         // --- AI INSIGHT GENERATION START ---
         let aiInsight = undefined;
-
         try {
-            // console.log(`[MAIN-POST] Attempting AI Gen for: ${reason}`);
-
-            const insightRes = await fetch("http://127.0.0.1:5001/api/clinical-insight", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    symptoms: reason,
-                    history: "Not available",
-                    medications: "Not available"
-                }),
-            });
-
-            if (insightRes.ok) {
-                const insightData = await insightRes.json();
-                aiInsight = insightData.insight;
-            } else {
-                const text = await insightRes.text();
-                // console.error(`[MAIN-POST] AI Failed: ${text}`);
-            }
+            aiInsight = await getAiInsight(reason);
         } catch (e: any) {
             console.error("AI Gen Failed", e);
         }

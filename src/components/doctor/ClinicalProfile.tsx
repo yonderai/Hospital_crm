@@ -175,38 +175,73 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
 
                     {activeTab === "overview" && (
                         <div className="space-y-8">
-                            {/* AI Clinical Insight Block (New) */}
-                            {currentAppointment?.aiInsights && (
-                                <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-700">
-                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent_70%)]" />
-                                    <div className="relative z-10 space-y-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-inner">
-                                                <div className="relative">
-                                                    <div className="absolute inset-0 bg-white blur-lg opacity-40"></div>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-white relative z-10 w-8 h-8"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" /></svg>
+                            {/* AI Clinical Insight Block (Enhanced) */}
+                            {(currentAppointment?.aiInsights || patient.latestAiInsight) && (
+                                <div className="bg-gradient-to-br from-indigo-700 via-indigo-600 to-purple-800 rounded-[32px] p-6 text-white shadow-xl relative overflow-hidden animate-in fade-in slide-in-from-top-6 duration-1000 border border-white/10">
+                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.15),transparent_70%)]" />
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+
+                                    <div className="relative z-10 space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-xl flex items-center justify-center border border-white/20 shadow-xl group hover:scale-105 transition-transform duration-500">
+                                                    <div className="relative">
+                                                        <div className="absolute inset-0 bg-white blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-white relative z-10 w-7 h-7"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" /></svg>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200 flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" /> AI Clinical Analysis
-                                                </p>
-                                                <h3 className="text-2xl font-black italic tracking-tight mt-1">Pre-Visit Symptom Intelligence</h3>
+                                                <div>
+                                                    <div className="flex items-center gap-3">
+                                                        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-300">
+                                                            SENTINEL AI ENGINE
+                                                        </p>
+                                                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[8px] font-black uppercase tracking-tighter border border-emerald-500/30">Live Analysis</span>
+                                                    </div>
+                                                    <h3 className="text-xl font-black italic tracking-tight mt-0.5 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                                                        Clinical Intelligence Report
+                                                    </h3>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div className="p-6 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 relative group">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-quote absolute top-6 right-6 text-white/10 w-12 h-12 rotate-180"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" /><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" /></svg>
-                                            <div className="prose prose-invert prose-sm">
-                                                <p className="text-lg font-medium leading-relaxed italic text-indigo-50">
-                                                    "{currentAppointment.aiInsights}"
-                                                </p>
+                                        <div className="p-6 bg-black/20 backdrop-blur-2xl rounded-2xl border border-white/10 relative shadow-inner">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-brain absolute top-6 right-6 text-white/5 w-16 h-16"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .52 8.125A5 5 0 1 0 12 17M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.52 8.125A5 5 0 1 1 12 17" /><path d="M12 5v12" /></svg>
+
+                                            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-4 custom-scrollbar-white">
+                                                {(currentAppointment?.aiInsights || patient.latestAiInsight).split('\n').map((line: string, i: number) => {
+                                                    if (line.includes('---')) return <hr key={i} className="border-white/10 my-4" />;
+                                                    if (line.startsWith('•') || line.startsWith('–')) {
+                                                        return (
+                                                            <div key={i} className="flex gap-3 pl-2">
+                                                                <span className="text-indigo-400 mt-1.5">•</span>
+                                                                <p className="text-sm font-medium text-indigo-50/90 leading-relaxed font-mono tracking-tight">{line.replace(/^[•–]\s*/, '')}</p>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    if (i === 0 && line.includes('AI')) {
+                                                        return <p key={i} className="text-sm font-black text-indigo-300 uppercase tracking-widest mb-2">{line}</p>;
+                                                    }
+                                                    return (
+                                                        <p key={i} className={`text-sm leading-relaxed ${line.endsWith(':') ? 'font-black text-white mt-4 uppercase tracking-wider text-[11px]' : 'text-indigo-50/80 font-medium'}`}>
+                                                            {line}
+                                                        </p>
+                                                    );
+                                                })}
                                             </div>
-                                            <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
-                                                <p className="text-[10px] uppercase tracking-widest text-indigo-300 font-bold">Analysis based on reported complaints</p>
-                                                <Link href={`/doctor/clinical/${currentAppointment._id}/ai-report`} className="text-[10px] uppercase tracking-widest text-white font-black hover:underline decoration-indigo-300 underline-offset-4 opacity-50 cursor-not-allowed" title="Detailed Report Coming Soon">
-                                                    View Full Analysis &rarr;
-                                                </Link>
+
+                                            <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                                        <Clock size={14} className="text-indigo-300" />
+                                                    </div>
+                                                    <p className="text-[10px] uppercase tracking-widest text-indigo-300/80 font-black">
+                                                        Analysis Timestamp: {format(new Date(currentAppointment?.updatedAt || patient?.updatedAt || new Date()), "HH:mm, MMM dd")}
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <button className="px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Download PDF</button>
+                                                    <button className="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/40">Verify Source</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -284,39 +319,6 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                 );
                             })()}
 
-                            {/* AI Clinical Insights Section */}
-                            {patient.latestAiInsight && (
-                                <div className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden mb-8 border-4 border-white/20">
-                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.15),transparent_60%)]" />
-                                    <div className="relative z-10">
-                                        <div className="flex items-center gap-4 mb-6">
-                                            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
-                                                <Activity size={28} className="text-white" />
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-100/80 drop-shadow-sm">Advanced Clinical Preview</p>
-                                                <h3 className="text-2xl font-black italic tracking-tight text-white drop-shadow-md">AI Clinical Insights</h3>
-                                            </div>
-                                        </div>
-                                        <div className="bg-white/10 backdrop-blur-md rounded-[32px] p-8 border border-white/20 shadow-inner">
-                                            <div className="prose prose-invert max-w-none">
-                                                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-indigo-50 font-medium bg-transparent border-0 p-0 m-0">
-                                                    {patient.latestAiInsight}
-                                                </pre>
-                                            </div>
-                                            <div className="mt-8 flex items-center gap-3 pt-6 border-t border-white/10">
-                                                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-indigo-200">
-                                                    Generated from recent chief complaints & history • Non-Diagnostic Reference
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="absolute top-[-20px] right-[-20px] w-40 h-40 bg-white/5 blur-3xl rounded-full" />
-                                    <div className="absolute bottom-[-20px] left-[-20px] w-60 h-60 bg-indigo-900/20 blur-3xl rounded-full" />
-                                </div>
-                            )}
-
                             {/* Patient Quick Info Card */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                 <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm space-y-4">
@@ -382,11 +384,11 @@ export default function ClinicalProfile(props: { patient: any; onBack: () => voi
                                     ) : history.prescriptions[0] ? (
                                         <div onClick={() => setSelectedReport({
                                             url: "/brain/7e558bad-ff5f-46ac-afb7-d36c8d2b6454/mock_lab_report_john_doe_1769605788071.png",
-                                            title: `Lab Report: ${history.prescriptions[0].prescriptionId.slice(-8)}`
+                                            title: `Lab Report: ${history.prescriptions[0].prescriptionId?.slice(-8) || 'N/A'}`
                                         })} className="space-y-4 cursor-pointer hover:opacity-80 transition-opacity">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Order Ref: {history.prescriptions[0].prescriptionId.slice(-8)} • {format(new Date(history.prescriptions[0].prescribedDate), "MMM dd, yyyy HH:mm")}</p>
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Order Ref: {history.prescriptions[0].prescriptionId?.slice(-8) || 'N/A'} • {format(new Date(history.prescriptions[0].prescribedDate || new Date()), "MMM dd, yyyy HH:mm")}</p>
                                             <div className="space-y-2">
-                                                {history.prescriptions[0].medications.slice(0, 2).map((m: any, i: number) => (
+                                                {history.prescriptions[0].medications?.slice(0, 2).map((m: any, i: number) => (
                                                     <div key={i} className="flex justify-between text-xs p-3 bg-slate-50 rounded-xl">
                                                         <span className="font-bold text-slate-700">{m.drugName}</span>
                                                         <span className="text-slate-400 font-medium italic">{m.dosage} • {m.frequency}</span>

@@ -189,9 +189,11 @@ export async function POST(req: Request) {
         }
 
         // Phase 3: Archive Prescription if needed
-        if (prescription) {
-            prescription.status = "completed";
-            await prescription.save();
+        if (prescriptionId) {
+            await Prescription.updateOne(
+                { _id: prescriptionId },
+                { $set: { status: "completed" } }
+            );
         }
 
         // Phase 4: Create Dispense Log for Reports

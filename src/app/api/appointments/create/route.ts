@@ -5,6 +5,8 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from '@/lib/db';
 import Appointment from "@/lib/models/Appointment";
 import User from "@/lib/models/User";
+import Patient from "@/lib/models/Patient";
+import { getAiInsight } from "@/lib/ai";
 
 export async function POST(request: Request) {
     try {
@@ -48,36 +50,17 @@ export async function POST(request: Request) {
 
         // 3. Generate AI Insight
         let aiInsight = undefined;
-        // Temporary Debug Logging
-        const fs = require('fs');
-        const logPath = require('path').join(process.cwd(), 'debug_ai_log.txt');
-
         try {
-            fs.appendFileSync(logPath, `[CREATE] Attempting AI Gen for: ${reason}\n`);
-
-            const insightRes = await fetch("http://127.0.0.1:5001/api/clinical-insight", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    symptoms: reason,
-                    history: "Not available",
-                    medications: "Not available"
-                }),
-            });
-
-            fs.appendFileSync(logPath, `[CREATE] AI Status: ${insightRes.status}\n`);
-
-            if (insightRes.ok) {
-                const insightData = await insightRes.json();
-                aiInsight = insightData.insight;
-                fs.appendFileSync(logPath, `[CREATE] AI Success. Length: ${aiInsight?.length}\n`);
+            const patient = await Patient.findById(patientId);
+            if (patient) {
+                const history = `${patient.chronicConditions?.join(', ') || 'None'}. Allergies: ${patient.allergies?.join(', ') || 'None'}`;
+                const meds = patient.currentMedications?.map((m: any) => `${m.name} (${m.dosage})`).join(', ') || 'None';
+                aiInsight = await getAiInsight(reason, history, meds);
             } else {
-                const text = await insightRes.text();
-                fs.appendFileSync(logPath, `[CREATE] AI Failed: ${text}\n`);
+                aiInsight = await getAiInsight(reason);
             }
         } catch (e: any) {
             console.error("AI Gen Failed", e);
-            fs.appendFileSync(logPath, `[CREATE] AI Exception: ${e.message}\n`);
         }
 
         // 4. Create Appointment
@@ -93,6 +76,11 @@ export async function POST(request: Request) {
             aiInsights: aiInsight,
             createdBy: (session.user as any).role === 'patient' ? 'patient' : 'staff'
         });
+
+        // Update Patient's latestAiInsight
+        if (aiInsight) {
+            await Patient.findByIdAndUpdate(patientId, { latestAiInsight: aiInsight });
+        }
 
         return NextResponse.json({
             success: true,

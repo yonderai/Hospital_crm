@@ -68,32 +68,14 @@ export async function POST(req: Request) {
             receiptNo = `RCP-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(5, '0')}`;
         }
 
-        // Generate AI Insight (Non-blocking preference, but awaiting for simplicity in V1)
+        // Generate AI Insight with full context
         let aiInsight = undefined;
-
         try {
-            console.log(`[BOOK] Attempting AI Gen for: ${chiefComplaint || reason}`);
-
-            const insightRes = await fetch("http://127.0.0.1:5001/api/clinical-insight", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    symptoms: chiefComplaint || reason,
-                    history: "Not available during booking",
-                    medications: "Not available during booking"
-                }),
-            });
-
-            if (insightRes.ok) {
-                const insightData = await insightRes.json();
-                aiInsight = insightData.insight;
-            } else {
-                const text = await insightRes.text();
-                console.error(`[BOOK] AI Failed: ${text}`);
-            }
+            const history = `${patient.chronicConditions?.join(', ') || 'None'}. Allergies: ${patient.allergies?.join(', ') || 'None'}`;
+            const meds = patient.currentMedications?.map((m: any) => `${m.name} (${m.dosage})`).join(', ') || 'None';
+            aiInsight = await getAiInsight(chiefComplaint || reason, history, meds);
         } catch (error: any) {
             console.error("AI Insight Generation Failed:", error);
-            // We do not block booking if AI fails
         }
 
         // Create Appointment

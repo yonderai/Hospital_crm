@@ -51,17 +51,15 @@ export async function GET(req: Request) {
         yesterdayEnd = new Date(yDate);
         yesterdayEnd.setUTCHours(23, 59, 59, 999);
 
-        // 1. Base Criteria (RBAC) - Include patients from appointments
+        // 1. Base Criteria (Appointment Filter) - Only show patients who have booked
         let baseCriteria: any = {};
+        const appointmentQuery: any = {};
         if (role === 'doctor') {
-            const patientIdsFromAppts = await Appointment.find({ providerId: doctorId }).distinct('patientId');
-            baseCriteria = {
-                $or: [
-                    { assignedDoctorId: doctorId },
-                    { _id: { $in: patientIdsFromAppts.map(id => new mongoose.Types.ObjectId(id)) } }
-                ]
-            };
+            appointmentQuery.providerId = doctorId;
         }
+
+        const patientIdsWithAppts = await Appointment.find(appointmentQuery).distinct('patientId');
+        baseCriteria = { _id: { $in: patientIdsWithAppts.map(id => new mongoose.Types.ObjectId(id)) } };
 
         // 2. Search Criteria
         let searchCriteria: any = {};

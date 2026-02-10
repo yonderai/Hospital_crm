@@ -4,6 +4,7 @@ import dbConnect from '@/lib/db';
 import User, { UserRole } from "@/lib/models/User";
 import Patient from "@/lib/models/Patient";
 import bcrypt from "bcryptjs";
+import { getAiInsight } from "@/lib/ai";
 
 // Helper to generate MRN
 async function generateMRN() {
@@ -98,15 +99,20 @@ export async function POST(request: Request) {
             },
             photoUrl: data.photoUrl,
             registrationSource: 'self-registration',
-            // Link to User
-            // Note: Patient schema doesn't effectively link TO User in original schema except maybe assignedDoctor
-            // But usually we want a link. We can add specific field if needed, or rely on email match.
-            // However, common practice is User has patientId or Patient has userId.
-            // Let's rely on Email for now unless we add userId to Patient schema or patientId to User.
-            // Wait! User schema HAS patientId field in some versions or we might want to add it.
-            // Checking User.ts: It does NOT have patientId explicitly in the interface I saw earlier, 
-            // but let's re-check or just save it. 
         });
+
+        // 5.5 Generate AI Insight if medical data exists
+        if ((data.allergies && data.allergies.length > 0) || (data.chronicConditions && data.chronicConditions.length > 0)) {
+            try {
+                const symptoms = `Initial Medical Profle: ${data.chronicConditions?.join(', ') || 'No chronic conditions'}. Allergies: ${data.allergies?.join(', ') || 'None'}.`;
+                const aiInsight = await getAiInsight(symptoms);
+                if (aiInsight) {
+                    newPatient.latestAiInsight = aiInsight;
+                }
+            } catch (error) {
+                console.error("AI Insight generation failed during registration:", error);
+            }
+        }
 
         const savedPatient = await newPatient.save();
 

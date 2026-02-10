@@ -106,26 +106,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Detect role from pathname if not in session/demoState
     const rawPathRole = pathname?.split('/')[1];
-    const pathRole = rawPathRole === 'pharmacy' ? 'pharmacist' : rawPathRole;
+    const pathRole = rawPathRole === 'pharmacy' ? 'pharmacist' : (rawPathRole === 'lab' ? 'labtech' : rawPathRole);
 
     // Priority: Session Role -> Demo Role -> Path Role (if valid) -> Fallback
     let role = (session?.user as any)?.role || demoState?.role ||
-        (["doctor", "nurse", "admin", "frontdesk", "patient", "labtech", "pharmacist", "billing", "hr"].includes(pathRole) ? pathRole : "doctor");
+        (["doctor", "nurse", "admin", "frontdesk", "patient", "labtech", "pharmacist", "billing", "hr", "finance", "emergency", "maintenance"].includes(pathRole) ? pathRole : "doctor");
 
     // Normalize specific roles for navigation config
-    if (role === 'pharmacy_inventory') role = 'pharmacist';
+    if (role === 'pharmacy_inventory' || role === 'pharmacy') role = 'pharmacist';
+    if (role === 'lab') role = 'labtech';
 
     // Keep original role for URL paths before normalization
     const urlRole = role === 'labtech' ? 'lab' : (role === 'pharmacist' ? 'pharmacy' : role);
-
-    // Normalize role for navigation config
-    if (role === 'lab') role = 'labtech';
-    if (role === 'pharmacy') role = 'pharmacist';
     const userName = session?.user?.name || demoState?.name || "Initializing...";
 
     // Role-based navigation mapping - Strictly separated as per requirements
     const navConfig: Record<string, string[]> = {
-        doctor: ["Overview", "Patients", "Schedule", "Clinical Insight", "Surgery", "ICU Tracking", "Support"],
+        doctor: ["Overview", "Patients", "Schedule", "Surgery", "ICU Tracking", "Support"],
         pharmacist: ["Overview", "Dispensing", "Inventory", "Batch & Expiry", "Usage Reports", "Purchase Orders"], // Unified Pharmacy & Inventory
         labtech: ["Overview", "Pending Lab Orders", "Radiology", "Test Scheduling", "Sample Tracking", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
@@ -145,7 +142,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // Doctor
         { name: "Patients", href: `/${urlRole}/patients`, icon: Users },
         { name: "Schedule", href: `/${urlRole}/schedule`, icon: Calendar },
-        { name: "Clinical Insight", href: `/${urlRole}/clinical-insight`, icon: Sparkles },
         { name: "Surgery", href: `/${urlRole}/or-management`, icon: Scissors },
         { name: "ICU Tracking", href: `/${urlRole}/icu-tracking`, icon: Activity },
         { name: "Laboratory", href: `/${urlRole}/laboratory`, icon: Microscope },

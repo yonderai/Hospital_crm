@@ -189,78 +189,72 @@ export default function PatientDetails() {
                     {activeTab === 'overview' && (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <div className="lg:col-span-2 space-y-10">
-                                {currentAppointment?.aiInsights && (
-                                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[40px] p-8 text-white shadow-2xl relative overflow-hidden animate-in fade-in slide-in-from-top-4 duration-700">
-                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent_70%)]" />
-                                        <div className="relative z-10 space-y-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-inner">
-                                                    <div className="relative">
-                                                        <div className="absolute inset-0 bg-white blur-lg opacity-40"></div>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-white relative z-10 w-8 h-8"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" /></svg>
+                                {((currentAppointment?.aiInsights || patient.latestAiInsight)) && (
+                                    <div className="bg-gradient-to-br from-indigo-700 via-indigo-600 to-purple-800 rounded-[32px] p-6 text-white shadow-xl relative overflow-hidden animate-in fade-in slide-in-from-top-6 duration-1000 border border-white/10 mb-8">
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.15),transparent_70%)]" />
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+
+                                        <div className="relative z-10 space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-xl flex items-center justify-center border border-white/20 shadow-xl group hover:scale-105 transition-transform duration-500">
+                                                        <div className="relative">
+                                                            <div className="absolute inset-0 bg-white blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-white relative z-10 w-7 h-7"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z" /></svg>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div>
-                                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200 flex items-center gap-2">
-                                                        <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" /> AI Clinical Analysis
-                                                    </p>
-                                                    <h3 className="text-2xl font-black italic tracking-tight mt-1">Pre-Visit Symptom Intelligence</h3>
+                                                    <div>
+                                                        <div className="flex items-center gap-3">
+                                                            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-indigo-300">
+                                                                SENTINEL AI ENGINE
+                                                            </p>
+                                                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[8px] font-black uppercase tracking-tighter border border-emerald-500/30">Live Analysis</span>
+                                                        </div>
+                                                        <h3 className="text-xl font-black italic tracking-tight mt-0.5 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                                                            Clinical Intelligence Report
+                                                        </h3>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div className="p-8 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 relative group">
-                                                <div className="space-y-4">
-                                                    {currentAppointment.aiInsights
-                                                        .replace(/["']?🧠 AI Clinical Insights[\s\S]*?-{3,}/, '') // Remove Header
-                                                        .replace(/-{2,}/g, '') // Remove garbage dashes
-                                                        .replace(/([•*–-])/g, '\n$1') // Force newlines
-                                                        .split('\n')
-                                                        .map((line: string, i: number) => {
-                                                            const cleanLine = line.trim();
-                                                            if (!cleanLine || cleanLine.includes('---') || cleanLine.includes('AI Clinical Insights')) return null;
+                                            <div className="p-6 bg-black/20 backdrop-blur-2xl rounded-2xl border border-white/10 relative shadow-inner">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-brain absolute top-6 right-6 text-white/5 w-16 h-16"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .52 8.125A5 5 0 1 0 12 17M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.52 8.125A5 5 0 1 1 12 17" /><path d="M12 5v12" /></svg>
 
-                                                            // Headers (lines ending with :)
-                                                            if (cleanLine.endsWith(':')) {
-                                                                return (
-                                                                    <h4 key={i} className="text-sm font-black uppercase tracking-widest text-indigo-200 mt-6 first:mt-0 border-b border-white/10 pb-2">
-                                                                        {cleanLine.replace('•', '').trim()}
-                                                                    </h4>
-                                                                );
-                                                            }
-
-                                                            // Bullet points
-                                                            if (cleanLine.startsWith('•') || cleanLine.startsWith('-') || cleanLine.startsWith('–')) {
-                                                                return (
-                                                                    <div key={i} className="flex items-start gap-3 pl-2">
-                                                                        <div className="w-1.5 h-1.5 bg-indigo-300 rounded-full mt-2 flex-shrink-0" />
-                                                                        <p className="text-base font-medium text-indigo-50 leading-relaxed">
-                                                                            {cleanLine.replace(/^[•\-–]\s*/, '')}
-                                                                        </p>
-                                                                    </div>
-                                                                );
-                                                            }
-
-                                                            // Regular text
+                                                <div className="space-y-4 max-h-[300px] overflow-y-auto pr-4 custom-scrollbar-white">
+                                                    {(currentAppointment?.aiInsights || patient.latestAiInsight).split('\n').map((line: string, i: number) => {
+                                                        if (line.includes('---')) return <hr key={i} className="border-white/10 my-4" />;
+                                                        if (line.startsWith('•') || line.startsWith('–')) {
                                                             return (
-                                                                <p key={i} className="text-base font-medium text-indigo-50 leading-relaxed pl-2">
-                                                                    {cleanLine}
-                                                                </p>
+                                                                <div key={i} className="flex gap-3 pl-2">
+                                                                    <span className="text-indigo-400 mt-1.5">•</span>
+                                                                    <p className="text-sm font-medium text-indigo-50/90 leading-relaxed font-mono tracking-tight">{line.replace(/^[•–]\s*/, '')}</p>
+                                                                </div>
                                                             );
-                                                        })}
+                                                        }
+                                                        if (i === 0 && line.includes('AI')) {
+                                                            return <p key={i} className="text-sm font-black text-indigo-300 uppercase tracking-widest mb-2">{line}</p>;
+                                                        }
+                                                        return (
+                                                            <p key={i} className={`text-sm leading-relaxed ${line.endsWith(':') ? 'font-black text-white mt-4 uppercase tracking-wider text-[11px]' : 'text-indigo-50/80 font-medium'}`}>
+                                                                {line}
+                                                            </p>
+                                                        );
+                                                    })}
                                                 </div>
 
-                                                <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="px-2 py-1 rounded bg-indigo-500/20 border border-indigo-400/30 text-[9px] font-bold uppercase tracking-widest text-indigo-200">
-                                                            Model: Llama 3.3
+                                                <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                                            <Clock size={14} className="text-indigo-300" />
                                                         </div>
-                                                        <div className="px-2 py-1 rounded bg-indigo-500/20 border border-indigo-400/30 text-[9px] font-bold uppercase tracking-widest text-indigo-200">
-                                                            Confidence: High
-                                                        </div>
+                                                        <p className="text-[10px] uppercase tracking-widest text-indigo-300/80 font-black">
+                                                            Analysis Timestamp: {new Date(currentAppointment?.updatedAt || patient?.updatedAt || new Date()).toLocaleString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', month: 'short', day: '2-digit' })}
+                                                        </p>
                                                     </div>
-                                                    <p className="text-[9px] uppercase tracking-widest text-indigo-300 font-bold opacity-70">
-                                                        For clinical reference only
-                                                    </p>
+                                                    <div className="flex gap-4">
+                                                        <button className="px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">Download PDF</button>
+                                                        <button className="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/40">Verify Source</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
