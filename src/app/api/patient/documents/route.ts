@@ -4,7 +4,8 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from '@/lib/db';
 import MedicalDocument from "@/lib/models/MedicalDocument";
 import Patient from "@/lib/models/Patient";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
+import { existsSync } from "fs";
 import path from "path";
 
 export async function POST(request: Request) {
@@ -55,7 +56,14 @@ export async function POST(request: Request) {
 
         const safeName = file.name.replace(/[^a-z0-9.]/gi, '-').replace(/-+/g, '-');
         const fileName = `${Date.now()}-${safeName}`;
-        const uploadPath = path.join(process.cwd(), "public", "uploads", "medical-history", fileName);
+
+        // Ensure directory exists
+        const uploadDir = path.join(process.cwd(), "public", "uploads", "medical-history");
+        if (!existsSync(uploadDir)) {
+            await mkdir(uploadDir, { recursive: true });
+        }
+
+        const uploadPath = path.join(uploadDir, fileName);
         const publicUrl = `/uploads/medical-history/${fileName}`;
 
         await writeFile(uploadPath, buffer);

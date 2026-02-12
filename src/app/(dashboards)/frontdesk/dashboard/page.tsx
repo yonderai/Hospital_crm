@@ -5,7 +5,7 @@ import {
     Users,
     CheckCircle2,
     Calendar,
-    DollarSign,
+    IndianRupee,
     QrCode,
     UserPlus,
     Plus,
@@ -56,7 +56,7 @@ export default function FrontDeskDashboard() {
         { title: "Today's Registrations", value: stats.registrations, icon: UserPlus, color: "text-blue-600", bg: "bg-blue-50", link: "/frontdesk/registration" },
         { title: "Check-ins Today", value: stats.checkIns, sub: `vs ${stats.appointments} Scheduled`, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50", link: "/frontdesk/check-in" },
         { title: "Available Beds", value: `${stats.beds.available}/${stats.beds.total}`, sub: `${Math.round((stats.beds.available / stats.beds.total) * 100)}% Available`, icon: Bed, color: "text-purple-600", bg: "bg-purple-50", link: "/frontdesk/bed-allocation" },
-        { title: "Pending Payments", value: `₹${stats.pendingPayments.amount.toLocaleString()}`, sub: `${stats.pendingPayments.count} Patients`, icon: DollarSign, color: "text-amber-600", bg: "bg-amber-50", link: "/frontdesk/billing" },
+        { title: "Pending Payments", value: `₹${stats.pendingPayments.amount.toLocaleString()}`, sub: `${stats.pendingPayments.count} Patients`, icon: IndianRupee, color: "text-amber-600", bg: "bg-amber-50", link: "/frontdesk/billing" },
     ];
 
     if (loading) return <div className="p-12 text-center text-slate-400 font-bold animate-pulse">Loading dashboard...</div>;
@@ -185,7 +185,7 @@ export default function FrontDeskDashboard() {
                     {/* Pending Payments Widget */}
                     <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                         <h3 className="font-black text-slate-900 flex items-center gap-2 mb-4">
-                            <DollarSign size={20} className="text-amber-500" />
+                            <IndianRupee size={20} className="text-amber-500" />
                             Unpaid Bills
                         </h3>
                         <div className="space-y-4">

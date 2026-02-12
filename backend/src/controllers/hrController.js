@@ -1,4 +1,5 @@
-import User from '../models/User.js';
+import Staff from '../models/Staff.js';
+import { ROLES } from '../config/roles.js';
 
 // @desc    Get all staff (Doctors, Nurses, etc.)
 // @route   GET /api/hr/staff
@@ -7,6 +8,59 @@ export const getAllStaff = async (req, res) => {
     try {
         const staff = await User.find({ role: { $ne: 'PATIENT' } }).select('-password');
         res.json(staff);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Create new staff member
+// @route   POST /api/hr/staff
+// @access  Private (HR only)
+export const createStaff = async (req, res) => {
+    const { firstName, lastName, email, phone, role, department, designation, baseSalary } = req.body;
+
+    try {
+        // 1. Check if user exists
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // 2. Create User (Auth)
+        const user = await User.create({
+            firstName,
+            lastName,
+            email,
+            password: 'a', // Default password
+            role,
+            department,
+            phone,
+            employeeId: `EMP-${Date.now().toString().slice(-4)}` // Simple ID generation
+        });
+
+        // 3. Create Staff Profile (HR Data)
+        const staff = await Staff.create({
+            userId: user._id,
+            employeeId: user.employeeId,
+            firstName,
+            lastName,
+            email,
+            phone,
+            role,
+            department,
+            designation,
+            baseSalary: Number(baseSalary),
+            dateJoined: new Date(),
+            status: 'active',
+            bankDetails: {
+                accountName: `${firstName} ${lastName}`,
+                bankName: 'Pending',
+                accountNumber: 'Pending',
+                ifscCode: 'Pending'
+            }
+        });
+
+        res.status(201).json({ message: 'Staff created successfully', data: staff });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

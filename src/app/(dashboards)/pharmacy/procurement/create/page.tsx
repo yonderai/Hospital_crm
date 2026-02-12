@@ -228,7 +228,7 @@ export default function CreatePOPage() {
                                             />
                                         </div>
                                         <div className="w-24 text-right pt-6">
-                                            <p className="font-mono font-bold text-slate-700">${item.total.toFixed(2)}</p>
+                                            <p className="font-mono font-bold text-slate-700">₹{item.total.toFixed(2)}</p>
                                         </div>
                                         <button onClick={() => removeItem(idx)} className="p-2 mt-4 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
                                             <Trash2 size={16} />
@@ -247,15 +247,15 @@ export default function CreatePOPage() {
                             <div className="space-y-4 mb-8">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-400">Subtotal</span>
-                                    <span className="font-medium font-mono">${subtotal.toFixed(2)}</span>
+                                    <span className="font-medium font-mono">₹{subtotal.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-400">Tax (10%)</span>
-                                    <span className="font-medium font-mono">${tax.toFixed(2)}</span>
+                                    <span className="font-medium font-mono">₹{tax.toFixed(2)}</span>
                                 </div>
                                 <div className="pt-4 border-t border-slate-800 flex justify-between items-end">
                                     <span className="font-bold">Total Payable</span>
-                                    <span className="text-3xl font-black tracking-tight">${totalAmount.toFixed(2)}</span>
+                                    <span className="text-3xl font-black tracking-tight">₹{totalAmount.toFixed(2)}</span>
                                 </div>
                             </div>
 

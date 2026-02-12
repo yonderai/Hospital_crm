@@ -10,7 +10,7 @@ import {
     FileText,
     Beaker,
     Package,
-    DollarSign,
+    IndianRupee,
     ShieldCheck,
     Activity,
     LogOut,
@@ -127,18 +127,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         labtech: ["Overview", "Pending Lab Orders", "Radiology", "Test Scheduling", "Sample Tracking", "Digital Reports"], // Diagnostics Hub
         frontdesk: ["Overview", "Registration", "Queue", "Bed Allocation", "Appointments", "Insurance Triage", "Fee Collection"], // Front Desk
         nurse: ["Overview", "Duty Roster", "Assigned Patients", "ICU Monitor", "Clinical Updates", "Surgery Tasks"], // Nurse Portal
-        billing: ["Overview", "Cash Payments", "Card/UPI", "Insurance Pre-Auth", "Claims Management", "Split Billing", "Invoices"], // Revenue Office
+        billing: ["Overview", "Payments", "Insurance Pre-Auth", "Claims Management", "Invoices"], // Revenue Office
 
         finance: ["Overview", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
         patient: ["Overview", "Report Viewer", "Medical History", "Surgery", "Insurance", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
-        hr: ["Overview", "Staff Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // HR Module
-        admin: ["Overview", "User Management", "Staff Overview", "Departments & Services", "Stock Summary", "Billing & Payments", "Expense Oversight", "Salary Overview", "Medical Claims", "Hospital Chain", "Reports", "Analytics", "Settings"], // Master Control
+        hr: ["Overview", "Personnel Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // Dedicated HR Module
+        admin: ["Overview", "User Management", "Departments & Services", "Stock Summary", "Billing & Payments", "Expense Oversight", "Salary Overview", "Medical Claims", "Hospital Chain", "Reports", "Analytics", "Settings"], // Master Control - Enterprise Ops
         emergency: ["Overview", "Triage", "Clinical Workspace", "Ambulance", "Alerts"], // Emergency
         maintenance: ["Overview", "My Tickets", "Raise Ticket", "Profile"] // Maintenance Staff
     };
 
     const navigationItems = [
         { name: "Overview", href: urlRole === 'pharmacy' ? `/${urlRole}/overview` : `/${urlRole}/dashboard`, icon: LayoutGrid },
+        { name: "Profile", href: `/${urlRole}/profile`, icon: UserCircle },
         // Doctor
         { name: "Patients", href: `/${urlRole}/patients`, icon: Users },
         { name: "Schedule", href: `/${urlRole}/schedule`, icon: Calendar },
@@ -166,7 +167,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Bed Allocation", href: `/${urlRole}/bed-allocation`, icon: Activity },
         { name: "Appointments", href: `/${urlRole}/appointments`, icon: Calendar },
         { name: "Insurance Triage", href: `/${urlRole}/insurance-triage`, icon: ShieldCheck },
-        { name: "Fee Collection", href: `/${urlRole}/fees`, icon: DollarSign },
+        { name: "Fee Collection", href: `/${urlRole}/fees`, icon: IndianRupee },
         // Nurse
         { name: "Duty Roster", href: `/${urlRole}/roster`, icon: Calendar },
         { name: "Assigned Patients", href: `/${urlRole}/assigned-patients`, icon: Users },
@@ -175,17 +176,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Clinical Updates", href: `/${urlRole}/clinical-updates`, icon: FileText },
         { name: "Surgery Tasks", href: `/${urlRole}/surgery-tasks`, icon: Scissors },
         // Revenue Office
-        { name: "Cash Payments", href: `/${urlRole}/cash-payments`, icon: DollarSign },
-        { name: "Card/UPI", href: `/${urlRole}/digital-payments`, icon: DollarSign },
+        { name: "Payments", href: `/${urlRole}/payments`, icon: IndianRupee },
         { name: "Insurance Pre-Auth", href: `/${urlRole}/pre-auth`, icon: ShieldCheck },
         { name: "Claims Management", href: `/${urlRole}/claims`, icon: FileText },
-        { name: "Split Billing", href: `/${urlRole}/split-billing`, icon: DollarSign },
         { name: "Invoices", href: `/${urlRole}/invoices`, icon: FileText },
         // Back Office / Finance
 
 
         { name: "Procurement", href: `/${role}/procurement`, icon: Package },
-        { name: "Expenses", href: `/${role}/expenses`, icon: DollarSign },
+        { name: "Expenses", href: `/${role}/expenses`, icon: IndianRupee },
         { name: "Utilities", href: `/${role}/utilities`, icon: Wind },
         { name: "Maintenance", href: `/${role}/maintenance`, icon: Wrench },
         { name: "Assets", href: `/${role}/assets`, icon: Activity },
@@ -199,18 +198,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "e-Prescriptions", href: `/${urlRole}/prescriptions`, icon: Package },
         { name: "Booking", href: `/${urlRole}/booking`, icon: Calendar },
         { name: "Queue Status", href: `/${urlRole}/queue-status`, icon: Activity },
-        { name: "Billing & Invoices", href: `/${urlRole}/billing-history`, icon: DollarSign },
+        { name: "Billing & Invoices", href: `/${urlRole}/billing-history`, icon: IndianRupee },
         // HR Module
-        { name: "Staff Management", href: `/${urlRole}/staff`, icon: Users },
+        { name: "Personnel Management", href: `/${urlRole}/hr`, icon: Users },
         { name: "Rosters & Attendance", href: `/${urlRole}/attendance`, icon: Calendar },
         { name: "Complaints", href: `/${urlRole}/complaints`, icon: Bell },
         { name: "Compliance", href: `/${urlRole}/compliance`, icon: ShieldCheck },
-        { name: "Payroll Integration", href: `/${urlRole}/payroll-data`, icon: DollarSign },
+        { name: "Payroll Integration", href: `/${urlRole}/payroll-data`, icon: IndianRupee },
         // Admin Portal
-        { name: "Expense Oversight", href: `/${urlRole}/expense-oversight`, icon: DollarSign },
+        { name: "Expense Oversight", href: `/${urlRole}/expense-oversight`, icon: IndianRupee },
         { name: "Stock Summary", href: `/${urlRole}/stock-summary`, icon: Package },
         { name: "Staff Overview", href: `/${urlRole}/staff-overview`, icon: Users },
-        { name: "Salary Overview", href: `/${urlRole}/salary-overview`, icon: DollarSign },
+        { name: "Salary Overview", href: `/${urlRole}/salary-overview`, icon: IndianRupee },
         { name: "Medical Claims", href: `/${urlRole}/claims-overview`, icon: ShieldCheck },
         { name: "Hospital Chain", href: `/${urlRole}/chain-management`, icon: LayoutGrid },
         { name: "Analytics", href: `/${urlRole}/analytics`, icon: BarChart3 },

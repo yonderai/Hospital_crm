@@ -151,7 +151,7 @@ export default function TicketManagement({ mode }: TicketManagementProps) {
                                     {ticket.approvalDetails?.amount > 0 && (
                                         <div className="text-right mt-4">
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Approved Cost</p>
-                                            <p className="text-2xl font-black text-emerald-600 italic tracking-tight">${ticket.approvalDetails.amount}</p>
+                                            <p className="text-2xl font-black text-emerald-600 italic tracking-tight">₹{ticket.approvalDetails.amount}</p>
                                         </div>
                                     )}
                                 </div>

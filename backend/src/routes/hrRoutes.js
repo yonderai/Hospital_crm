@@ -1,6 +1,7 @@
 import express from 'express';
 import {
     getAllStaff,
+    createStaff,
     updateStaffProfile,
     manageRosters,
     getComplianceStatus,
@@ -17,6 +18,7 @@ router.use(protect);
 router.use(authorize(ROLES.HR));
 
 router.get('/staff', getAllStaff);
+router.post('/staff', createStaff);
 router.put('/staff/:id', updateStaffProfile);
 router.post('/rosters', manageRosters);
 router.get('/compliance', getComplianceStatus);

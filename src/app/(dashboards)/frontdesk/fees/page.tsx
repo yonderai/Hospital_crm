@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import {
-    Search, DollarSign, Receipt, User,
+    Search, IndianRupee, Receipt, User,
     ArrowRight, Loader2, CheckCircle2,
     AlertCircle, FileText, ChevronRight,
     TrendingUp, History, CreditCard, Banknote
@@ -83,7 +83,7 @@ export default function FeeCollectionPage() {
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                         <div className="p-3 bg-olive-600 text-white rounded-2xl">
-                            <DollarSign size={28} />
+                            <IndianRupee size={28} />
                         </div>
                         Fee Collection
                     </h1>

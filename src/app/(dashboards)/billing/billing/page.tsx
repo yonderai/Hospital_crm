@@ -1,6 +1,6 @@
 "use client";
 import ModulePage from "@/components/ModulePage";
-import { DollarSign } from "lucide-react";
+import { IndianRupee } from "lucide-react";
 
 export default function BillingMainPage() {
     return (
@@ -8,7 +8,7 @@ export default function BillingMainPage() {
             title="Invoice Management"
             subtitle="Financial Services"
             description="Centralized billing hub for insurance claims processing, patient invoicing, and accounts receivable."
-            icon={DollarSign}
+            icon={IndianRupee}
         />
     );
 }

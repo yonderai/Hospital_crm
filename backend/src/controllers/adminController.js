@@ -20,7 +20,7 @@ export const getAdminDashboard = async (req, res) => {
             $expr: { $lte: ["$quantity", "$reorderLevel"] }
         });
 
-        const activeStaff = await User.countDocuments({ role: { $ne: 'PATIENT' } });
+        const activeStaff = await User.countDocuments({ role: { $ne: ROLES.PATIENT } });
 
         res.json({
             summary: {
@@ -64,7 +64,7 @@ export const getStockOverview = async (req, res) => {
 // @access  Private (Admin only)
 export const getStaffOverview = async (req, res) => {
     try {
-        const staff = await User.find({ role: { $ne: 'PATIENT' } }).select('-password');
+        const staff = await User.find({ role: { $ne: ROLES.PATIENT } }).select('-password');
         res.json(staff);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { UserPlus, Search, Filter, Stethoscope, User, Calendar, Mail, Phone, Hash, DollarSign, Clock, MapPin, X, Loader2, CheckCircle, AlertCircle, Activity } from "lucide-react";
+import { UserPlus, Search, Filter, Stethoscope, User, Calendar, Mail, Phone, Hash, IndianRupee, Clock, MapPin, X, Loader2, CheckCircle, AlertCircle, Activity } from "lucide-react";
 
 // Interface for Staff Member
 interface StaffMember {
@@ -300,7 +300,7 @@ function RegistrationModal({ onClose, onSuccess }: { onClose: () => void, onSucc
                                 </h4>
                                 <div className="grid grid-cols-2 gap-4">
                                     <InputField label="Specialization" name="specialization" placeholder="e.g. Cardiology" value={formData.specialization} onChange={handleChange} />
-                                    <InputField label="Consultation Fee" type="number" name="consultationFee" icon={DollarSign} value={formData.consultationFee} onChange={handleChange} />
+                                    <InputField label="Consultation Fee" type="number" name="consultationFee" icon={IndianRupee} value={formData.consultationFee} onChange={handleChange} />
                                 </div>
                             </div>
                         )}

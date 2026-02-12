@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 
 import {
-    DollarSign,
+    IndianRupee,
     Search,
     CreditCard,
     FileText,
@@ -76,7 +76,7 @@ export default function FrontDeskBillingPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <BillingStat label="Today's Collections" value="₹4,820" detail="+12% from avg" icon={DollarSign} color="text-olive-600" bg="bg-olive-50" />
+                <BillingStat label="Today's Collections" value="₹4,820" detail="+12% from avg" icon={IndianRupee} color="text-olive-600" bg="bg-olive-50" />
                 <BillingStat label="Pending Payments" value="12" detail="4 high value" icon={ClockIcon} color="text-blue-600" bg="bg-blue-50" />
                 <BillingStat label="Claims Verified" value="98%" detail="Eligibility Check" icon={ShieldCheck} color="text-teal-600" bg="bg-teal-50" />
             </div>
@@ -178,7 +178,7 @@ export default function FrontDeskBillingPage() {
                                 Collect Payment
                             </button>
                         </div>
-                        <DollarSign className="absolute bottom-[-10%] right-[-10%] text-white/5 pointer-events-none" size={240} />
+                        <IndianRupee className="absolute bottom-[-10%] right-[-10%] text-white/5 pointer-events-none" size={240} />
                     </div>
 
                     <div className="bg-white rounded-[40px] border border-slate-100 p-8 shadow-sm">

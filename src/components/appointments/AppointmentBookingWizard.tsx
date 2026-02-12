@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Search, Calendar, Clock, CreditCard, User, ChevronRight, ChevronLeft, CheckCircle, Stethoscope } from "lucide-react";
+import { AppointmentReceipt } from "@/components/AppointmentReceipt";
 
 export default function AppointmentBookingWizard() {
     const [step, setStep] = useState(1);
@@ -155,43 +156,61 @@ export default function AppointmentBookingWizard() {
     // Success View
     if (step === 6 && successData) {
         return (
-            <div className="bg-white rounded-[32px] p-8 text-center space-y-8 animate-in zoom-in">
-                <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-                    <CheckCircle size={40} />
-                </div>
-                <div>
-                    <h2 className="text-3xl font-black text-slate-900">Appointment Booked!</h2>
-                    <p className="text-slate-500">ID: <span className="font-mono font-bold">{successData.appointment.appointmentId}</span></p>
+            <>
+                <div className="bg-white rounded-[32px] p-8 text-center space-y-8 animate-in zoom-in print:hidden">
+                    <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                        <CheckCircle size={40} />
+                    </div>
+                    <div>
+                        <h2 className="text-3xl font-black text-slate-900">Appointment Booked!</h2>
+                        <p className="text-slate-500">ID: <span className="font-mono font-bold">{successData.appointment.appointmentId}</span></p>
+                    </div>
+
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-left space-y-4 shadow-inner">
+                        <div className="flex justify-between border-b border-slate-200 pb-2">
+                            <span className="text-slate-500 text-sm">Patient</span>
+                            <span className="font-bold text-slate-900">{successData.details.patientName}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-slate-200 pb-2">
+                            <span className="text-slate-500 text-sm">Doctor</span>
+                            <span className="font-bold text-slate-900">{successData.details.doctorName}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-slate-200 pb-2">
+                            <span className="text-slate-500 text-sm">Date & Time</span>
+                            <span className="font-bold text-slate-900">{successData.details.date} at {successData.details.time}</span>
+                        </div>
+                        <div className="flex justify-between pt-2">
+                            <span className="text-slate-500 text-sm">Payment Status</span>
+                            <span className="font-bold text-olive-600">Fully Paid</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-slate-500 text-sm">Receipt</span>
+                            <span className="font-mono font-bold text-slate-900">{successData.details.receiptNo}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button onClick={() => window.location.reload()} className="flex-1 py-3 bg-olive-600 text-white font-bold rounded-xl hover:bg-olive-700">Book Another</button>
+                        <button onClick={() => window.print()} className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50">Print Slip</button>
+                    </div>
                 </div>
 
-                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-left space-y-4 shadow-inner">
-                    <div className="flex justify-between border-b border-slate-200 pb-2">
-                        <span className="text-slate-500 text-sm">Patient</span>
-                        <span className="font-bold text-slate-900">{successData.details.patientName}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-slate-200 pb-2">
-                        <span className="text-slate-500 text-sm">Doctor</span>
-                        <span className="font-bold text-slate-900">{successData.details.doctorName}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-slate-200 pb-2">
-                        <span className="text-slate-500 text-sm">Date & Time</span>
-                        <span className="font-bold text-slate-900">{successData.details.date} at {successData.details.time}</span>
-                    </div>
-                    <div className="flex justify-between pt-2">
-                        <span className="text-slate-500 text-sm">Payment Status</span>
-                        <span className="font-bold text-olive-600">Fully Paid</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="text-slate-500 text-sm">Receipt</span>
-                        <span className="font-mono font-bold text-slate-900">{successData.details.receiptNo}</span>
-                    </div>
+                {/* Hidden Receipt for Printing */}
+                <div className="hidden print:block fixed inset-0 bg-white z-[9999]">
+                    <AppointmentReceipt data={{
+                        appointmentId: successData.appointment.appointmentId,
+                        patientName: successData.details.patientName,
+                        patientPhone: selectedPatient?.phone || "N/A",
+                        doctorName: successData.details.doctorName,
+                        department: selectedDoctor?.specialty || "General",
+                        date: successData.details.date,
+                        time: successData.details.time,
+                        paymentMethod: payment.method,
+                        amount: selectedDoctor?.fees ? selectedDoctor.fees + 100 : 0,
+                        status: "Paid"
+                    }} />
                 </div>
-
-                <div className="flex gap-4">
-                    <button onClick={() => window.location.reload()} className="flex-1 py-3 bg-olive-600 text-white font-bold rounded-xl hover:bg-olive-700">Book Another</button>
-                    <button onClick={() => window.print()} className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50">Print Slip</button>
-                </div>
-            </div>
+            </>
         );
     }
 
@@ -344,11 +363,15 @@ export default function AppointmentBookingWizard() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {doctors.map(doc => (
                                 <div key={doc.id}
-                                    onClick={() => setSelectedDoctor(doc)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedDoctor(doc);
+                                    }}
+                                    role="button"
                                     className={`p-4 rounded-xl border border-slate-100 cursor-pointer hover:shadow-md transition-all ${selectedDoctor?.id === doc.id ? 'bg-olive-50 border-olive-500 ring-1 ring-olive-500' : ''}`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <h4 className="font-bold text-slate-900">{doc.name}</h4>
+                                        <h4 className="font-bold text-slate-900">{doc.name.startsWith('Dr. ') ? doc.name : `Dr. ${doc.name}`}</h4>
                                         <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">{doc.specialty}</span>
                                     </div>
                                     <p className="text-xs text-slate-500">Exp: {doc.exp} • Fee: ₹{doc.fees}</p>

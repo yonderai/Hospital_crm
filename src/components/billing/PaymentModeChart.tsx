@@ -17,8 +17,7 @@ interface PaymentModeChartProps {
 
 export default function PaymentModeChart({ data }: PaymentModeChartProps) {
     const chartData = [
-        { name: "Cash", value: data.cash, color: "#10b981" },
-        { name: "UPI", value: data.upi, color: "#3b82f6" },
+        { name: "Cash/UPI", value: data.cash + data.upi, color: "#10b981" },
         { name: "Card", value: data.card, color: "#8b5cf6" },
         { name: "Insurance", value: data.insurance.total, color: "#f59e0b" }
     ];

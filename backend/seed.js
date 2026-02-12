@@ -8,6 +8,7 @@ import Appointment from './src/models/Appointment.js';
 import Billing from './src/models/Billing.js';
 import EmergencyCase from './src/models/EmergencyCase.js';
 import Ambulance from './src/models/Ambulance.js';
+import Staff from './src/models/Staff.js';
 
 dotenv.config();
 
@@ -39,44 +40,148 @@ const seedData = async () => {
     } catch (e) { console.log('No appointment indexes to drop'); }
     await Appointment.deleteMany({});
     await Billing.deleteMany({});
+    console.log('Creating Standardized Staff...');
+    await Staff.deleteMany({});
 
-    console.log('Creating Users (Staff)...');
-
-    // Create Doctors
-    const doctors = [];
-    const doctorSpecialties = ['Cardiology', 'Neurology', 'Oncology', 'Pediatrics', 'Orthopedics'];
-
-    for (let i = 0; i < 5; i++) {
-        const lname = ['Smith', 'Patel', 'Jones', 'Wang', 'Garcia'][i];
-        doctors.push(await User.create({
-            firstName: 'Dr.',
-            lastName: lname,
-            email: `doctor${i + 1}@hospital.com`,
-            password: 'password123',
+    const staffData = [
+        {
+            firstName: 'Dr. Gregory',
+            lastName: 'House',
+            email: 'doctor@medicore.com',
+            password: 'a',
             role: ROLES.DOCTOR,
-            specialization: doctorSpecialties[i]
-        }));
-    }
+            department: 'Diagnostics',
+            designation: 'Chief of Diagnostics',
+            baseSalary: 250000,
+            phone: '9876543210'
+        },
+        {
+            firstName: 'Nurse',
+            lastName: 'Joy',
+            email: 'nurse@medicore.com',
+            password: 'a',
+            role: ROLES.NURSE,
+            department: 'Outpatient',
+            designation: 'Head Nurse',
+            baseSalary: 85000,
+            phone: '9876543211'
+        },
+        {
+            firstName: 'Sarah',
+            lastName: 'Finance',
+            email: 'finance@hospital.com',
+            password: 'a',
+            role: ROLES.BACK_OFFICE_FINANCE,
+            department: 'Finance',
+            designation: 'Finance Manager',
+            baseSalary: 120000,
+            phone: '9876543212'
+        },
+        {
+            firstName: 'Mike',
+            lastName: 'Maintenance',
+            email: 'maintenance@hospital.com',
+            password: 'a',
+            role: ROLES.MAINTENANCE,
+            department: 'Maintenance',
+            designation: 'Lead Engineer',
+            baseSalary: 65000,
+            phone: '9876543213'
+        },
+        {
+            firstName: 'Admin',
+            lastName: 'User',
+            email: 'admin@medicore.com',
+            password: 'a',
+            role: ROLES.ADMIN,
+            department: 'Administration',
+            designation: 'Hospital Administrator',
+            baseSalary: 150000,
+            phone: '9876543214'
+        },
+        {
+            firstName: 'Front',
+            lastName: 'Desk',
+            email: 'frontdesk@medicore.com',
+            password: 'a',
+            role: ROLES.FRONT_DESK,
+            department: 'Front Desk',
+            designation: 'Reception Supervisor',
+            baseSalary: 55000,
+            phone: '9876543215'
+        },
+        {
+            firstName: 'Lab',
+            lastName: 'Tech',
+            email: 'lab@medicore.com',
+            password: 'a',
+            role: ROLES.DIAGNOSTICS,
+            department: 'Laboratory',
+            designation: 'Senior Lab Technician',
+            baseSalary: 75000,
+            phone: '9876543216'
+        },
+        {
+            firstName: 'Pharmacist',
+            lastName: 'User',
+            email: 'pharmacy@medicore.com',
+            password: 'a',
+            role: ROLES.PHARMACY_INVENTORY,
+            department: 'Pharmacy',
+            designation: 'Chief Pharmacist',
+            baseSalary: 95000,
+            phone: '9876543217'
+        },
+        {
+            firstName: 'Billing',
+            lastName: 'Officer',
+            email: 'billing@medicore.com',
+            password: 'a',
+            role: ROLES.REVENUE_OFFICE,
+            department: 'Billing',
+            designation: 'Billing In-charge',
+            baseSalary: 70000,
+            phone: '9876543218'
+        }
+    ];
 
-    // Create Nurses
-    for (let i = 0; i < 10; i++) {
-        const fname = ['Sarah', 'Mike', 'Emily', 'David', 'Jessica', 'Tom', 'Laura', 'Chris', 'Anna', 'James'][i];
-        await User.create({
-            firstName: fname,
-            lastName: 'Nurse',
-            email: `nurse${i + 1}@hospital.com`,
-            password: 'password123',
-            role: ROLES.NURSE
+    const doctors = [];
+    for (const data of staffData) {
+        const user = await User.create({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            password: data.password,
+            role: data.role,
+            department: data.department,
+            employeeId: `EMP-${data.firstName[0]}${data.lastName[0]}-${Math.floor(Math.random() * 1000)}`.toUpperCase()
         });
-    }
 
-    // Create Finance/Admin
-    await User.create({ firstName: 'Finance', lastName: 'Manager', email: 'finance@hospital.com', password: 'password123', role: ROLES.REVENUE_OFFICE || 'finance' });
-    await User.create({ firstName: 'Maintenance', lastName: 'Staff', email: 'maintenance@hospital.com', password: 'a', role: 'maintenance', department: 'Maintenance', employeeId: 'maintenance' });
-    await User.create({ firstName: 'Emergency', lastName: 'Manager', email: 'emergency@hospital.com', password: 'emergency123', role: 'emergency' });
-    await User.create({ firstName: 'Admin', lastName: 'User', email: 'admin@hospital.com', password: 'password123', role: ROLES.ADMIN });
-    await User.create({ firstName: 'HR', lastName: 'Manager', email: 'hr@hospital.com', password: 'password123', role: ROLES.HR });
-    await User.create({ firstName: 'Pharmacy', lastName: 'Manager', email: 'pharmacy@hospital.com', password: 'password123', role: ROLES.PHARMACY_INVENTORY });
+        const staffMember = await Staff.create({
+            userId: user._id,
+            employeeId: user.employeeId,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phone: data.phone,
+            role: data.role,
+            department: data.department,
+            designation: data.designation,
+            baseSalary: data.baseSalary,
+            dateJoined: new Date(2023, Math.floor(Math.random() * 12), 1),
+            status: 'active',
+            bankDetails: {
+                accountName: `${data.firstName} ${data.lastName}`,
+                accountNumber: `4099${Math.floor(10000000 + Math.random() * 90000000)}`,
+                bankName: 'HDFC Bank',
+                ifscCode: 'HDFC0001234'
+            }
+        });
+
+        if (data.role === ROLES.DOCTOR) {
+            doctors.push(user);
+        }
+    }
 
     console.log('Creating Patients...');
     const patients = [];
@@ -85,14 +190,16 @@ const seedData = async () => {
     for (let i = 0; i < 20; i++) {
         const fullName = patientNames[i % patientNames.length] + (i > 9 ? ` ${i}` : '');
         const [pFirst, pLast] = fullName.split(' ');
-        patients.push(await Patient.create({
-            firstName: pFirst,
-            lastName: pLast || 'Doe',
-            name: fullName,
+        const patientEmail = i === 0 ? "patient@medicore.com" : `patient${i + 1}@example.com`;
+
+        const patient = await Patient.create({
+            firstName: "Patient",
+            lastName: "User",
+            name: "Patient User",
             mrn: `MRN-${2024000 + i}`,
             contact: {
                 phone: `555-01${i.toString().padStart(2, '0')}`,
-                email: `patient${i + 1}@example.com`,
+                email: patientEmail,
                 address: {
                     street: '123 Hospital Way',
                     city: 'New York',
@@ -112,14 +219,27 @@ const seedData = async () => {
                 status: 'Approved'
             },
             bedAllocated: i < 5 ? { ward: 'ICU', bedNumber: `ICU-${i + 1}`, allocatedAt: new Date() } : undefined
-        }));
+        });
+
+        patients.push(patient);
+
+        // Also create a User document for the first patient for login
+        if (i === 0) {
+            await User.create({
+                firstName: "Patient",
+                lastName: "User",
+                email: patientEmail,
+                password: "a",
+                role: ROLES.PATIENT
+            });
+        }
     }
 
     console.log('Creating Appointments...');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 3; i++) {
         const appointmentDate = new Date(today);
         appointmentDate.setHours(9 + i, 0); // 9 AM onwards
 

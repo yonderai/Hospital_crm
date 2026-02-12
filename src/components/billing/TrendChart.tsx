@@ -66,7 +66,7 @@ export default function TrendChart({ data }: TrendChartProps) {
                     <YAxis
                         tick={{ fill: "#64748b", fontSize: 12, fontWeight: 600 }}
                         axisLine={{ stroke: "#e2e8f0" }}
-                        tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+                        tickFormatter={(value) => `₹${value}`}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend

@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import {
     Users,
     TrendingUp,
-    DollarSign,
+    IndianRupee,
     AlertCircle,
     Settings,
     Plus,
@@ -36,7 +36,7 @@ const revenueData = [
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState([
-        { title: "Monthly Revenue", value: "---", icon: DollarSign, color: "text-green-500", bg: "bg-green-50" },
+        { title: "Monthly Revenue", value: "---", icon: IndianRupee, color: "text-green-500", bg: "bg-green-50" },
         { title: "Total Staff", value: "---", icon: Users, color: "text-blue-500", bg: "bg-blue-50" },
         { title: "Dept. Occupancy", value: "---", icon: TrendingUp, color: "text-olive-600", bg: "bg-olive-50" },
         { title: "Pending Approvals", value: "---", icon: AlertCircle, color: "text-red-500", bg: "bg-red-50" },
@@ -49,7 +49,7 @@ export default function AdminDashboard() {
                 if (data.stats) {
                     // Map string icons back to components if needed, or just keep structure if API returns matching keys
                     // The API returns "icon": "Users", we need to map it.
-                    const iconMap: any = { Users, TrendingUp, DollarSign, AlertCircle };
+                    const iconMap: any = { Users, TrendingUp, IndianRupee, AlertCircle };
                     const mappedStats = data.stats.map((s: any) => ({
                         ...s,
                         icon: iconMap[s.icon] || Users

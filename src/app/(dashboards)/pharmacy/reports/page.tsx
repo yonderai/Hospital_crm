@@ -11,7 +11,7 @@ import {
     Clock,
     CheckCircle2,
     Search,
-    DollarSign,
+    IndianRupee,
     AlertTriangle
 } from "lucide-react";
 
@@ -60,7 +60,7 @@ export default function ReportsPage() {
         h.medications.some(m => m.drugName.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    // Calculate real revenue for display (mock price of $20 per unit if not available)
+    // Calculate real revenue for display (mock price of ₹20 per unit if not available)
     const mockTotalRevenue = history.reduce((sum, h) => {
         const hTotal = h.medications.reduce((mSum, m) => mSum + (m.quantity * 20), 0);
         return sum + hTotal;
@@ -115,7 +115,7 @@ export default function ReportsPage() {
                     <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm group hover:border-blue-400 transition-all">
                         <div className="flex justify-between items-start mb-4">
                             <div className="p-4 bg-blue-50 text-blue-600 rounded-2xl group-hover:scale-110 transition-transform">
-                                <DollarSign size={24} />
+                                <IndianRupee size={24} />
                             </div>
                             <div className="text-right">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue Today</p>

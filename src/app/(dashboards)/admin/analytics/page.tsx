@@ -6,7 +6,7 @@ import {
     PieChart as PieChartIcon,
     TrendingUp,
     Users,
-    DollarSign,
+    IndianRupee,
     Activity,
     Calendar,
     Filter,
@@ -72,7 +72,7 @@ export default function AnalyticsDashboard() {
 
                 {/* KPI Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <KPIComponent title="Lifetime Revenue" value="₹4.82M" change="+14.2%" up icon={DollarSign} />
+                    <KPIComponent title="Lifetime Revenue" value="₹4.82M" change="+14.2%" up icon={IndianRupee} />
                     <KPIComponent title="Active Patients" value="12,405" change="+5.7%" up icon={Users} />
                     <KPIComponent title="Avg. Length of Stay" value="4.2 Days" change="-0.8%" down icon={Activity} />
                     <KPIComponent title="Clinical Efficiency" value="96.4%" change="+2.1%" up icon={Target} />

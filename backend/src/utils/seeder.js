@@ -1,17 +1,28 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 import User from '../models/User.js';
 import Patient from '../models/Patient.js';
 import Inventory from '../models/Inventory.js';
 import Appointment from '../models/Appointment.js';
 import Expense from '../models/Expense.js';
 import Billing from '../models/Billing.js';
+import Staff from '../models/Staff.js';
 import { ROLES } from '../config/roles.js';
 
-dotenv.config(); // Loads .env from CWD (backend root)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from project root
+dotenv.config({ path: path.join(__dirname, '../../../.env') });
 
 const seedData = async () => {
     try {
+        if (!process.env.MONGODB_URI) {
+            throw new Error('MONGODB_URI is not defined in .env');
+        }
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to MongoDB for seeding...');
 
@@ -22,46 +33,207 @@ const seedData = async () => {
         await Appointment.deleteMany();
         await Expense.deleteMany();
         await Billing.deleteMany();
+        await Staff.deleteMany();
 
         console.log('Cleared existing data...');
 
-        // 1. Create Users for all 10 roles
-        const password = 'password123';
-        const users = await User.create([
-            { name: 'Dr. John Smith', email: 'doctor@hospital.com', password, role: ROLES.DOCTOR },
-            { name: 'Admin User', email: 'admin@hospital.com', password, role: ROLES.ADMIN },
-            { name: 'Pharmacist Sarah', email: 'pharmacy@hospital.com', password, role: ROLES.PHARMACY_INVENTORY },
-            { name: 'Diagnostics Tech', email: 'lab@hospital.com', password, role: ROLES.DIAGNOSTICS },
-            { name: 'Front Desk Alice', email: 'frontdesk@hospital.com', password, role: ROLES.FRONT_DESK },
-            { name: 'Nurse Joy', email: 'nurse@hospital.com', password, role: ROLES.NURSE },
-            { name: 'Revenue Officer', email: 'revenue@hospital.com', password, role: ROLES.REVENUE_OFFICE },
-            { name: 'Finance Manager', email: 'finance@hospital.com', password, role: ROLES.BACK_OFFICE_FINANCE },
-            { name: 'HR Manager', email: 'hr@hospital.com', password, role: ROLES.HR },
-            { name: 'Patient Charlie', email: 'patient@hospital.com', password, role: ROLES.PATIENT },
-        ]);
-        console.log('Seed: Created 10 users (Role-based)...');
+        // 1. Create Standardized Staff
+        const staffData = [
+            {
+                firstName: 'Dr. Gregory',
+                lastName: 'House',
+                email: 'doctor@medicore.com',
+                password: 'a',
+                role: ROLES.DOCTOR,
+                department: 'Diagnostics',
+                designation: 'Chief of Diagnostics',
+                baseSalary: 250000,
+                phone: '9876543210'
+            },
+            {
+                firstName: 'Nurse',
+                lastName: 'Joy',
+                email: 'nurse@medicore.com',
+                password: 'a',
+                role: ROLES.NURSE,
+                department: 'Outpatient',
+                designation: 'Head Nurse',
+                baseSalary: 85000,
+                phone: '9876543211'
+            },
+            {
+                firstName: 'Sarah',
+                lastName: 'Finance',
+                email: 'finance@hospital.com',
+                password: 'a',
+                role: ROLES.BACK_OFFICE_FINANCE,
+                department: 'Finance',
+                designation: 'Finance Manager',
+                baseSalary: 120000,
+                phone: '9876543212'
+            },
+            {
+                firstName: 'Mike',
+                lastName: 'Maintenance',
+                email: 'maintenance@hospital.com',
+                password: 'a',
+                role: ROLES.MAINTENANCE,
+                department: 'Maintenance',
+                designation: 'Lead Engineer',
+                baseSalary: 65000,
+                phone: '9876543213'
+            },
+            {
+                firstName: 'Admin',
+                lastName: 'User',
+                email: 'admin@medicore.com',
+                password: 'a',
+                role: ROLES.ADMIN,
+                department: 'Administration',
+                designation: 'Hospital Administrator',
+                baseSalary: 150000,
+                phone: '9876543214'
+            },
+            {
+                firstName: 'Front',
+                lastName: 'Desk',
+                email: 'frontdesk@medicore.com',
+                password: 'a',
+                role: ROLES.FRONT_DESK,
+                department: 'Front Desk',
+                designation: 'Reception Supervisor',
+                baseSalary: 55000,
+                phone: '9876543215'
+            },
+            {
+                firstName: 'Lab',
+                lastName: 'Tech',
+                email: 'lab@medicore.com',
+                password: 'a',
+                role: ROLES.DIAGNOSTICS,
+                department: 'Laboratory',
+                designation: 'Senior Lab Technician',
+                baseSalary: 75000,
+                phone: '9876543216'
+            },
+            {
+                firstName: 'Pharmacist',
+                lastName: 'User',
+                email: 'pharmacy@medicore.com',
+                password: 'a',
+                role: ROLES.PHARMACY_INVENTORY,
+                department: 'Pharmacy',
+                designation: 'Chief Pharmacist',
+                baseSalary: 95000,
+                phone: '9876543217'
+            },
+            {
+                firstName: 'Billing',
+                lastName: 'Officer',
+                email: 'billing@medicore.com',
+                password: 'a',
+                role: ROLES.REVENUE_OFFICE,
+                department: 'Billing',
+                designation: 'Billing In-charge',
+                baseSalary: 70000,
+                phone: '9876543218'
+            },
+            {
+                firstName: 'HR',
+                lastName: 'Manager',
+                email: 'hr@hospital.com',
+                password: 'a',
+                role: ROLES.HR,
+                department: 'Human Resources',
+                designation: 'HR Director',
+                baseSalary: 110000,
+                phone: '9876543219'
+            }
+        ];
+
+        const users = [];
+        const staffMembers = [];
+        const doctors = [];
+
+        for (const data of staffData) {
+            const user = await User.create({
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                password: data.password,
+                role: data.role,
+                department: data.department,
+                employeeId: `EMP-${data.firstName[0]}${data.lastName[0]}-${Math.floor(Math.random() * 1000)}`.toUpperCase()
+            });
+
+            const staffMember = await Staff.create({
+                userId: user._id,
+                employeeId: user.employeeId,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                phone: data.phone,
+                role: data.role,
+                department: data.department,
+                designation: data.designation,
+                baseSalary: data.baseSalary,
+                dateJoined: new Date(2023, Math.floor(Math.random() * 12), 1),
+                status: 'active',
+                bankDetails: {
+                    accountName: `${data.firstName} ${data.lastName}`,
+                    accountNumber: `4099${Math.floor(10000000 + Math.random() * 90000000)}`,
+                    bankName: 'HDFC Bank',
+                    ifscCode: 'HDFC0001234'
+                }
+            });
+
+            users.push(user);
+            staffMembers.push(staffMember);
+            if (data.role === ROLES.DOCTOR) doctors.push(user);
+        }
+
+        // Add a patient user for login parity
+        await User.create({
+            firstName: 'Patient',
+            lastName: 'User',
+            email: 'patient@medicore.com',
+            password: 'a',
+            role: ROLES.PATIENT
+        });
+
+        console.log(`Seed: Created ${staffMembers.length} staff members...`);
 
         // 2. Create Patients
         const patients = await Patient.create([
             {
+                firstName: 'Charlie',
+                lastName: 'Brown',
                 name: 'Charlie Brown',
-                email: 'patient@hospital.com',
-                phone: '1234567890',
+                mrn: 'MRN-2024001',
+                contact: {
+                    email: 'patient@hospital.com',
+                    phone: '1234567890',
+                    address: { street: '123 Pine St', city: 'Fremont', state: 'CA', zipCode: '94536', country: 'USA' }
+                },
                 dob: new Date('1990-01-01'),
                 gender: 'Male',
-                address: '123 Pine St',
                 kycVerified: true,
                 bloodGroup: 'O+',
-                emergencyContact: { name: 'Sally Brown', phone: '0987654321', relationship: 'Sister' },
+                insuranceDetails: { provider: 'MediCare+', policyNumber: 'MC12345', status: 'Approved' },
                 bedAllocated: { ward: 'General', bedNumber: 'G-101', allocatedAt: new Date() }
             },
             {
+                firstName: 'Lucy',
+                lastName: 'Van Pelt',
                 name: 'Lucy Van Pelt',
-                email: 'lucy@vanpelt.com',
-                phone: '5550101',
+                mrn: 'MRN-2024002',
+                contact: {
+                    email: 'lucy@vanpelt.com',
+                    phone: '5550101',
+                    address: { street: '456 Oak Ave', city: 'Fremont', state: 'CA', zipCode: '94536', country: 'USA' }
+                },
                 dob: new Date('1992-05-15'),
                 gender: 'Female',
-                address: '456 Oak Ave',
                 kycVerified: true,
                 bloodGroup: 'A-'
             }
@@ -77,10 +249,31 @@ const seedData = async () => {
         console.log(`Seed: Created ${inventory.length} inventory items...`);
 
         // 4. Create Appointments
-        const doc = users.find(u => u.role === ROLES.DOCTOR);
+        const doc = doctors[0];
         await Appointment.create([
-            { patient: patients[0]._id, doctor: doc._id, dateTime: new Date(), reason: 'Regular Checkup', queueNumber: 1, vitals: { bloodPressure: '120/80', temperature: '98.6', pulse: '72', weight: '70kg' } },
-            { patient: patients[1]._id, doctor: doc._id, dateTime: new Date(Date.now() + 3600000), reason: 'Fever', queueNumber: 2 }
+            {
+                appointmentId: 'APT-2024001',
+                patient: patients[0]._id,
+                providerId: doc._id,
+                startTime: new Date(),
+                endTime: new Date(Date.now() + 30 * 60000), // 30 mins later
+                type: 'consultation',
+                status: 'Scheduled',
+                reason: 'Regular Checkup',
+                queueNumber: 1,
+                vitals: { bloodPressure: '120/80', temperature: '98.6', pulse: '72', weight: '70kg' }
+            },
+            {
+                appointmentId: 'APT-2024002',
+                patient: patients[1]._id,
+                providerId: doc._id,
+                startTime: new Date(Date.now() + 3600000),
+                endTime: new Date(Date.now() + 3600000 + 30 * 60000),
+                type: 'urgent',
+                status: 'Scheduled',
+                reason: 'Fever',
+                queueNumber: 2
+            }
         ]);
         console.log('Seed: Created appointments...');
 
@@ -102,7 +295,6 @@ const seedData = async () => {
             insuranceCovered: 40,
             patientPayable: 20,
             paymentStatus: 'Paid',
-            paymentMethod: 'UPI',
             invoiceNumber: 'INV-SEED-001'
         });
         console.log('Seed: Created 1 billing record...');
@@ -111,6 +303,7 @@ const seedData = async () => {
         process.exit();
     } catch (error) {
         console.error(`Error with seeding: ${error.message}`);
+        console.error(error.stack);
         process.exit(1);
     }
 };

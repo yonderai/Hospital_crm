@@ -2,7 +2,7 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter, DollarSign } from "lucide-react";
+import { Plus, Search, Filter, IndianRupee } from "lucide-react";
 
 export default function ExpensesPage() {
     const [expenses, setExpenses] = useState<any[]>([]);

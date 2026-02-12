@@ -2,7 +2,7 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import {
-    DollarSign,
+    IndianRupee,
     FileText,
     CreditCard,
     TrendingUp,
@@ -46,7 +46,7 @@ const recentInvoices = [
 
 export default function BillingDashboard() {
     const stats = [
-        { title: "Total Revenue", value: "₹124,500", change: "+12.5%", trendingUp: true, icon: DollarSign, color: "text-olive-600", bg: "bg-olive-50" },
+        { title: "Total Revenue", value: "₹124,500", change: "+12.5%", trendingUp: true, icon: IndianRupee, color: "text-olive-600", bg: "bg-olive-50" },
         { title: "Pending Claims", value: "42", change: "-3", trendingUp: false, icon: FileText, color: "text-blue-500", bg: "bg-blue-50" },
         { title: "Unpaid Invoices", value: "₹18,200", change: "+5.2%", trendingUp: true, icon: AlertCircle, color: "text-red-500", bg: "bg-red-50" },
         { title: "Collection Rate", value: "94%", change: "+1.2%", trendingUp: true, icon: CheckCircle2, color: "text-green-500", bg: "bg-green-50" },

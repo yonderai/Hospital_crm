@@ -12,24 +12,40 @@ import {
     MoreVertical,
     ChevronRight,
     MapPin,
-    Activity
+    Activity,
+    X,
+    Loader2
 } from "lucide-react";
 
 export default function HRPersonnelPage() {
     const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const fetchStaff = async () => {
+        try {
+            const res = await fetch('/api/admin/staff');
+            const data = await res.json();
+            if (data.data) {
+                setStaff(data.data.map((s: any) => ({
+                    id: s._id,
+                    name: `${s.firstName} ${s.lastName}`,
+                    role: s.role.charAt(0).toUpperCase() + s.role.slice(1),
+                    dept: s.department || 'General',
+                    status: 'On Duty', // Mock status for now
+                    joined: new Date(s.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                    type: 'Full-time'
+                })));
+            }
+        } catch (error) {
+            console.error("Failed to fetch staff", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        setTimeout(() => {
-            setStaff([
-                { id: "1", name: "Dr. Yuvraj Singh", role: "Sr. Cardiologist", dept: "Cardiology", status: "On Duty", joined: "Jan 2020", type: "Full-time" },
-                { id: "2", name: "Nurse Sarah Connor", role: "Head Nurse", dept: "Sector 7G", status: "On Duty", joined: "Mar 2021", type: "Full-time" },
-                { id: "3", name: "Dr. Alan Turing", role: "Chief Pathologist", dept: "Laboratory", status: "On Leave", joined: "Jun 2019", type: "Consultant" },
-                { id: "4", name: "Steve Jobs", role: "HR Director", dept: "Administration", status: "On Duty", joined: "Aug 2018", type: "Full-time" },
-                { id: "5", name: "Gregory House", role: "Lead Pharmacist", dept: "Pharmacy", status: "Off Duty", joined: "Nov 2022", type: "Contract" },
-            ]);
-            setLoading(false);
-        }, 800);
+        fetchStaff();
     }, []);
 
     return (
@@ -45,7 +61,10 @@ export default function HRPersonnelPage() {
                         <button className="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all">
                             Payroll Logs
                         </button>
-                        <button className="flex items-center gap-2 px-6 py-2.5 bg-olive-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all">
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-olive-700 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-olive-600/20 hover:bg-olive-800 transition-all"
+                        >
                             <UserPlus size={16} /> Add Personnel
                         </button>
                     </div>
@@ -53,7 +72,7 @@ export default function HRPersonnelPage() {
 
                 {/* Personnel Insights */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <HRStat label="Total Staff" value="482" detail="+4 this week" icon={Users} />
+                    <HRStat label="Total Staff" value={staff.length.toString()} detail={`+${staff.length} this week`} icon={Users} />
                     <HRStat label="On Active Duty" value="124" detail="89% shift coverage" icon={Activity} />
                     <HRStat label="Open Reqs" value="15" icon={Briefcase} />
                     <HRStat label="Certifications" value="94%" detail="Compliance Rate" icon={GraduationCap} />
@@ -132,6 +151,17 @@ export default function HRPersonnelPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Add Staff Modal */}
+            {isModalOpen && (
+                <AddStaffModal
+                    onClose={() => setIsModalOpen(false)}
+                    onSuccess={() => {
+                        setIsModalOpen(false);
+                        fetchStaff();
+                    }}
+                />
+            )}
         </DashboardLayout>
     );
 }
@@ -156,5 +186,183 @@ function DeptFilter({ label, active = false }: any) {
         <span className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer transition-all border ${active ? 'bg-olive-700 text-white border-transparent' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}`}>
             {label}
         </span>
+    );
+}
+
+function AddStaffModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
+    const [isLoading, setIsLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        role: 'doctor',
+        department: 'Cardiology',
+        designation: 'Staff Physician',
+        baseSalary: '0'
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/admin/staff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            if (res.ok) {
+                onSuccess();
+            } else {
+                alert('Failed to create staff member');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error creating staff member');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <div>
+                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Add Personnel</h3>
+                        <p className="text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">New Staff Registration</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">First Name</label>
+                            <input
+                                required
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-olive-500 focus:ring-1 focus:ring-olive-500/20 transition-all placeholder:text-slate-300"
+                                placeholder="e.g. John"
+                                value={formData.firstName}
+                                onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Last Name</label>
+                            <input
+                                required
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-olive-500 focus:ring-1 focus:ring-olive-500/20 transition-all placeholder:text-slate-300"
+                                placeholder="e.g. Doe"
+                                value={formData.lastName}
+                                onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
+                            <input
+                                type="email"
+                                required
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-olive-500 focus:ring-1 focus:ring-olive-500/20 transition-all placeholder:text-slate-300"
+                                placeholder="john.doe@medicore.com"
+                                value={formData.email}
+                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phone Number</label>
+                            <input
+                                required
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-olive-500 focus:ring-1 focus:ring-olive-500/20 transition-all placeholder:text-slate-300"
+                                placeholder="+1 (555) 000-0000"
+                                value={formData.phone}
+                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Role</label>
+                            <select
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-olive-500 focus:ring-1 focus:ring-olive-500/20 transition-all"
+                                value={formData.role}
+                                onChange={e => setFormData({ ...formData, role: e.target.value })}
+                            >
+                                <option value="doctor">Doctor</option>
+                                <option value="nurse">Nurse</option>
+                                <option value="admin">Admin</option>
+                                <option value="frontdesk">Front Desk</option>
+                                <option value="labtech">Lab Tech</option>
+                                <option value="pharmacist">Pharmacist</option>
+                                <option value="billing">Billing Officer</option>
+                                <option value="hr">HR Manager</option>
+                                <option value="finance">Finance Manager</option>
+                                <option value="maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Department</label>
+                            <input
+                                required
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-olive-500 focus:ring-1 focus:ring-olive-500/20 transition-all placeholder:text-slate-300"
+                                placeholder="e.g. Cardiology"
+                                value={formData.department}
+                                onChange={e => setFormData({ ...formData, department: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Designation</label>
+                            <input
+                                required
+                                className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-olive-500 focus:ring-1 focus:ring-olive-500/20 transition-all placeholder:text-slate-300"
+                                placeholder="e.g. Senior Resident"
+                                value={formData.designation}
+                                onChange={e => setFormData({ ...formData, designation: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Base Salary</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-3.5 text-slate-400 font-bold">₹</span>
+                                <input
+                                    type="number"
+                                    required
+                                    className="w-full bg-slate-50 border border-slate-100 rounded-xl pl-8 pr-4 py-3 text-sm font-bold text-slate-900 outline-none focus:border-olive-500 focus:ring-1 focus:ring-olive-500/20 transition-all placeholder:text-slate-300"
+                                    placeholder="0.00"
+                                    value={formData.baseSalary}
+                                    onChange={e => setFormData({ ...formData, baseSalary: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-4 flex justify-end gap-3 border-t border-slate-50">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-500 hover:bg-slate-50 transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="px-8 py-3 rounded-xl bg-olive-700 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-olive-600/20 hover:bg-olive-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                        >
+                            {isLoading && <Loader2 size={14} className="animate-spin" />}
+                            {isLoading ? 'Creating...' : 'Create Personnel'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 }

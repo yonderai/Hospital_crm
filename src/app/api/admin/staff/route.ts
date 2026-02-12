@@ -10,14 +10,14 @@ export async function GET() {
     try {
         await dbConnect();
 
-        // RBAC: Admin only
+        // RBAC: Admin or HR
         const session = await getServerSession(authOptions);
-        if (!session || session.user.role !== 'admin') {
+        if (!session || (session.user.role !== 'admin' && session.user.role !== 'hr')) {
             return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
         }
 
         const staff = await User.find({
-            role: { $in: ['doctor', 'nurse', 'frontdesk', 'labtech', 'pharmacist', 'billing', 'hr', 'finance', 'emergency', 'maintenance', 'backoffice'] }
+            role: { $in: ['doctor', 'nurse', 'frontdesk', 'labtech', 'pharmacist', 'billing', 'hr', 'finance', 'emergency', 'maintenance', 'backoffice', 'admin'] }
         })
             .select('-password -mfaSecret') // bit safer
             .sort({ createdAt: -1 });
@@ -34,7 +34,9 @@ export async function POST(req: Request) {
     try {
         await dbConnect();
         const session = await getServerSession(authOptions);
-        if (!session || session.user.role !== 'admin') {
+
+        // Allow Admin or HR
+        if (!session || (session.user.role !== 'admin' && session.user.role !== 'hr')) {
             return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
         }
 
@@ -46,11 +48,12 @@ export async function POST(req: Request) {
             phone, // maps to mobile in schema
             role,
             department,
-            password
+            designation,
+            baseSalary
         } = body;
 
         // Validation
-        if (!firstName || !lastName || !email || !role || !password) {
+        if (!firstName || !lastName || !email || !role) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
@@ -60,8 +63,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Email already in use" }, { status: 409 });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash('a', 10); // Default password 'a'
 
+        // 1. Create User
         const newUser = await User.create({
             firstName,
             lastName,
@@ -71,7 +75,32 @@ export async function POST(req: Request) {
             mobile: phone,
             department,
             isActive: true,
-            forcePasswordChange: true, // Requirement: First login change password
+            forcePasswordChange: true,
+        });
+
+        // 2. Create Staff Profile
+        // Import Staff dynamically to avoid circular deps if any, or just at top
+        const Staff = (await import('@/lib/models/Staff')).default;
+
+        await Staff.create({
+            userId: newUser._id,
+            employeeId: `EMP-${Date.now().toString().slice(-6)}`,
+            firstName,
+            lastName,
+            email,
+            phone,
+            role,
+            department: department || 'General',
+            designation: designation || 'Staff',
+            baseSalary: Number(baseSalary) || 0,
+            dateJoined: new Date(),
+            status: 'active',
+            bankDetails: {
+                accountName: `${firstName} ${lastName}`,
+                bankName: 'Pending',
+                accountNumber: 'Pending',
+                ifscCode: 'Pending'
+            }
         });
 
         return NextResponse.json({

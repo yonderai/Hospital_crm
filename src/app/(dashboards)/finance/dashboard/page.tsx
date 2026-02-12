@@ -2,7 +2,7 @@
 
 import DashboardLayout from "@/components/DashboardLayout";
 import {
-    DollarSign,
+    IndianRupee,
     Zap, // For utilities
     TrendingUp,
     ShieldCheck,
@@ -121,7 +121,7 @@ export default function FinanceDashboard() {
             title: "Total Ops Cost (Month)",
             value: data ? `₹${data.currentMonth.totalCost.toLocaleString()}` : "₹0",
             change: "+2.5%",
-            icon: DollarSign,
+            icon: IndianRupee,
             color: "text-olive-700",
             bg: "bg-olive-50"
         },

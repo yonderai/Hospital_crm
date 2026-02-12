@@ -3,7 +3,7 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { useState } from "react";
 import {
-    DollarSign, Calculator, User, FileText,
+    IndianRupee, Calculator, User, FileText,
     CheckCircle2, AlertCircle, ShieldCheck,
     CreditCard, Printer
 } from "lucide-react";
