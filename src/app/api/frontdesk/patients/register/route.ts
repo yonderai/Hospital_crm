@@ -109,26 +109,38 @@ export async function POST(req: Request) {
 
         // 6. Create User Account
         // Check if email already exists
+        console.log(`[REG-DEBUG] Checking for existing user with email: ${userEmail.toLowerCase()}`);
         const existingUser = await User.findOne({ email: userEmail.toLowerCase() });
+        console.log(`[REG-DEBUG] existingUser found? ${!!existingUser}`);
 
         let credentials;
 
         if (!existingUser) {
+            console.log(`[REG-DEBUG] Creating new user for ${userEmail.toLowerCase()}`);
             const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-            await User.create({
-                email: userEmail.toLowerCase(),
-                password: hashedPassword,
-                role: 'patient',
-                firstName: body.firstName,
-                lastName: body.lastName,
-                mobile: body.phone,
-                isActive: true,
-            });
+            try {
+                await User.create({
+                    email: userEmail.toLowerCase(),
+                    password: hashedPassword,
+                    role: 'patient',
+                    firstName: body.firstName,
+                    lastName: body.lastName,
+                    mobile: body.phone,
+                    isActive: true,
+                });
+                console.log(`[REG-DEBUG] User created successfully`);
+            } catch (userCreateError: any) {
+                console.error(`[REG-DEBUG] User creation failed:`, userCreateError);
+                // If this fails, we should probably rollback the Patient creation or something, 
+                // but for now let's just rethrow to see the error.
+                throw userCreateError;
+            }
             credentials = {
                 username: userEmail,
                 password: defaultPassword
             };
         } else {
+            console.log(`[REG-DEBUG] User already exists. Linking.`);
             // If user exists, we link it but don't error? 
             // Actually, for a new MRN, the email should be unique.
             credentials = { username: userEmail, password: "Existing Account" };
@@ -157,19 +169,65 @@ export async function POST(req: Request) {
 // Helpers
 async function generateMRN() {
     const year = new Date().getFullYear();
-    // Find last MRN of this year
-    const lastPatient = await Patient.findOne({ mrn: { $regex: `^MRN-${year}-` } }).sort({ createdAt: -1 });
+    const mrnPrefix = `MRN-${year}-`;
 
-    let sequence = 1;
+    // Find last MRN from Patients collection
+    const lastPatient = await Patient.findOne({ mrn: { $regex: `^${mrnPrefix}` } }).sort({ mrn: -1 });
+
+    // Find last MRN from Users collection (email based)
+    // User emails are like: mrn-202X-XXXXXX@patient.medicore.com
+    const emailPrefix = `${mrnPrefix.toLowerCase()}`;
+    const lastUser = await User.findOne({
+        email: { $regex: `^${emailPrefix}` }
+    }).sort({ email: -1 });
+
+    let maxSequence = 0;
+
+    // Check Patient sequence
     if (lastPatient && lastPatient.mrn) {
         const parts = lastPatient.mrn.split('-');
         if (parts.length === 3) {
-            const lastSeq = parseInt(parts[2]);
-            if (!isNaN(lastSeq)) sequence = lastSeq + 1;
+            const seq = parseInt(parts[2]);
+            if (!isNaN(seq) && seq > maxSequence) maxSequence = seq;
         }
     }
 
-    return `MRN-${year}-${sequence.toString().padStart(6, '0')}`;
+    // Check User sequence
+    if (lastUser && lastUser.email) {
+        const emailParts = lastUser.email.split('@')[0];
+        const parts = emailParts.split('-');
+        if (parts.length === 3) {
+            const seq = parseInt(parts[2]);
+            if (!isNaN(seq) && seq > maxSequence) maxSequence = seq;
+        }
+    }
+
+    let nextSequence = maxSequence + 1;
+    let candidateMRN = '';
+    let isUnique = false;
+
+    // Verification Loop: Ensure the generated MRN is truly unique
+    // This handles cases where sort() might miss the true max due to unpadded legacy data
+    // or race conditions.
+    while (!isUnique) {
+        candidateMRN = `${mrnPrefix}${nextSequence.toString().padStart(6, '0')}`;
+        const candidateEmail = `${candidateMRN.toLowerCase()}@patient.medicore.com`;
+
+        // Parallel check
+        const [patientExists, userExists] = await Promise.all([
+            Patient.findOne({ mrn: candidateMRN }).select('_id'),
+            User.findOne({ email: candidateEmail }).select('_id')
+        ]);
+
+        if (!patientExists && !userExists) {
+            isUnique = true;
+        } else {
+            console.log(`Collision detected for ${candidateMRN}. Incrementing sequence.`);
+            nextSequence++;
+        }
+    }
+
+    return candidateMRN;
 }
 
 function generateDefaultPassword() {
