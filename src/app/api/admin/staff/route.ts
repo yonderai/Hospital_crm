@@ -6,7 +6,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
 // GET: List all staff (Doctors, Nurses, Front Desk, etc.)
-export async function GET() {
+export async function GET(req: Request) {
     try {
         await dbConnect();
 
@@ -16,9 +16,18 @@ export async function GET() {
             return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
         }
 
-        const staff = await User.find({
+        const { searchParams } = new URL(req.url);
+        const department = searchParams.get('department');
+
+        const query: any = {
             role: { $in: ['doctor', 'nurse', 'frontdesk', 'labtech', 'pharmacist', 'billing', 'hr', 'finance', 'emergency', 'maintenance', 'backoffice', 'admin'] }
-        })
+        };
+
+        if (department) {
+            query.department = department;
+        }
+
+        const staff = await User.find(query)
             .select('-password -mfaSecret') // bit safer
             .sort({ createdAt: -1 });
 

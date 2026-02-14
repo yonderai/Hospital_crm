@@ -1,74 +1,71 @@
 # Hospital CRM
 
-A full-stack Hospital CRM built with **Next.js 16 (App Router)** and **Flask (Python)**.
+A full-stack Hospital CRM built with **Next.js 16 (App Router)** and **Flask (Python)**. This project includes management for Personnel, Attendance, Complaints, Inventory, and AI-driven Clinical Insights.
 
-## Project Structure
+## 📁 Project Structure
 - **/src**: Next.js Frontend & Core API (Port 3000)
-- **/backend**: Flask AI Service (Port 5001) & Database Scripts
-- **/public**: Static assets
+- **/backend**: Flask AI Service (Port 5001) & Python Logic
+- **/scripts**: Utility scripts for data maintenance and verification
 
-## Prerequisites
-- Node.js (v18+)
-- Python (v3.8+)
-- MongoDB (running locally or cloud)
+## ⚙️ Prerequisites
+- **Node.js**: v18+
+- **Python**: v3.14+ (recommended)
+- **MongoDB**: Running locally or a MongoDB Atlas URI
 
 ## 🚀 Getting Started
 
-Follow these steps to set up the project from scratch.
-
-### 1. Clone & Environment Setup
-Clone the repo and create the environment file:
+### 1. Project Initialization
 ```bash
 git clone <repo-url>
 cd Hospital_crm
 
-# Copy example env file
+# Setup environment variables
 cp .env.example .env
 ```
-> **Note:** Update `.env` with your `MONGODB_URI` and `OPENROUTER_API_KEY` (for AI features).
+> **IMPORTANT:** Update `.env` with your `MONGODB_URI` and `OPENROUTER_API_KEY`.
 
 ### 2. Install Dependencies
-
-#### Frontend (Next.js)
 ```bash
+# Frontend dependencies
 npm install
-```
 
-#### Backend (Flask AI Service)
-```bash
+# Backend dependencies (Python)
 pip install -r backend/requirements.txt
 ```
 
-#### Backend (Support Scripts)
+### 3. Database Seeding
+Populate your database with demo staff, patients, and inventory:
 ```bash
-cd backend
-npm install
-cd ..
-```
-
-### 3. Seed Database
-Populate the database with initial data (Users, Patients, Inventory, etc.):
-```bash
-# Run from the root directory
 npm run seed
 ```
 
-### 4. Run the Application
+### 4. Running the Application
+You need to run both the AI backend and the Next.js frontend:
 
-#### Start AI Service (Flask)
-Open a new terminal:
+**Terminal 1 (AI Service):**
 ```bash
 python backend/app.py
 ```
-*Runs on: [http://127.0.0.1:5001](http://127.0.0.1:5001)*
 
-#### Start Main App (Next.js)
-Open another terminal:
+**Terminal 2 (Main App):**
 ```bash
 npm run dev
 ```
-*Runs on: [http://localhost:3000](http://localhost:3000)*
 
-## ✅ Verify Installation
-1.  Open [http://localhost:3000/flask-test](http://localhost:3000/flask-test).
-2.  You should see status **Green/Connected** for both Backend (Flask) and Database.
+## 🔐 Default Admin Credentials
+Use these after seeding to explore the system:
+
+| Role | Email | Password |
+|------|-------|----------|
+| **HR / Admin** | admin@medicore.com | a |
+| **Doctor** | doctor@medicore.com | a |
+| **Nurse** | nurse@medicore.com | a |
+| **Patient** | patient@medicore.com | a |
+
+## 🛠 Troubleshooting
+- **Port Conflict**: If port 3000 or 5001 is taken, kill the process or update config in `.env`.
+- **MongoDB Connection**: Ensure `MONGODB_URI` in `.env` is correct.
+- **Auth Issues**: Use `127.0.0.1:3000` instead of `localhost` in your browser.
+
+## 📜 License
+This project is private and intended for internal use.

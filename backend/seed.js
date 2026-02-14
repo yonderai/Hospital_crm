@@ -142,6 +142,28 @@ const seedData = async () => {
             designation: 'Billing In-charge',
             baseSalary: 70000,
             phone: '9876543218'
+        },
+        {
+            firstName: 'Jessica',
+            lastName: 'Pearson',
+            email: 'hr@medicore.com',
+            password: 'a',
+            role: ROLES.HR,
+            department: 'HR',
+            designation: 'HR Director',
+            baseSalary: 150000,
+            phone: '9876543219'
+        },
+        {
+            firstName: 'Emergency',
+            lastName: 'Responder',
+            email: 'emergency@medicore.com',
+            password: 'a',
+            role: ROLES.EMERGENCY,
+            department: 'Emergency',
+            designation: 'Lead Paramedic',
+            baseSalary: 80000,
+            phone: '9876543220'
         }
     ];
 

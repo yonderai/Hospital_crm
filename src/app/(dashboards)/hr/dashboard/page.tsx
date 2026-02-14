@@ -12,13 +12,40 @@ import {
     Briefcase
 } from "lucide-react";
 
+import { useState, useEffect } from "react";
+
 export default function HRDashboard() {
-    const stats = [
-        { title: "Total Medical Staff", value: "482", icon: Users, color: "text-olive-600", bg: "bg-olive-50" },
-        { title: "Staff on Duty", value: "124", icon: UserCheck, color: "text-blue-500", bg: "bg-blue-50" },
-        { title: "Pending Leave", value: "08", icon: Calendar, color: "text-orange-500", bg: "bg-orange-50" },
-        { title: "Open Positions", value: "15", icon: Briefcase, color: "text-purple-500", bg: "bg-purple-50" },
-    ];
+    const [stats, setStats] = useState([
+        { title: "Total Hospital Staff", value: "...", icon: Users, color: "text-olive-600", bg: "bg-olive-50" },
+        { title: "Doctors", value: "...", icon: UserCheck, color: "text-blue-500", bg: "bg-blue-50" },
+        { title: "Nurses", value: "...", icon: Activity, color: "text-red-500", bg: "bg-red-50" },
+        { title: "Other Staff", value: "...", icon: Briefcase, color: "text-purple-500", bg: "bg-purple-50" },
+    ]);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await fetch('/api/hr/staff');
+                const data = await res.json();
+                if (data.stats) {
+                    const totalStat = data.stats.find((s: any) => s.label === "Total Staff");
+                    const doctorStat = data.stats.find((s: any) => s.label === "Doctors");
+                    const nurseStat = data.stats.find((s: any) => s.label === "Nurses");
+                    const otherStat = data.stats.find((s: any) => s.label === "Other");
+
+                    setStats([
+                        { title: "Total Hospital Staff", value: totalStat?.value || "0", icon: Users, color: "text-olive-600", bg: "bg-olive-50" },
+                        { title: "Doctors", value: doctorStat?.value || "0", icon: UserCheck, color: "text-blue-500", bg: "bg-blue-50" },
+                        { title: "Nurses", value: nurseStat?.value || "0", icon: Activity, color: "text-red-500", bg: "bg-red-50" },
+                        { title: "Other Staff", value: otherStat?.value || "0", icon: Briefcase, color: "text-purple-500", bg: "bg-purple-50" },
+                    ]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch HR stats", error);
+            }
+        };
+        fetchStats();
+    }, []);
 
     const staffActivity = [
         { name: "Dr. Yuvraj Singh", role: "Cardiologist", status: "On Duty", location: "OPD-1", shift: "08:00 AM - 04:00 PM" },

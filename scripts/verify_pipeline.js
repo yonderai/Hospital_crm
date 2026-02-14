@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 
 // Basic env parser
-const envPath = '/Users/yuvrajsingh/medical/Hospital_crm/.env';
+const envPath = './.env';
 const envContent = fs.readFileSync(envPath, 'utf8');
 const MONGODB_URI = envContent.split('\n')
     .find(line => line.startsWith('MONGODB_URI='))

@@ -19,23 +19,27 @@ import {
 
 export default function HRPersonnelPage() {
     const [staff, setStaff] = useState<any[]>([]);
+    const [stats, setStats] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const fetchStaff = async () => {
         try {
-            const res = await fetch('/api/admin/staff');
+            const res = await fetch('/api/hr/staff');
             const data = await res.json();
             if (data.data) {
                 setStaff(data.data.map((s: any) => ({
-                    id: s._id,
-                    name: `${s.firstName} ${s.lastName}`,
-                    role: s.role.charAt(0).toUpperCase() + s.role.slice(1),
-                    dept: s.department || 'General',
-                    status: 'On Duty', // Mock status for now
-                    joined: new Date(s.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                    id: s.id,
+                    name: s.name,
+                    role: s.value,
+                    dept: 'HR',
+                    status: s.status,
+                    joined: s.date,
                     type: 'Full-time'
                 })));
+            }
+            if (data.stats) {
+                setStats(data.stats);
             }
         } catch (error) {
             console.error("Failed to fetch staff", error);
@@ -47,6 +51,9 @@ export default function HRPersonnelPage() {
     useEffect(() => {
         fetchStaff();
     }, []);
+
+    // Helper to get stat value
+    const getStat = (label: string) => stats.find(s => s.label === label)?.value || "0";
 
     return (
         <DashboardLayout>
@@ -72,10 +79,10 @@ export default function HRPersonnelPage() {
 
                 {/* Personnel Insights */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <HRStat label="Total Staff" value={staff.length.toString()} detail={`+${staff.length} this week`} icon={Users} />
-                    <HRStat label="On Active Duty" value="124" detail="89% shift coverage" icon={Activity} />
-                    <HRStat label="Open Reqs" value="15" icon={Briefcase} />
-                    <HRStat label="Certifications" value="94%" detail="Compliance Rate" icon={GraduationCap} />
+                    <HRStat label="Total Hospital Staff" value={getStat("Total Staff")} detail={`+${getStat("Total Staff")} in ecosystem`} icon={Users} />
+                    <HRStat label="Doctors" value={getStat("Doctors")} detail="Medical Personnel" icon={Activity} />
+                    <HRStat label="Nurses" value={getStat("Nurses")} detail="Nursing Division" icon={Activity} />
+                    <HRStat label="Other Roles" value={getStat("Other")} detail="Compliance Dept" icon={GraduationCap} />
                 </div>
 
                 {/* Staff Directory */}

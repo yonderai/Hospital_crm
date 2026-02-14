@@ -45,11 +45,22 @@ next-env.d.ts
 # logs and temp files
 *.log
 *.txt
+*.json
+*.pdf
+!package.json
+!tsconfig.json
+!package-lock.json
+!backend/package.json
+!backend/package-lock.json
+!eslint.config.mjs
+!postcss.config.mjs
+!next.config.ts
 check_*.js
 seed_*.js
 !seed_fix.js
 !src/scripts/
 debug_*.js
+debug_*.ts
 *_out.txt
 *_errors.txt
 build_*.txt
