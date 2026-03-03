@@ -128,7 +128,7 @@ export default function LoginPage() {
                                     type="text"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="user@medicore.net"
+                                    placeholder="user@medicore.com"
                                     className="w-full bg-white border border-slate-200 p-4 pl-12 rounded-2xl outline-none focus:ring-4 focus:ring-olive-600/5 focus:border-olive-600 transition-all text-sm font-medium text-slate-900 placeholder:text-slate-300"
                                 />
                             </div>

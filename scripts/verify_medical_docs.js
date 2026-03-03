@@ -18,7 +18,7 @@ require('dotenv').config();
 
 async function verifyDocs() {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hospital_crm');
+        await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to MongoDB');
 
         const patient = await Patient.findOne({ "contact.email": "patient@example.com" }) || await Patient.findOne();

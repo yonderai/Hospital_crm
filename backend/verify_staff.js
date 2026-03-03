@@ -7,7 +7,7 @@ dotenv.config(); // Load env vars if needed, though usually auto-loaded in app c
 
 const checkStaff = async () => {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hospital_crm');
+        await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to DB');
 
         const users = await User.find({ lastName: 'Synchronized' });

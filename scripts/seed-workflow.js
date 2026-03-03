@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const util = require('util');
 require('dotenv').config();
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/hospital-crm";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 async function seedWorkflow() {
     try {

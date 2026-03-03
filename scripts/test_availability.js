@@ -28,7 +28,7 @@ const AppointmentModel = mongoose.models.Appointment || mongoose.model('Appointm
 
 async function testAvailability() {
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/hospital_crm');
+        await mongoose.connect(process.env.MONGODB_URI);
         console.log('Connected to MongoDB');
 
         // 1. Get Doctor

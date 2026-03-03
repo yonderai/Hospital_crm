@@ -12,8 +12,7 @@ def get_db():
     if 'db' not in g:
         mongo_uri = os.environ.get("MONGODB_URI")
         if not mongo_uri:
-            # Fallback for development matches user's local setup
-            mongo_uri = "mongodb://127.0.0.1:27017/hospital_crm"
+            raise ValueError("MONGODB_URI environment variable is not defined!")
             
         # DEBUG: Print loaded URI to confirm
         masked_uri = mongo_uri.split('@')[-1] if '@' in mongo_uri else mongo_uri

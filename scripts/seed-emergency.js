@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { Schema } = mongoose;
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/hospital-db";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 const UserSchema = new Schema(
     {

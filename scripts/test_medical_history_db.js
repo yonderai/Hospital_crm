@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // Use local URI as used in .env
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/hospital_crm";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 async function verify() {
     try {

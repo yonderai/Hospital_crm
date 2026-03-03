@@ -132,7 +132,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         finance: ["Overview", "Procurement", "Expenses", "Utilities", "Maintenance", "Assets", "Payroll", "Compliance"], // Back Office / Finance
         patient: ["Overview", "Report Viewer", "Medical History", "Surgery", "Insurance", "e-Prescriptions", "Booking", "Queue Status", "Billing & Invoices"], // Patient Portal
         hr: ["Overview", "Personnel Management", "Rosters & Attendance", "Complaints", "Compliance", "Payroll Integration"], // Dedicated HR Module
-        admin: ["Overview", "User Management", "Departments & Services", "Stock Summary", "Billing & Payments", "Expense Oversight", "Salary Overview", "Medical Claims", "Hospital Chain", "Reports", "Analytics", "Settings"], // Master Control - Enterprise Ops
+        admin: ["Overview", "User Management", "Personnel Management", "Departments & Services", "Procurement", "Stock Summary", "Inventory", "Billing & Payments", "Expense Oversight", "Salary Overview", "Medical Claims", "Hospital Chain", "Maintenance", "Triage", "Ambulance", "Reports", "Analytics", "Settings"], // Master Control - Enterprise Ops
         emergency: ["Overview", "Triage", "Clinical Workspace", "Ambulance", "Alerts"], // Emergency
         maintenance: ["Overview", "My Tickets", "Raise Ticket", "Profile"] // Maintenance Staff
     };
@@ -159,6 +159,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: "Radiology", href: `/${urlRole}/radiology`, icon: Aperture },
         { name: "Test Scheduling", href: `/${urlRole}/test-scheduling`, icon: Calendar },
         { name: "Sample Tracking", href: `/${urlRole}/sample-tracking`, icon: Activity },
+        { name: "My Tickets", href: `/${urlRole}/tickets`, icon: FileText },
+        { name: "Raise Ticket", href: `/${urlRole}/raise-ticket`, icon: AlertCircle },
 
         { name: "Digital Reports", href: `/${urlRole}/digital-reports`, icon: FileText },
         // Front Desk

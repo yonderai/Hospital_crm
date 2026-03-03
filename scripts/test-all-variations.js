@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const username = "yuvrajsingh02608_db_user";
 const passwords = ["yuvraj singh 121", "yuvraj%20singh%20121", "yuvrajsingh121", "yuvrajsingh02608_db_user"];
-const clusters = ["yondermedicareai.b6dwyv5.mongodb.net", "yuvrajsingh02608_db_user.b6dwyv5.mongodb.net"];
+const clusters = ["yuvrajsingh02608_db_user.b6dwyv5.mongodb.net", "yuvrajsingh02608_db_user.b6dwyv5.mongodb.net"];
 
 async function testConnection(pwm, cluster) {
     const uri = `mongodb+srv://${username}:${pwm}@${cluster}/yonder_medicare?retryWrites=true&w=majority`;

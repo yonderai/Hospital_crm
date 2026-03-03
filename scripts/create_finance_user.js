@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: '../.env' }); // Adjust path as scripts is usually in root or scripts folder. This file is in scripts/
 
 // Fallback URI if dotenv fails or .env is in a different place relative to where we run
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://yuvrajsingh02608_db_user:yuvrajsingh@yondermedicareai.b6dwyv5.mongodb.net/yonder_medicare?retryWrites=true&w=majority";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://yuvrajsingh02608_db_user:yuvrajsingh@yuvrajsingh02608_db_user.b6dwyv5.mongodb.net/yonder_medicare?retryWrites=true&w=majority";
 
 const UserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },

@@ -21,12 +21,13 @@ export const authOptions: NextAuthOptions = {
 
                 await dbConnect();
 
+                const identifier = credentials.email.trim();
                 const user = await User.findOne({
                     $or: [
-                        { email: credentials.email },
-                        { employeeId: credentials.email }
+                        { email: identifier },
+                        { employeeId: identifier }
                     ]
-                }).select('+password'); // Ensure password is selected
+                }).select('+password');
 
                 if (!user) {
                     console.log("User not found for:", credentials.email);
